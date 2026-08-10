@@ -21,16 +21,22 @@ Firebase App Hosting, against the shared `reqs-tech` project:
 npx firebase-tools@latest deploy --only apphosting --project reqs-tech
 ```
 
-You need to create the App Hosting backend once before the first deploy — this
-repo has `apphosting.yaml` and `.firebaserc` but no backend exists yet.
+Backend `preview` in `us-central1`, runtime `nodejs24` with automatic base
+image updates on, serving at
+**https://preview--reqs-tech.us-central1.hosted.app**. It deploys from this
+local folder — no GitHub repo is connected to the backend, same as leafatip.
 
 ## Firebase notes
 
 - `src/firebase/config.ts` holds the **public** web config for the shared
   `reqs-tech` project. Public by design; security lives in Firestore rules.
-- The `appId` in there is still leafatip's. Register a Web App for this project
-  in the console and swap it in, or analytics will land under leafatip.
+- It points at the `preview_1` web app, which is the one the backend is bound
+  to. A second, unlinked web app named `preview` also exists — ignore it.
 - Firestore is the **named** `flexagenda` database, not `(default)` — that one
   doesn't exist in this project. The database is shared with flexAgenda and
   leafatip, so namespace any collections this app adds.
+- **This project deliberately has no `firestore` block in `firebase.json`.**
+  Leafatip owns `firestore.rules` and `firestore.indexes.json` for the shared
+  database. Adding them here would let a `firebase deploy --only firestore`
+  from this directory overwrite leafatip's live security rules.
 - Auth is shared too. Never delete an Auth user to fix something here.

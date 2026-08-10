@@ -6,6 +6,6 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_SITE_URL
-    value: http://localhost:9002
+    value: https://preview--reqs-tech.us-central1.hosted.app
     availability:
       - RUNTIME
