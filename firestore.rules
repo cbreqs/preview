@@ -1,0 +1,33 @@
+rules_version = '2';
+
+// Rules for the `clients` database ONLY — see the "database" key in
+// firebase.json. The other reqs.tech database, `flexagenda`, is shared by
+// flexAgenda and leafatip and its rules live in the leafatip repo. Deploying
+// from here cannot touch it.
+//
+// Data is namespaced per client site: sites/cnkc/..., sites/rubi/...
+// One client can never read another's data, because every path is scoped by
+// {siteId} and nothing grants cross-site access.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Published site content — anything a visitor is meant to see without
+    // signing in. Writes never come from the browser; they go through the
+    // Admin SDK in a route handler, which bypasses these rules.
+    match /sites/{siteId}/public/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Everything else under a site is server-only. Client SDK reads and
+    // writes are denied outright; use the Admin SDK for them.
+    match /sites/{siteId}/{document=**} {
+      allow read, write: if false;
+    }
+
+    // Default deny for anything outside the sites/ tree.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

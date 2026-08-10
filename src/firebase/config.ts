@@ -1,7 +1,8 @@
-// The shared Firestore database across reqs.tech apps is a named database
-// (not "(default)", which doesn't exist in this project) — see leafatip's
-// firebase.json, which owns the rules and indexes for it.
-export const FIRESTORE_DATABASE_ID = 'flexagenda';
+// Client site data lives in its own named database, separate from the
+// `flexagenda` database that flexAgenda and leafatip share. This repo owns
+// its rules and indexes; leafatip owns flexagenda's. Neither can deploy over
+// the other. (There is no "(default)" database in this project.)
+export const FIRESTORE_DATABASE_ID = 'clients';
 
 // Shared Firebase project across reqs.tech apps. This config is public by
 // design (security comes from Firestore rules, not from hiding this).
