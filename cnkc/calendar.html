@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC calendar — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>Calendar · CNKC · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <nav class="top">
+    <div class="nav-left">
+      <a class="nav-home" href="../index.html">preview</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">cnkc</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="calendar.html" aria-current="page">Calendar</a>
+    <a href="documents.html">Documents</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <p class="hero-eyebrow">Calendar</p>
+      <h1>What's coming up</h1>
+      <p class="page-sub">Events are listed soonest first. Past events drop off on their own.</p>
+    </header>
+
+    <div class="data-list" id="events">
+      <p class="state">Loading events…</p>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links">
+      <a href="../index.html">all previews</a>
+      <a href="mailto:privacy@reqs.tech">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+  <script type="module">
+    import { db, toDate } from '../assets/firebase.js';
+    import {
+      collection, getDocs, query, orderBy, where,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const container = document.getElementById('events');
+
+    const dayFormat = new Intl.DateTimeFormat(undefined, {
+      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    });
+    const timeFormat = new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric', minute: '2-digit',
+    });
+
+    function whenLabel(start, allDay) {
+      if (!start) return '';
+      return allDay
+        ? dayFormat.format(start)
+        : `${dayFormat.format(start)} · ${timeFormat.format(start)}`;
+    }
+
+    function render(events) {
+      if (events.length === 0) {
+        container.innerHTML =
+          '<p class="state">No events scheduled yet. Once dates are added they show up here automatically.</p>';
+        return;
+      }
+
+      container.replaceChildren(...events.map((event) => {
+        const row = document.createElement('div');
+        row.className = 'data-row';
+
+        const left = document.createElement('div');
+
+        const when = document.createElement('p');
+        when.className = 'data-when';
+        when.textContent = whenLabel(event.start, event.allDay);
+        left.append(when);
+
+        const title = document.createElement('p');
+        title.className = 'data-title';
+        title.textContent = event.title;
+        left.append(title);
+
+        if (event.note) {
+          const note = document.createElement('p');
+          note.className = 'data-note';
+          note.textContent = event.note;
+          left.append(note);
+        }
+
+        row.append(left);
+
+        if (event.location) {
+          const side = document.createElement('span');
+          side.className = 'data-side';
+          side.textContent = event.location;
+          row.append(side);
+        }
+
+        return row;
+      }));
+    }
+
+    try {
+      // Only future events, soonest first. Firestore serves this from the
+      // single-field index on `start`, so no composite index is needed.
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const snapshot = await getDocs(query(
+        collection(db, 'sites', 'cnkc', 'public', 'calendar', 'events'),
+        where('start', '>=', startOfToday),
+        orderBy('start'),
+      ));
+
+      render(snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          title: data.title ?? 'Untitled event',
+          start: toDate(data.start),
+          allDay: data.allDay === true,
+          location: data.location ?? '',
+          note: data.note ?? '',
+        };
+      }));
+    } catch (error) {
+      console.error('Calendar failed to load:', error);
+      container.innerHTML =
+        '<p class="state error">The calendar could not be loaded just now. Please try again shortly.</p>';
+    }
+  </script>
+
+</body>
+</html>

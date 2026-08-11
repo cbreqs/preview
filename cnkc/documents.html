@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC documents — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>Documents · CNKC · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <nav class="top">
+    <div class="nav-left">
+      <a class="nav-home" href="../index.html">preview</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">cnkc</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="documents.html" aria-current="page">Documents</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <p class="hero-eyebrow">Documents</p>
+      <h1>Downloads</h1>
+      <p class="page-sub">Forms, schedules and handouts. Select one to download it.</p>
+    </header>
+
+    <div class="data-list" id="documents">
+      <p class="state">Loading documents…</p>
+    </div>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links">
+      <a href="../index.html">all previews</a>
+      <a href="mailto:privacy@reqs.tech">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+  <script type="module">
+    import { db } from '../assets/firebase.js';
+    import {
+      collection, getDocs, query, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const container = document.getElementById('documents');
+
+    /** Bytes to something a person reads, e.g. "1.4 MB". */
+    function fileSize(bytes) {
+      if (typeof bytes !== 'number' || bytes <= 0) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      const power = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+      const value = bytes / 1024 ** power;
+      return `${value >= 10 || power === 0 ? Math.round(value) : value.toFixed(1)} ${units[power]}`;
+    }
+
+    function render(documents) {
+      if (documents.length === 0) {
+        container.innerHTML =
+          '<p class="state">No documents yet. Anything added later appears here automatically.</p>';
+        return;
+      }
+
+      container.replaceChildren(...documents.map((file) => {
+        // Anchor, not div — these are real downloads.
+        const row = document.createElement('a');
+        row.className = 'data-row';
+        row.href = file.url;
+        row.rel = 'noopener';
+
+        const left = document.createElement('div');
+
+        const title = document.createElement('p');
+        title.className = 'data-title';
+        title.textContent = file.name;
+        left.append(title);
+
+        if (file.note) {
+          const note = document.createElement('p');
+          note.className = 'data-note';
+          note.textContent = file.note;
+          left.append(note);
+        }
+
+        row.append(left);
+
+        const side = document.createElement('span');
+        side.className = 'data-side';
+        side.textContent = [file.kind, fileSize(file.size)].filter(Boolean).join(' · ') || 'Download';
+        row.append(side);
+
+        return row;
+      }));
+    }
+
+    try {
+      const snapshot = await getDocs(query(
+        collection(db, 'sites', 'cnkc', 'public', 'library', 'files'),
+        orderBy('name'),
+      ));
+
+      // A document with no URL can't be downloaded, so it isn't listed.
+      render(snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          return {
+            name: data.name ?? 'Untitled',
+            note: data.note ?? '',
+            url: data.url ?? '',
+            kind: data.kind ?? '',
+            size: data.size,
+          };
+        })
+        .filter((file) => file.url));
+    } catch (error) {
+      console.error('Documents failed to load:', error);
+      container.innerHTML =
+        '<p class="state error">The documents could not be loaded just now. Please try again shortly.</p>';
+    }
+  </script>
+
+</body>
+</html>

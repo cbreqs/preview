@@ -1,0 +1,445 @@
+/* Shared styles for preview.reqs.tech.
+   Same design system as the apps repo — Lora + DM Sans, teal/terra, dark by
+   default with a light toggle. Kept in one file rather than inlined per page
+   because /cnkc is a multi-page site and six copies of this would drift. */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+button { font-family: inherit; cursor: pointer; }
+
+:root {
+  --teal:        #2E7D7A;
+  --teal-bright: #4AADAA;
+  --terra:       #C4533A;
+  --terra-bright:#E07055;
+  --cream:       #EDE8DC;
+  --navy-deep:   #1A2535;
+  --serif:       'Lora', Georgia, serif;
+  --sans:        'DM Sans', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg:          #111418;
+  --bg2:         #181D24;
+  --bg3:         #1E2530;
+  --surface:     #222A36;
+  --border:      rgba(255,255,255,0.07);
+  --border-mid:  rgba(255,255,255,0.13);
+  --text:        #EDE8DC;
+  --text-mid:    rgba(237,232,220,0.62);
+  --text-dim:    rgba(237,232,220,0.35);
+  --accent:      #4AADAA;
+  --accent2:     #E07055;
+  --tag-bg:      rgba(74,173,170,0.09);
+  --tag-border:  rgba(74,173,170,0.22);
+}
+
+[data-theme="light"] {
+  --bg:          #EEEAE0;
+  --bg2:         #E8E3D8;
+  --bg3:         #E0DAD0;
+  --surface:     #F4F0E8;
+  --border:      rgba(26,37,53,0.09);
+  --border-mid:  rgba(26,37,53,0.15);
+  --text:        #1A2535;
+  --text-mid:    #4A5568;
+  --text-dim:    #9A9A9A;
+  --accent:      #2E7D7A;
+  --accent2:     #C4533A;
+  --tag-bg:      rgba(46,125,122,0.07);
+  --tag-border:  rgba(46,125,122,0.2);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── nav ── */
+nav.top {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  transition: background 0.3s;
+}
+
+.nav-left {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 13px;
+}
+
+.nav-home {
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 1px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.nav-home:hover { color: var(--accent); }
+
+.nav-sep { color: var(--border-mid); font-size: 14px; }
+
+.nav-current {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+.theme-btn {
+  background: none;
+  border: 1px solid var(--border-mid);
+  border-radius: 999px;
+  padding: 6px 15px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  transition: color 0.2s, border-color 0.2s;
+}
+.theme-btn:hover { color: var(--text); }
+
+/* ── section nav, for multi-page client sites ── */
+.site-nav {
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex;
+  gap: 1.75rem;
+  overflow-x: auto;
+}
+
+.site-nav a {
+  display: block;
+  padding: 0.9rem 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.site-nav a:hover { color: var(--text); }
+.site-nav a[aria-current="page"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── main ── */
+main {
+  flex: 1;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 5rem 2rem 6rem;
+  width: 100%;
+}
+
+/* ── page header ── */
+.page-header { margin-bottom: 3.5rem; }
+
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.25rem;
+  animation: fadeUp 0.45s ease both;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 1px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.page-header h1 {
+  font-family: var(--serif);
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text);
+  margin-bottom: 0.6rem;
+  animation: fadeUp 0.45s 0.08s ease both;
+}
+
+.page-sub {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-mid);
+  line-height: 1.7;
+  animation: fadeUp 0.45s 0.16s ease both;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+  margin-bottom: 1.25rem;
+}
+
+.prose p { color: var(--text-mid); margin-bottom: 1rem; max-width: 60ch; }
+.prose p:last-child { margin-bottom: 0; }
+
+/* ── app / site list ── */
+.app-list { border-top: 1px solid var(--border); }
+
+.app-card {
+  display: block;
+  padding: 2rem 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: background 0.2s;
+}
+
+.app-card-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.app-card:hover .app-name { color: var(--accent); }
+
+.app-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.app-name {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+
+.app-tag {
+  font-size: 11px;
+  color: var(--accent);
+  padding: 3px 10px;
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.app-desc {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.65;
+  max-width: 500px;
+}
+
+.app-platform {
+  margin-top: 0.9rem;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+}
+
+.app-arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  padding: 10px 18px;
+  border-radius: 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background 0.2s, transform 0.2s;
+}
+.app-card:hover .app-arrow {
+  background: var(--accent2);
+  transform: translateX(3px);
+}
+
+/* ── data lists: calendar events, document downloads ── */
+.data-list { border-top: 1px solid var(--border); }
+
+.data-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+}
+
+a.data-row:hover .data-title { color: var(--accent); }
+
+.data-title {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  transition: color 0.2s;
+}
+
+.data-when {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.3rem;
+}
+
+.data-note {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-top: 0.3rem;
+  max-width: 55ch;
+}
+
+.data-side {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Placeholder shown while Firestore loads, and when it returns nothing. */
+.state {
+  padding: 2.5rem 0;
+  font-size: 14px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+.state.error { color: var(--accent2); }
+
+/* ── contact ── */
+.contact-line {
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+.contact-line:first-child { border-top: 1px solid var(--border); }
+
+.contact-label {
+  min-width: 7rem;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding-top: 3px;
+}
+
+.contact-line a { color: var(--accent); text-decoration: none; }
+.contact-line a:hover { text-decoration: underline; }
+
+/* ── notice ── */
+.notice {
+  border: 1px solid var(--tag-border);
+  background: var(--tag-bg);
+  border-radius: 3px;
+  padding: 1.1rem 1.25rem;
+  font-size: 14px;
+  color: var(--text-mid);
+  margin-bottom: 2.5rem;
+}
+.notice strong { color: var(--text); font-weight: 500; }
+
+/* ── footer ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.footer-text {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.footer-links { display: flex; gap: 1.5rem; }
+
+.footer-links a {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--accent); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 680px) {
+  nav.top { padding: 0 1.25rem; }
+  .site-nav { padding: 0 1.25rem; gap: 1.25rem; }
+  main { padding: 3.5rem 1.25rem 5rem; }
+  footer { padding: 1.25rem; justify-content: center; text-align: center; }
+  .app-card-inner { flex-direction: column; }
+  .data-row { flex-direction: column; gap: 0.4rem; }
+  .contact-line { flex-direction: column; gap: 0.2rem; }
+}

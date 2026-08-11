@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Rubi — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>Rubi · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <nav class="top">
+    <div class="nav-left">
+      <a class="nav-home" href="../index.html">preview</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">rubi</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <p class="hero-eyebrow">In progress</p>
+      <h1>Rubi</h1>
+      <p class="page-sub">
+        A single page — the essentials, said once, well.
+      </p>
+    </header>
+
+    <div class="notice">
+      <strong>This is a preview.</strong> Everything below is placeholder text, here to
+      show the shape of the page. Nothing is public — it asks search engines not to
+      index it.
+    </div>
+
+    <section class="prose">
+      <h2>About</h2>
+      <p>
+        This is the opening — who you are and what you offer, in a couple of short
+        paragraphs. Most visitors read only this much, so it carries the weight.
+      </p>
+      <p>
+        Send the words you'd like here and any photographs, and this stops being a
+        placeholder.
+      </p>
+    </section>
+
+    <section class="prose" style="margin-top: 3rem;">
+      <h2>What you offer</h2>
+      <p>
+        A short list works well here — three or four things, each a line or two. Enough
+        to answer "can they do what I need?" without becoming a brochure.
+      </p>
+    </section>
+
+    <section style="margin-top: 3rem;">
+      <h2>Get in touch</h2>
+      <div class="contact-line">
+        <span class="contact-label">Email</span>
+        <span><a href="mailto:hello@example.com">hello@example.com</a></span>
+      </div>
+      <div class="contact-line">
+        <span class="contact-label">Phone</span>
+        <span><a href="tel:+10000000000">(000) 000-0000</a></span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links">
+      <a href="../index.html">all previews</a>
+      <a href="mailto:privacy@reqs.tech">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+
+</body>
+</html>

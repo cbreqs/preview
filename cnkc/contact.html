@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC contact — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>Contact · CNKC · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <nav class="top">
+    <div class="nav-left">
+      <a class="nav-home" href="../index.html">preview</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">cnkc</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav">
+    <a href="index.html">Home</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="documents.html">Documents</a>
+    <a href="contact.html" aria-current="page">Contact</a>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <p class="hero-eyebrow">Contact</p>
+      <h1>Get in touch</h1>
+      <p class="page-sub">Placeholder details — send the real ones and they go straight in.</p>
+    </header>
+
+    <div>
+      <div class="contact-line">
+        <span class="contact-label">Email</span>
+        <span><a href="mailto:hello@example.com">hello@example.com</a></span>
+      </div>
+      <div class="contact-line">
+        <span class="contact-label">Phone</span>
+        <span><a href="tel:+10000000000">(000) 000-0000</a></span>
+      </div>
+      <div class="contact-line">
+        <span class="contact-label">Address</span>
+        <span>Street address<br />City, State ZIP</span>
+      </div>
+      <div class="contact-line">
+        <span class="contact-label">Hours</span>
+        <span>Monday to Friday, 9am – 5pm</span>
+      </div>
+    </div>
+
+    <section class="prose" style="margin-top: 3rem;">
+      <h2>A contact form?</h2>
+      <p>
+        These pages are static, so a form needs somewhere to send messages. That can be
+        added — it's a small piece of work, not a rebuild. Say the word if you want one
+        rather than a plain email address.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links">
+      <a href="../index.html">all previews</a>
+      <a href="mailto:privacy@reqs.tech">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+
+</body>
+</html>

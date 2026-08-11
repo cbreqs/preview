@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>CNKC · preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <nav class="top">
+    <div class="nav-left">
+      <a class="nav-home" href="../index.html">preview</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">cnkc</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav">
+    <a href="index.html" aria-current="page">Home</a>
+    <a href="calendar.html">Calendar</a>
+    <a href="documents.html">Documents</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <main>
+    <header class="page-header">
+      <p class="hero-eyebrow">In progress</p>
+      <h1>CNKC</h1>
+      <p class="page-sub">
+        A working draft. The structure is here; the words and pictures are yours to send.
+      </p>
+    </header>
+
+    <div class="notice">
+      <strong>This is a preview.</strong> Everything you see is placeholder content,
+      here to show the shape of the site. Nothing is public — the pages ask search
+      engines not to index them.
+    </div>
+
+    <section class="prose">
+      <h2>About</h2>
+      <p>
+        This is where the introduction goes — who you are, what you do, and why someone
+        landing here should keep reading. A few short paragraphs work better than one
+        long one.
+      </p>
+      <p>
+        Send over the text you'd like here, along with any photographs, and this page
+        stops being a placeholder.
+      </p>
+    </section>
+
+    <section class="prose" style="margin-top: 3rem;">
+      <h2>What's on the site</h2>
+      <p>
+        <strong>Calendar</strong> — upcoming events, with dates, times and locations.
+        Managed centrally, so a change shows up here straight away.
+      </p>
+      <p>
+        <strong>Documents</strong> — forms, schedules, anything worth handing out.
+        Visitors download them directly.
+      </p>
+      <p>
+        <strong>Contact</strong> — how to reach you.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links">
+      <a href="../index.html">all previews</a>
+      <a href="mailto:privacy@reqs.tech">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+
+</body>
+</html>

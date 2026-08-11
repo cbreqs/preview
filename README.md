@@ -1,42 +1,59 @@
-# preview
+# preview.reqs.tech
 
-A reqs.tech app. Next.js App Router + TypeScript + Tailwind + shadcn/ui (Radix),
-with the shared Firebase client wiring under `src/firebase/`.
-
-## Develop
-
-```
-npm run dev        # http://localhost:9004
-npm run typecheck
-npm run lint
-```
-
-Ports across the family: flexAgenda 9002, leafatip 9003, this 9004.
-
-## Deploy
-
-Firebase App Hosting, against the shared `reqs-tech` project:
+Client sites in progress, published early so clients can look at them. Same
+shape as the [apps](https://github.com/cbreqs/apps) repo: static HTML on GitHub
+Pages, one folder per client, no build step.
 
 ```
-npx firebase-tools@latest deploy --only apphosting --project reqs-tech
+CNAME              preview.reqs.tech
+index.html         landing page listing the client sites
+assets/            shared stylesheet, theme toggle, Firebase setup
+cnkc/              index, calendar, documents, contact
+rubi/              index
 ```
 
-Backend `preview` in `us-central1`, runtime `nodejs24` with automatic base
-image updates on, serving at
-**https://preview--reqs-tech.us-central1.hosted.app**. It deploys from this
-local folder — no GitHub repo is connected to the backend, same as leafatip.
+Open any `.html` file directly in a browser to work on it. Paths are relative,
+so the site also works at `cbreqs.github.io/preview/` before DNS resolves.
 
-## Firebase notes
+## Hosting
 
-- `src/firebase/config.ts` holds the **public** web config for the shared
-  `reqs-tech` project. Public by design; security lives in Firestore rules.
-- It points at the `preview_1` web app, which is the one the backend is bound
-  to. A second, unlinked web app named `preview` also exists — ignore it.
-- Firestore is the **named** `flexagenda` database, not `(default)` — that one
-  doesn't exist in this project. The database is shared with flexAgenda and
-  leafatip, so namespace any collections this app adds.
-- **This project deliberately has no `firestore` block in `firebase.json`.**
-  Leafatip owns `firestore.rules` and `firestore.indexes.json` for the shared
-  database. Adding them here would let a `firebase deploy --only firestore`
-  from this directory overwrite leafatip's live security rules.
-- Auth is shared too. Never delete an Auth user to fix something here.
+GitHub Pages, from `main` at the repo root. The `CNAME` file sets the custom
+domain; DNS is a CNAME from `preview.reqs.tech` to `cbreqs.github.io`, exactly
+like `apps.reqs.tech`.
+
+## The calendar and documents
+
+`/cnkc/calendar.html` and `/cnkc/documents.html` read from Firestore in the
+browser using the CDN SDK — no build, no server. Data lives in the **`clients`**
+database in the `reqs-tech` Firebase project, kept separate from the
+`flexagenda` database that flexAgenda and leafatip share.
+
+Collections:
+
+```
+sites/cnkc/public/calendar/events/{id}   title, start, allDay, location, note
+sites/cnkc/public/library/files/{id}     name, note, url, kind, size
+```
+
+`start` is a Firestore timestamp; the calendar shows only future events, so
+past ones drop off on their own. A file with no `url` is skipped.
+
+Rules live in `firestore.rules` and cover the `clients` database only —
+`firebase.json` scopes them with `"database": "clients"`, so a deploy from here
+cannot touch leafatip's. Anything under `sites/{siteId}/public/` is
+world-readable; everything else is denied to the browser entirely. Writes go
+through the Admin SDK, never from these pages.
+
+To publish rules changes:
+
+```
+firebase deploy --only firestore --project reqs-tech
+```
+
+## Firebase App Hosting
+
+Backend `preview` in `us-central1` still exists and serves an earlier Next.js
+version of this site at `preview--reqs-tech.us-central1.hosted.app`. It is not
+used and nothing here deploys to it — `firebase.json` has no `apphosting`
+block on purpose. Delete the backend in the console when you're sure it isn't
+wanted; the old code is in this repo's git history.
