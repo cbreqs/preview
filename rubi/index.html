@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Rubi's Everly Creations — custom handmade bouquets. Roses, snacks, makeup and a little sparkle." />
   <meta name="robots" content="noindex" />
-  <meta name="theme-color" content="#F8688A" />
+  <meta name="theme-color" content="#B82C52" />
   <title>Rubi's Everly Creations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,16 +16,20 @@
     button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
     :root {
-      /* Sampled from Rubi's own pricing / add-ons / policy graphics. */
-      --pink:        #F8688A;
-      --pink-deep:   #E4436B;
-      --pink-soft:   #FF8FA8;
+      /* Sampled from Rubi's own pricing / add-ons / policy graphics, then
+         deepened for legibility. Her bright pink (#F8688A) behind cream text
+         measures 2.6:1 — under the 4.5:1 WCAG AA wants for body text, and
+         under even the 3:1 for large text. The page colour is that same hue
+         taken darker: still unmistakably hers, and it clears AA. The original
+         bright pink is kept for accents, where no text sits on it. */
+      --pink:        #B82C52;  /* page background — 5.4:1 with cream */
+      --pink-bright: #F8688A;  /* Rubi's original, accents only */
+      --pink-deep:   #8E2244;  /* text on cream buttons — 7.7:1 */
       --cream:       #FCF4C9;
-      --cream-dim:   rgba(252, 244, 201, 0.74);
+      --cream-soft:  rgba(252, 244, 201, 0.92);
+      --ink:         rgba(74, 15, 34, 0.2);   /* darkens card surfaces */
       --plum:        #7B3A56;
       --gold:        #F5C242;
-      --leaf:        #5C9E4A;
-      --lilac:       #A87BD1;
       --script:      'Lobster Two', 'Brush Script MT', cursive;
       --sans:        'Nunito', system-ui, sans-serif;
     }
@@ -42,20 +46,21 @@
       overflow-x: hidden;
     }
 
-    /* Soft blooms in the background so the flat pink has some depth. */
+    /* Soft blooms so the flat pink has some depth. Kept faint enough that
+       they don't lift the background under any text. */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       z-index: -1;
       background:
-        radial-gradient(closest-side, rgba(255,255,255,0.13), transparent) 12% 18% / 42vw 42vw no-repeat,
-        radial-gradient(closest-side, rgba(255,190,210,0.20), transparent) 88% 42% / 38vw 38vw no-repeat,
-        radial-gradient(closest-side, rgba(252,244,201,0.10), transparent) 30% 88% / 46vw 46vw no-repeat;
+        radial-gradient(closest-side, rgba(248,104,138,0.30), transparent) 12% 18% / 42vw 42vw no-repeat,
+        radial-gradient(closest-side, rgba(248,104,138,0.22), transparent) 88% 42% / 38vw 38vw no-repeat,
+        radial-gradient(closest-side, rgba(123,58,86,0.28), transparent) 30% 88% / 46vw 46vw no-repeat;
       pointer-events: none;
     }
 
-    /* ══ preview bar — remove this when the site gets its own domain ══ */
+    /* == preview bar - remove this when the site gets its own domain == */
     .preview-bar {
       background: var(--plum);
       color: var(--cream);
@@ -70,11 +75,11 @@
       text-align: center;
     }
     .preview-bar a { color: var(--cream); text-decoration: underline; text-underline-offset: 3px; }
-    .preview-bar span { opacity: 0.75; font-weight: 400; }
+    .preview-bar span { color: var(--cream-soft); font-weight: 400; }
 
     .wrap { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; width: 100%; }
 
-    /* ══ hero ══ */
+    /* == hero == */
     header.hero { padding: 3.5rem 0 3rem; text-align: center; }
 
     .logo-mark {
@@ -91,14 +96,14 @@
       font-size: clamp(2.6rem, 11vw, 4.25rem);
       line-height: 1.05;
       color: var(--cream);
-      text-shadow: 0 3px 0 rgba(123, 58, 86, 0.28);
+      text-shadow: 0 3px 0 rgba(58, 8, 26, 0.35);
       margin-bottom: 0.6rem;
     }
 
     .hero .tagline {
       font-size: clamp(1rem, 3.4vw, 1.2rem);
       font-weight: 600;
-      color: var(--cream-dim);
+      color: var(--cream-soft);
       max-width: 26ch;
       margin: 0 auto 1.75rem;
     }
@@ -116,24 +121,24 @@
       padding: 0.8rem 1.5rem;
       border-radius: 999px;
       text-decoration: none;
-      box-shadow: 0 4px 0 rgba(123, 58, 86, 0.32);
+      box-shadow: 0 4px 0 rgba(58, 8, 26, 0.4);
       transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
     .btn:hover, .btn:focus-visible {
       transform: translateY(-2px);
-      box-shadow: 0 6px 0 rgba(123, 58, 86, 0.32);
+      box-shadow: 0 6px 0 rgba(58, 8, 26, 0.4);
     }
-    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(123, 58, 86, 0.32); }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(58, 8, 26, 0.4); }
 
     .btn.ghost {
       background: transparent;
       color: var(--cream);
-      border: 2px solid var(--cream-dim);
+      border: 2px solid var(--cream-soft);
       box-shadow: none;
     }
     .btn.ghost:hover { border-color: var(--cream); transform: translateY(-2px); }
 
-    /* ══ sections ══ */
+    /* == sections == */
     section { padding: 2.75rem 0; }
 
     h2 {
@@ -143,26 +148,25 @@
       font-size: clamp(2rem, 7vw, 2.8rem);
       color: var(--cream);
       text-align: center;
-      text-shadow: 0 3px 0 rgba(123, 58, 86, 0.22);
+      text-shadow: 0 3px 0 rgba(58, 8, 26, 0.3);
       margin-bottom: 0.4rem;
     }
 
     .section-note {
       text-align: center;
-      color: var(--cream-dim);
+      color: var(--cream-soft);
       font-size: 15px;
       margin-bottom: 1.75rem;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.13);
+      background: var(--ink);
       border: 2px solid rgba(252, 244, 201, 0.28);
       border-radius: 22px;
       padding: 1.5rem 1.35rem;
-      backdrop-filter: blur(2px);
     }
 
-    /* ══ carousel ══ */
+    /* == carousel == */
     .carousel { position: relative; }
 
     .slides {
@@ -187,8 +191,10 @@
     }
     .slide img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Stand-in slides until Rubi sends photos. Delete .placeholder styles
-       once every slide holds a real <img>. */
+    /* Stand-in slides until Rubi sends photos. These gradients are deliberately
+       deep so the cream labels on them stay legible; real photos won't carry
+       text, so they can be as bright as she likes. Delete the .placeholder
+       rules once every slide holds an <img>. */
     .slide.placeholder {
       display: flex;
       flex-direction: column;
@@ -200,11 +206,11 @@
     }
     .slide.placeholder .emoji { font-size: 3.25rem; line-height: 1; }
     .slide.placeholder .label { font-weight: 800; font-size: 1.05rem; }
-    .slide.placeholder .sub { font-size: 13px; color: var(--cream-dim); }
-    .slide.p1 { background: linear-gradient(140deg, #FF9BB3, #E4436B); }
-    .slide.p2 { background: linear-gradient(140deg, #C79BE8, #7B3A56); }
-    .slide.p3 { background: linear-gradient(140deg, #FFD98A, #E4436B); }
-    .slide.p4 { background: linear-gradient(140deg, #8FD07E, #2F7A4F); }
+    .slide.placeholder .sub { font-size: 13px; color: var(--cream-soft); }
+    .slide.p1 { background: linear-gradient(140deg, #A32348, #6E1430); }
+    .slide.p2 { background: linear-gradient(140deg, #5E3480, #331A45); }
+    .slide.p3 { background: linear-gradient(140deg, #96540E, #5E3204); }
+    .slide.p4 { background: linear-gradient(140deg, #2C6E47, #164026); }
 
     .car-controls {
       display: flex;
@@ -225,7 +231,7 @@
       line-height: 1;
       display: grid;
       place-items: center;
-      box-shadow: 0 3px 0 rgba(123, 58, 86, 0.3);
+      box-shadow: 0 3px 0 rgba(58, 8, 26, 0.4);
       transition: transform 0.15s ease;
     }
     .car-btn:hover { transform: scale(1.08); }
@@ -233,16 +239,19 @@
 
     .dots { display: flex; gap: 0.5rem; }
     .dot {
-      width: 10px;
-      height: 10px;
+      width: 11px;
+      height: 11px;
       border-radius: 999px;
-      background: rgba(252, 244, 201, 0.4);
+      /* Inactive dots are a filled ring rather than faint cream, so the
+         active/inactive difference doesn't rely on a low-contrast tint. */
+      background: transparent;
+      border: 2px solid var(--cream-soft);
       transition: background 0.2s, transform 0.2s;
       padding: 0;
     }
-    .dot[aria-current="true"] { background: var(--cream); transform: scale(1.35); }
+    .dot[aria-current="true"] { background: var(--cream); transform: scale(1.3); }
 
-    /* ══ price + add-on lists ══ */
+    /* == price + add-on lists == */
     .price-list { display: grid; gap: 0.15rem; }
 
     .price-row {
@@ -253,12 +262,12 @@
       border-radius: 10px;
       transition: background 0.15s;
     }
-    .price-row:hover { background: rgba(255,255,255,0.09); }
+    .price-row:hover { background: rgba(58, 8, 26, 0.22); }
 
-    .price-row .what { font-weight: 700; white-space: nowrap; }
+    .price-row .what { font-weight: 700; }
     .price-row .dots-fill {
       flex: 1;
-      border-bottom: 2px dotted rgba(252, 244, 201, 0.34);
+      border-bottom: 2px dotted rgba(252, 244, 201, 0.45);
       transform: translateY(-4px);
       min-width: 1rem;
     }
@@ -272,7 +281,7 @@
     .badge {
       display: inline-block;
       background: var(--gold);
-      color: #6B4A00;
+      color: #5A3D00;
       font-size: 11px;
       font-weight: 800;
       text-transform: uppercase;
@@ -283,7 +292,7 @@
       vertical-align: middle;
     }
 
-    /* ══ policy ══ */
+    /* == policy == */
     .policy-list { list-style: none; display: grid; gap: 0.85rem; }
     .policy-list li {
       display: flex;
@@ -292,7 +301,7 @@
       font-weight: 600;
     }
     .policy-list li::before {
-      content: '🌸';
+      content: '\1F338';
       flex-shrink: 0;
       font-size: 1rem;
       line-height: 1.5;
@@ -300,17 +309,17 @@
 
     .heads-up {
       margin-top: 1.25rem;
-      background: rgba(123, 58, 86, 0.3);
+      background: rgba(58, 8, 26, 0.35);
       border-radius: 14px;
       padding: 0.9rem 1.1rem;
       font-size: 15px;
       font-weight: 700;
     }
 
-    /* ══ socials ══ */
+    /* == socials == */
     .social-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 0.85rem;
     }
 
@@ -318,7 +327,7 @@
       display: flex;
       align-items: center;
       gap: 0.7rem;
-      background: rgba(255,255,255,0.13);
+      background: var(--ink);
       border: 2px solid rgba(252, 244, 201, 0.28);
       border-radius: 16px;
       padding: 0.9rem 1rem;
@@ -327,15 +336,17 @@
       font-weight: 700;
       transition: transform 0.15s ease, background 0.15s ease;
     }
-    a.social:hover { transform: translateY(-3px); background: rgba(255,255,255,0.2); }
+    a.social:hover { transform: translateY(-3px); background: rgba(58, 8, 26, 0.34); }
     .social .ico { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
-    .social .who { display: block; font-size: 12px; font-weight: 600; color: var(--cream-dim); }
-    .social .handle { display: block; font-size: 14px; word-break: break-word; }
+    .social .who { display: block; font-size: 12px; font-weight: 600; color: var(--cream-soft); }
+    /* Handles are long. The column min-width above is set so they fit on one
+       line; this is only a safety net for very narrow phones. */
+    .social .handle { display: block; font-size: 14px; overflow-wrap: break-word; }
 
     footer {
       text-align: center;
       padding: 2.5rem 0 3rem;
-      color: var(--cream-dim);
+      color: var(--cream-soft);
       font-size: 13px;
       font-weight: 600;
     }
@@ -365,8 +376,8 @@
 
   <!-- Preview chrome. Delete this bar when the site moves to its own address. -->
   <div class="preview-bar">
-    <a href="../index.html">← all previews</a>
-    <span>this is a draft — nothing here is final</span>
+    <a href="../index.html">&larr; all previews</a>
+    <span>this is a draft &mdash; nothing here is final</span>
   </div>
 
   <div class="wrap">
@@ -374,12 +385,12 @@
     <header class="hero">
       <!-- Swap this emoji for the real bouquet logo once Rubi sends the file:
            <img src="assets/logo.png" alt="Rubi's Everly Creations" style="width:120px;margin:0 auto 1rem"> -->
-      <div class="logo-mark">💐</div>
+      <div class="logo-mark">&#128144;</div>
       <h1>Rubi's Everly Creations</h1>
-      <p class="tagline">Custom bouquets made by hand — roses, snacks, makeup and a little sparkle.</p>
+      <p class="tagline">Custom bouquets made by hand &mdash; roses, snacks, makeup and a little sparkle.</p>
       <div class="cta-row">
         <a class="btn" href="https://www.instagram.com/rubis.everly.creations/" target="_blank" rel="noopener">
-          <span>📸</span> Order on Instagram
+          <span>&#128248;</span> Order on Instagram
         </a>
         <a class="btn ghost" href="#pricing">See pricing</a>
       </div>
@@ -387,7 +398,7 @@
 
     <section id="gallery">
       <h2>The Bouquets</h2>
-      <p class="section-note">Photos coming soon — here's the kind of thing she makes.</p>
+      <p class="section-note">Photos coming soon &mdash; here's the kind of thing she makes.</p>
 
       <!--
         CAROUSEL — swapping in real photos
@@ -403,31 +414,31 @@
       <div class="carousel">
         <div class="slides" id="slides" tabindex="0" aria-label="Bouquet photos">
           <div class="slide placeholder p1">
-            <span class="emoji">🌹</span>
+            <span class="emoji">&#127801;</span>
             <span class="label">Rose bouquets</span>
             <span class="sub">1 to 100 roses</span>
           </div>
           <div class="slide placeholder p2">
-            <span class="emoji">💄</span>
+            <span class="emoji">&#128132;</span>
             <span class="label">Makeup bouquets</span>
             <span class="sub">Built around her favourites</span>
           </div>
           <div class="slide placeholder p3">
-            <span class="emoji">🍫</span>
+            <span class="emoji">&#127851;</span>
             <span class="label">Snack bouquets</span>
             <span class="sub">Chips, candy, whatever they love</span>
           </div>
           <div class="slide placeholder p4">
-            <span class="emoji">🎓</span>
-            <span class="label">Graduations & birthdays</span>
+            <span class="emoji">&#127891;</span>
+            <span class="label">Graduations &amp; birthdays</span>
             <span class="sub">Crowns, banners and bows</span>
           </div>
         </div>
 
         <div class="car-controls">
-          <button class="car-btn" id="prev" aria-label="Previous photo">‹</button>
+          <button class="car-btn" id="prev" aria-label="Previous photo">&lsaquo;</button>
           <div class="dots" id="dots" role="tablist" aria-label="Choose a photo"></div>
-          <button class="car-btn" id="next" aria-label="Next photo">›</button>
+          <button class="car-btn" id="next" aria-label="Next photo">&rsaquo;</button>
         </div>
       </div>
     </section>
@@ -474,36 +485,36 @@
 
     <section id="ordering">
       <h2>How Ordering Works</h2>
-      <p class="section-note">Quick read — it keeps things smooth for both of us.</p>
+      <p class="section-note">Quick read &mdash; it keeps things smooth for both of us.</p>
       <div class="card">
         <ul class="policy-list">
           <li><span><strong>50% deposit</strong> to lock it in, and it's non-refundable. No deposit means no order.</span></li>
-          <li><span>Order <strong>1–2 weeks ahead</strong> so there's time to get it right.</span></li>
+          <li><span>Order <strong>1&ndash;2 weeks ahead</strong> so there's time to get it right.</span></li>
           <li><span>Send a <strong>detailed description or an inspo pic</strong> of what you want.</span></li>
           <li><span><strong>Local delivery</strong>, or we meet up somewhere public.</span></li>
           <li><span>Need to cancel? Give a <strong>few days' notice</strong>.</span></li>
           <li><span>Once your order leaves my care, I'm <strong>no longer responsible</strong> for it.</span></li>
         </ul>
-        <p class="heads-up">⏰ Last minute? I'll still take it on — there's an extra $20 rush fee.</p>
+        <p class="heads-up">&#9200; Last minute? I'll still take it on &mdash; there's an extra $20 rush fee.</p>
       </div>
     </section>
 
     <section id="contact">
       <h2>Find Me</h2>
-      <p class="section-note">DM to order — Instagram is fastest.</p>
+      <p class="section-note">DM to order &mdash; Instagram is fastest.</p>
       <div class="social-grid">
         <a class="social" href="https://www.instagram.com/rubis.everly.creations/" target="_blank" rel="noopener">
-          <span class="ico">📸</span>
+          <span class="ico">&#128248;</span>
           <span><span class="who">Instagram</span><span class="handle">@rubis.everly.creations</span></span>
         </a>
         <a class="social" href="https://www.tiktok.com/@rubis.everly.creations" target="_blank" rel="noopener">
-          <span class="ico">🎵</span>
+          <span class="ico">&#127925;</span>
           <span><span class="who">TikTok</span><span class="handle">@Rubis.Everly.creations</span></span>
         </a>
         <!-- No Facebook profile URL yet — add href once Rubi sends the link,
              and change this <div> to an <a class="social" href="..."> -->
         <div class="social">
-          <span class="ico">👍</span>
+          <span class="ico">&#128077;</span>
           <span><span class="who">Facebook</span><span class="handle">Rubi Duran</span></span>
         </div>
       </div>
@@ -511,7 +522,7 @@
 
     <footer>
       <p class="sig">Rubi's Everly Creations</p>
-      <p>Handmade to order 🌹</p>
+      <p>Handmade to order &#127801;</p>
     </footer>
 
   </div>
@@ -528,7 +539,7 @@
         dot.className = 'dot';
         dot.setAttribute('role', 'tab');
         dot.setAttribute('aria-label', `Photo ${i + 1}`);
-        dot.addEventListener('click', () => scrollToSlide(i));
+        dot.addEventListener('click', () => { scrollToSlide(i); restart(); });
         dotsBox.append(dot);
       });
       const dots = Array.from(dotsBox.children);
