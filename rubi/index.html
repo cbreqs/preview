@@ -1,90 +1,598 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Rubi — site in progress." />
+  <meta name="description" content="Rubi's Everly Creations — custom handmade bouquets. Roses, snacks, makeup and a little sparkle." />
   <meta name="robots" content="noindex" />
-  <title>Rubi · preview</title>
+  <meta name="theme-color" content="#F8688A" />
+  <title>Rubi's Everly Creations</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/site.css" />
-  <script>
-    try {
-      const saved = localStorage.getItem('theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
-    } catch {}
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,700;1,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    img { display: block; max-width: 100%; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+    :root {
+      /* Sampled from Rubi's own pricing / add-ons / policy graphics. */
+      --pink:        #F8688A;
+      --pink-deep:   #E4436B;
+      --pink-soft:   #FF8FA8;
+      --cream:       #FCF4C9;
+      --cream-dim:   rgba(252, 244, 201, 0.74);
+      --plum:        #7B3A56;
+      --gold:        #F5C242;
+      --leaf:        #5C9E4A;
+      --lilac:       #A87BD1;
+      --script:      'Lobster Two', 'Brush Script MT', cursive;
+      --sans:        'Nunito', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--pink);
+      color: var(--cream);
+      font-size: 17px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Soft blooms in the background so the flat pink has some depth. */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(closest-side, rgba(255,255,255,0.13), transparent) 12% 18% / 42vw 42vw no-repeat,
+        radial-gradient(closest-side, rgba(255,190,210,0.20), transparent) 88% 42% / 38vw 38vw no-repeat,
+        radial-gradient(closest-side, rgba(252,244,201,0.10), transparent) 30% 88% / 46vw 46vw no-repeat;
+      pointer-events: none;
+    }
+
+    /* ══ preview bar — remove this when the site gets its own domain ══ */
+    .preview-bar {
+      background: var(--plum);
+      color: var(--cream);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 0.6rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+    .preview-bar a { color: var(--cream); text-decoration: underline; text-underline-offset: 3px; }
+    .preview-bar span { opacity: 0.75; font-weight: 400; }
+
+    .wrap { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; width: 100%; }
+
+    /* ══ hero ══ */
+    header.hero { padding: 3.5rem 0 3rem; text-align: center; }
+
+    .logo-mark {
+      font-size: 3.5rem;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+      animation: bob 3.5s ease-in-out infinite;
+    }
+
+    .hero h1 {
+      font-family: var(--script);
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(2.6rem, 11vw, 4.25rem);
+      line-height: 1.05;
+      color: var(--cream);
+      text-shadow: 0 3px 0 rgba(123, 58, 86, 0.28);
+      margin-bottom: 0.6rem;
+    }
+
+    .hero .tagline {
+      font-size: clamp(1rem, 3.4vw, 1.2rem);
+      font-weight: 600;
+      color: var(--cream-dim);
+      max-width: 26ch;
+      margin: 0 auto 1.75rem;
+    }
+
+    .cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--cream);
+      color: var(--pink-deep);
+      font-weight: 800;
+      font-size: 15px;
+      padding: 0.8rem 1.5rem;
+      border-radius: 999px;
+      text-decoration: none;
+      box-shadow: 0 4px 0 rgba(123, 58, 86, 0.32);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn:hover, .btn:focus-visible {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 rgba(123, 58, 86, 0.32);
+    }
+    .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(123, 58, 86, 0.32); }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--cream);
+      border: 2px solid var(--cream-dim);
+      box-shadow: none;
+    }
+    .btn.ghost:hover { border-color: var(--cream); transform: translateY(-2px); }
+
+    /* ══ sections ══ */
+    section { padding: 2.75rem 0; }
+
+    h2 {
+      font-family: var(--script);
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(2rem, 7vw, 2.8rem);
+      color: var(--cream);
+      text-align: center;
+      text-shadow: 0 3px 0 rgba(123, 58, 86, 0.22);
+      margin-bottom: 0.4rem;
+    }
+
+    .section-note {
+      text-align: center;
+      color: var(--cream-dim);
+      font-size: 15px;
+      margin-bottom: 1.75rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.13);
+      border: 2px solid rgba(252, 244, 201, 0.28);
+      border-radius: 22px;
+      padding: 1.5rem 1.35rem;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ══ carousel ══ */
+    .carousel { position: relative; }
+
+    .slides {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      padding-bottom: 0.5rem;
+      scrollbar-width: none;
+    }
+    .slides::-webkit-scrollbar { display: none; }
+
+    .slide {
+      flex: 0 0 100%;
+      scroll-snap-align: center;
+      aspect-ratio: 4 / 3;
+      border-radius: 22px;
+      overflow: hidden;
+      position: relative;
+      border: 2px solid rgba(252, 244, 201, 0.3);
+    }
+    .slide img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Stand-in slides until Rubi sends photos. Delete .placeholder styles
+       once every slide holds a real <img>. */
+    .slide.placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      text-align: center;
+      padding: 1rem;
+    }
+    .slide.placeholder .emoji { font-size: 3.25rem; line-height: 1; }
+    .slide.placeholder .label { font-weight: 800; font-size: 1.05rem; }
+    .slide.placeholder .sub { font-size: 13px; color: var(--cream-dim); }
+    .slide.p1 { background: linear-gradient(140deg, #FF9BB3, #E4436B); }
+    .slide.p2 { background: linear-gradient(140deg, #C79BE8, #7B3A56); }
+    .slide.p3 { background: linear-gradient(140deg, #FFD98A, #E4436B); }
+    .slide.p4 { background: linear-gradient(140deg, #8FD07E, #2F7A4F); }
+
+    .car-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .car-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: var(--cream);
+      color: var(--pink-deep);
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 3px 0 rgba(123, 58, 86, 0.3);
+      transition: transform 0.15s ease;
+    }
+    .car-btn:hover { transform: scale(1.08); }
+    .car-btn:active { transform: scale(0.94); }
+
+    .dots { display: flex; gap: 0.5rem; }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(252, 244, 201, 0.4);
+      transition: background 0.2s, transform 0.2s;
+      padding: 0;
+    }
+    .dot[aria-current="true"] { background: var(--cream); transform: scale(1.35); }
+
+    /* ══ price + add-on lists ══ */
+    .price-list { display: grid; gap: 0.15rem; }
+
+    .price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.55rem 0.25rem;
+      border-radius: 10px;
+      transition: background 0.15s;
+    }
+    .price-row:hover { background: rgba(255,255,255,0.09); }
+
+    .price-row .what { font-weight: 700; white-space: nowrap; }
+    .price-row .dots-fill {
+      flex: 1;
+      border-bottom: 2px dotted rgba(252, 244, 201, 0.34);
+      transform: translateY(-4px);
+      min-width: 1rem;
+    }
+    .price-row .cost {
+      font-weight: 800;
+      font-size: 1.05rem;
+      white-space: nowrap;
+      color: var(--cream);
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--gold);
+      color: #6B4A00;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    /* ══ policy ══ */
+    .policy-list { list-style: none; display: grid; gap: 0.85rem; }
+    .policy-list li {
+      display: flex;
+      gap: 0.7rem;
+      align-items: flex-start;
+      font-weight: 600;
+    }
+    .policy-list li::before {
+      content: '🌸';
+      flex-shrink: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .heads-up {
+      margin-top: 1.25rem;
+      background: rgba(123, 58, 86, 0.3);
+      border-radius: 14px;
+      padding: 0.9rem 1.1rem;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    /* ══ socials ══ */
+    .social-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.85rem;
+    }
+
+    .social {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: rgba(255,255,255,0.13);
+      border: 2px solid rgba(252, 244, 201, 0.28);
+      border-radius: 16px;
+      padding: 0.9rem 1rem;
+      text-decoration: none;
+      color: var(--cream);
+      font-weight: 700;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    a.social:hover { transform: translateY(-3px); background: rgba(255,255,255,0.2); }
+    .social .ico { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+    .social .who { display: block; font-size: 12px; font-weight: 600; color: var(--cream-dim); }
+    .social .handle { display: block; font-size: 14px; word-break: break-word; }
+
+    footer {
+      text-align: center;
+      padding: 2.5rem 0 3rem;
+      color: var(--cream-dim);
+      font-size: 13px;
+      font-weight: 600;
+    }
+    footer .sig { font-family: var(--script); font-style: italic; font-size: 1.4rem; color: var(--cream); }
+
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50%      { transform: translateY(-8px) rotate(3deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .slides { scroll-behavior: auto; }
+    }
+
+    @media (min-width: 640px) {
+      .slide { flex-basis: calc(50% - 0.5rem); }
+    }
+  </style>
 </head>
 <body>
 
-  <nav class="top">
-    <div class="nav-left">
-      <a class="nav-home" href="../index.html">preview</a>
-      <span class="nav-sep">/</span>
-      <span class="nav-current">rubi</span>
-    </div>
-    <button class="theme-btn">light / dark</button>
-  </nav>
+  <!-- Preview chrome. Delete this bar when the site moves to its own address. -->
+  <div class="preview-bar">
+    <a href="../index.html">← all previews</a>
+    <span>this is a draft — nothing here is final</span>
+  </div>
 
-  <main>
-    <header class="page-header">
-      <p class="hero-eyebrow">In progress</p>
-      <h1>Rubi</h1>
-      <p class="page-sub">
-        A single page — the essentials, said once, well.
-      </p>
+  <div class="wrap">
+
+    <header class="hero">
+      <!-- Swap this emoji for the real bouquet logo once Rubi sends the file:
+           <img src="assets/logo.png" alt="Rubi's Everly Creations" style="width:120px;margin:0 auto 1rem"> -->
+      <div class="logo-mark">💐</div>
+      <h1>Rubi's Everly Creations</h1>
+      <p class="tagline">Custom bouquets made by hand — roses, snacks, makeup and a little sparkle.</p>
+      <div class="cta-row">
+        <a class="btn" href="https://www.instagram.com/rubis.everly.creations/" target="_blank" rel="noopener">
+          <span>📸</span> Order on Instagram
+        </a>
+        <a class="btn ghost" href="#pricing">See pricing</a>
+      </div>
     </header>
 
-    <div class="notice">
-      <strong>This is a preview.</strong> Everything below is placeholder text, here to
-      show the shape of the page. Nothing is public — it asks search engines not to
-      index it.
-    </div>
+    <section id="gallery">
+      <h2>The Bouquets</h2>
+      <p class="section-note">Photos coming soon — here's the kind of thing she makes.</p>
 
-    <section class="prose">
-      <h2>About</h2>
-      <p>
-        This is the opening — who you are and what you offer, in a couple of short
-        paragraphs. Most visitors read only this much, so it carries the weight.
-      </p>
-      <p>
-        Send the words you'd like here and any photographs, and this stops being a
-        placeholder.
-      </p>
-    </section>
+      <!--
+        CAROUSEL — swapping in real photos
+        ----------------------------------
+        Replace each placeholder slide with:
 
-    <section class="prose" style="margin-top: 3rem;">
-      <h2>What you offer</h2>
-      <p>
-        A short list works well here — three or four things, each a line or two. Enough
-        to answer "can they do what I need?" without becoming a brochure.
-      </p>
-    </section>
+            <div class="slide"><img src="assets/bouquet-1.jpg" alt="Short description"></div>
 
-    <section style="margin-top: 3rem;">
-      <h2>Get in touch</h2>
-      <div class="contact-line">
-        <span class="contact-label">Email</span>
-        <span><a href="mailto:hello@example.com">hello@example.com</a></span>
+        Put the photos in rubi/assets/. Any number of slides works — the dots
+        and arrows count them automatically. Once every slide is a real photo,
+        the .placeholder CSS block above can be deleted.
+      -->
+      <div class="carousel">
+        <div class="slides" id="slides" tabindex="0" aria-label="Bouquet photos">
+          <div class="slide placeholder p1">
+            <span class="emoji">🌹</span>
+            <span class="label">Rose bouquets</span>
+            <span class="sub">1 to 100 roses</span>
+          </div>
+          <div class="slide placeholder p2">
+            <span class="emoji">💄</span>
+            <span class="label">Makeup bouquets</span>
+            <span class="sub">Built around her favourites</span>
+          </div>
+          <div class="slide placeholder p3">
+            <span class="emoji">🍫</span>
+            <span class="label">Snack bouquets</span>
+            <span class="sub">Chips, candy, whatever they love</span>
+          </div>
+          <div class="slide placeholder p4">
+            <span class="emoji">🎓</span>
+            <span class="label">Graduations & birthdays</span>
+            <span class="sub">Crowns, banners and bows</span>
+          </div>
+        </div>
+
+        <div class="car-controls">
+          <button class="car-btn" id="prev" aria-label="Previous photo">‹</button>
+          <div class="dots" id="dots" role="tablist" aria-label="Choose a photo"></div>
+          <button class="car-btn" id="next" aria-label="Next photo">›</button>
+        </div>
       </div>
-      <div class="contact-line">
-        <span class="contact-label">Phone</span>
-        <span><a href="tel:+10000000000">(000) 000-0000</a></span>
+    </section>
+
+    <section id="pricing">
+      <h2>Pricing</h2>
+      <p class="section-note">Roses, by the bunch. Bigger bunches work out cheaper per rose.</p>
+      <div class="card">
+        <div class="price-list">
+          <div class="price-row"><span class="what">1 rose</span><span class="dots-fill"></span><span class="cost">$10</span></div>
+          <div class="price-row"><span class="what">3 roses</span><span class="dots-fill"></span><span class="cost">$18</span></div>
+          <div class="price-row"><span class="what">5 roses</span><span class="dots-fill"></span><span class="cost">$25</span></div>
+          <div class="price-row"><span class="what">7 roses</span><span class="dots-fill"></span><span class="cost">$30</span></div>
+          <div class="price-row"><span class="what">12 roses</span><span class="dots-fill"></span><span class="cost">$40</span></div>
+          <div class="price-row"><span class="what">14 roses</span><span class="dots-fill"></span><span class="cost">$45</span></div>
+          <div class="price-row"><span class="what">24 roses</span><span class="dots-fill"></span><span class="cost">$85</span></div>
+          <div class="price-row"><span class="what">30 roses</span><span class="dots-fill"></span><span class="cost">$92</span></div>
+          <div class="price-row"><span class="what">40 roses</span><span class="dots-fill"></span><span class="cost">$104</span></div>
+          <div class="price-row"><span class="what">50 roses</span><span class="dots-fill"></span><span class="cost">$115</span></div>
+          <div class="price-row"><span class="what">75 roses</span><span class="dots-fill"></span><span class="cost">$140</span></div>
+          <div class="price-row"><span class="what">100 roses<span class="badge">best value</span></span><span class="dots-fill"></span><span class="cost">$180</span></div>
+        </div>
       </div>
     </section>
-  </main>
 
-  <footer>
-    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
-    <nav class="footer-links">
-      <a href="../index.html">all previews</a>
-      <a href="mailto:privacy@reqs.tech">contact</a>
-    </nav>
-  </footer>
+    <section id="addons">
+      <h2>Add On's</h2>
+      <p class="section-note">Make it yours.</p>
+      <div class="card">
+        <div class="price-list">
+          <div class="price-row"><span class="what">Butterflies (gold/silver)</span><span class="dots-fill"></span><span class="cost">$0.50</span></div>
+          <div class="price-row"><span class="what">Diamond / pearl pins</span><span class="dots-fill"></span><span class="cost">$0.25</span></div>
+          <div class="price-row"><span class="what">Glitter (per flower)</span><span class="dots-fill"></span><span class="cost">$0.50</span></div>
+          <div class="price-row"><span class="what">Small crowns</span><span class="dots-fill"></span><span class="cost">$3.00</span></div>
+          <div class="price-row"><span class="what">Big crowns</span><span class="dots-fill"></span><span class="cost">$15</span></div>
+          <div class="price-row"><span class="what">Banner</span><span class="dots-fill"></span><span class="cost">$3.00</span></div>
+          <div class="price-row"><span class="what">Banner with bow</span><span class="dots-fill"></span><span class="cost">$5.00</span></div>
+          <div class="price-row"><span class="what">Baby's breath / chamomile</span><span class="dots-fill"></span><span class="cost">$5+</span></div>
+          <div class="price-row"><span class="what">Cut outs / toppers</span><span class="dots-fill"></span><span class="cost">$3.00</span></div>
+          <div class="price-row"><span class="what">Mesh</span><span class="dots-fill"></span><span class="cost">$5.00</span></div>
+        </div>
+      </div>
+    </section>
 
-  <script src="../assets/site.js"></script>
+    <section id="ordering">
+      <h2>How Ordering Works</h2>
+      <p class="section-note">Quick read — it keeps things smooth for both of us.</p>
+      <div class="card">
+        <ul class="policy-list">
+          <li><span><strong>50% deposit</strong> to lock it in, and it's non-refundable. No deposit means no order.</span></li>
+          <li><span>Order <strong>1–2 weeks ahead</strong> so there's time to get it right.</span></li>
+          <li><span>Send a <strong>detailed description or an inspo pic</strong> of what you want.</span></li>
+          <li><span><strong>Local delivery</strong>, or we meet up somewhere public.</span></li>
+          <li><span>Need to cancel? Give a <strong>few days' notice</strong>.</span></li>
+          <li><span>Once your order leaves my care, I'm <strong>no longer responsible</strong> for it.</span></li>
+        </ul>
+        <p class="heads-up">⏰ Last minute? I'll still take it on — there's an extra $20 rush fee.</p>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>Find Me</h2>
+      <p class="section-note">DM to order — Instagram is fastest.</p>
+      <div class="social-grid">
+        <a class="social" href="https://www.instagram.com/rubis.everly.creations/" target="_blank" rel="noopener">
+          <span class="ico">📸</span>
+          <span><span class="who">Instagram</span><span class="handle">@rubis.everly.creations</span></span>
+        </a>
+        <a class="social" href="https://www.tiktok.com/@rubis.everly.creations" target="_blank" rel="noopener">
+          <span class="ico">🎵</span>
+          <span><span class="who">TikTok</span><span class="handle">@Rubis.Everly.creations</span></span>
+        </a>
+        <!-- No Facebook profile URL yet — add href once Rubi sends the link,
+             and change this <div> to an <a class="social" href="..."> -->
+        <div class="social">
+          <span class="ico">👍</span>
+          <span><span class="who">Facebook</span><span class="handle">Rubi Duran</span></span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p class="sig">Rubi's Everly Creations</p>
+      <p>Handmade to order 🌹</p>
+    </footer>
+
+  </div>
+
+  <script>
+    (function () {
+      const slides = document.getElementById('slides');
+      const dotsBox = document.getElementById('dots');
+      const items = Array.from(slides.children);
+
+      // One dot per slide, so adding or removing slides needs no code change.
+      items.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'dot';
+        dot.setAttribute('role', 'tab');
+        dot.setAttribute('aria-label', `Photo ${i + 1}`);
+        dot.addEventListener('click', () => scrollToSlide(i));
+        dotsBox.append(dot);
+      });
+      const dots = Array.from(dotsBox.children);
+
+      function currentIndex() {
+        // Whichever slide's left edge is nearest the scroll position wins.
+        let best = 0;
+        let bestGap = Infinity;
+        items.forEach((item, i) => {
+          const gap = Math.abs(item.offsetLeft - slides.scrollLeft);
+          if (gap < bestGap) { bestGap = gap; best = i; }
+        });
+        return best;
+      }
+
+      function scrollToSlide(i) {
+        const target = items[(i + items.length) % items.length];
+        slides.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+      }
+
+      function syncDots() {
+        const active = currentIndex();
+        dots.forEach((dot, i) => dot.setAttribute('aria-current', String(i === active)));
+      }
+
+      document.getElementById('prev').addEventListener('click', () => {
+        scrollToSlide(currentIndex() - 1);
+        restart();
+      });
+      document.getElementById('next').addEventListener('click', () => {
+        scrollToSlide(currentIndex() + 1);
+        restart();
+      });
+
+      slides.addEventListener('scroll', () => {
+        window.clearTimeout(slides._t);
+        slides._t = window.setTimeout(syncDots, 80);
+      });
+      syncDots();
+
+      // Gentle autoplay, off for anyone who asked for less motion, and paused
+      // while the visitor is actually interacting with it.
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let timer = null;
+
+      function start() {
+        if (still.matches || timer) return;
+        timer = window.setInterval(() => scrollToSlide(currentIndex() + 1), 5000);
+      }
+      function stop() {
+        window.clearInterval(timer);
+        timer = null;
+      }
+      function restart() { stop(); start(); }
+
+      ['mouseenter', 'focusin', 'touchstart', 'pointerdown'].forEach((e) =>
+        slides.parentElement.addEventListener(e, stop, { passive: true }));
+      ['mouseleave', 'focusout'].forEach((e) =>
+        slides.parentElement.addEventListener(e, start));
+      document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+
+      start();
+    })();
+  </script>
 
 </body>
 </html>
