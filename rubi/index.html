@@ -316,6 +316,36 @@
       font-weight: 700;
     }
 
+    /* == payment methods == */
+    .pay {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 2px dotted rgba(252, 244, 201, 0.35);
+    }
+    .pay-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--cream-soft);
+      margin-bottom: 0.7rem;
+    }
+    .pay-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pay-list li {
+      border: 2px solid rgba(252, 244, 201, 0.4);
+      border-radius: 999px;
+      padding: 0.35rem 0.9rem;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
     /* == socials == */
     .social-grid {
       display: grid;
@@ -496,6 +526,16 @@
           <li><span>Once your order leaves my care, I'm <strong>no longer responsible</strong> for it.</span></li>
         </ul>
         <p class="heads-up">&#9200; Last minute? I'll still take it on &mdash; there's an extra $20 rush fee.</p>
+
+        <div class="pay">
+          <span class="pay-label">Ways to pay</span>
+          <ul class="pay-list">
+            <li>Cash</li>
+            <li>Cash App</li>
+            <li>Apple Pay</li>
+            <li>PayPal</li>
+          </ul>
+        </div>
       </div>
     </section>
 
