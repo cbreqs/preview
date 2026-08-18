@@ -69,6 +69,7 @@
   <script type="module">
     import { db, toDate } from './firebase.js';
     import { thumbButton } from './lightbox.js';
+    import { setLinkedText } from './text.js';
     import {
       collection, getDocs, query, orderBy, where,
     } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
@@ -119,7 +120,7 @@
         if (event.note) {
           const note = document.createElement('p');
           note.className = 'data-note';
-          note.textContent = event.note;
+          setLinkedText(note, event.note);
           left.append(note);
         }
 

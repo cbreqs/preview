@@ -72,6 +72,7 @@
   <script type="module">
     import { db } from './firebase.js';
     import { thumbButton } from './lightbox.js';
+    import { setLinkedText } from './text.js';
     import {
       collection, getDocs, query, orderBy,
     } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
@@ -131,7 +132,7 @@
         if (member.blurb) {
           const blurb = document.createElement('p');
           blurb.className = 'data-note';
-          blurb.textContent = member.blurb;
+          setLinkedText(blurb, member.blurb);
           body.append(blurb);
         }
 

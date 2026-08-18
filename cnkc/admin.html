@@ -250,6 +250,7 @@
   <script type="module">
     import { app, db, toDate } from './firebase.js';
     import { thumbButton } from './lightbox.js';
+    import { setLinkedText } from './text.js';
     import {
       getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
       sendPasswordResetEmail,
@@ -654,11 +655,27 @@
       try {
         // Every event, not just upcoming — past ones still need editing and
         // deleting from here, even though the public page hides them.
-        const snap = await getDocs(query(events, orderBy('start', 'desc')));
+        const snap = await getDocs(query(events, orderBy('start')));
 
-        // Same snapshot feeds the album pickers; photos are usually filed
-        // against events that have already happened.
-        albumOptions = snap.docs.map((docSnap) => ({
+        /* Ordered the way you actually work: the next event first, the rest of
+           the diary after it, then past events at the bottom with the most
+           recent first. Sorting everything by date descending — which this
+           used to do — buries the thing you're most likely here to change
+           under every date further out. */
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const upcoming = [];
+        const past = [];
+        for (const docSnap of snap.docs) {
+          const start = toDate(docSnap.data().start);
+          (start && start >= startOfToday ? upcoming : past).push(docSnap);
+        }
+        past.reverse();
+        const ordered = [...upcoming, ...past];
+
+        // Same order feeds the album pickers.
+        albumOptions = ordered.map((docSnap) => ({
           id: docSnap.id,
           title: docSnap.data().title || 'Untitled event',
           start: toDate(docSnap.data().start),
@@ -670,7 +687,7 @@
           return;
         }
 
-        list.replaceChildren(...snap.docs.map((d) => {
+        list.replaceChildren(...ordered.map((d) => {
           const data = d.data();
           const start = toDate(data.start);
 
@@ -704,7 +721,7 @@
           if (data.note) {
             const note = document.createElement('p');
             note.className = 'admin-row-note';
-            note.textContent = data.note;
+            setLinkedText(note, data.note);
             text.append(note);
           }
 
@@ -1150,7 +1167,7 @@
           if (data.blurb) {
             const blurb = document.createElement('p');
             blurb.className = 'admin-row-note';
-            blurb.textContent = data.blurb;
+            setLinkedText(blurb, data.blurb);
             text.append(blurb);
           }
 
