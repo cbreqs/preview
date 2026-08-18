@@ -395,10 +395,13 @@ main.wide {
 /* ── membership tiers ── */
 /* Explicit two columns rather than auto-fit, so the divider below always
    knows which way it is running. */
+/* The gap and the padding below are deliberately the same value: the rule
+   sits at the start of the second column, so equal amounts either side are
+   what centre it in the space between them. */
 .tier-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3.5rem;
+  gap: 2rem;
 }
 
 /* No cards. A bordered box with a button in it reads as something you pick,
@@ -413,7 +416,7 @@ main.wide {
 
 .tier + .tier {
   border-left: 1px solid var(--border);
-  padding-left: 3.5rem;
+  padding-left: 2rem;
 }
 
 .tier h3 {
