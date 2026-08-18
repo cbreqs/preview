@@ -270,6 +270,9 @@ textarea { resize: vertical; min-height: 6rem; line-height: 1.6; }
   margin-top: 0.3rem;
   overflow-wrap: anywhere;
   max-width: 52ch;
+  /* Same as the public page: show the line breaks that were typed, so this
+     list reads back exactly what will appear on the site. */
+  white-space: pre-wrap;
 }
 
 /* Supporting detail — the address, the member-since/website line. Steps back

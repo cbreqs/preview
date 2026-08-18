@@ -559,7 +559,15 @@ main.wide {
    site.css sizes these for the reqs.tech pages; CNKC needs them larger. */
 .data-when { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; }
 .data-title { font-size: 1.15rem; }
-.data-note { font-size: 16px; color: var(--text-mid); }
+.data-note {
+  font-size: 16px;
+  color: var(--text-mid);
+  /* Keep the line breaks people type. HTML collapses newlines and runs of
+     spaces by default, so pressing Enter twice in the Details box did
+     nothing at all. pre-wrap keeps the breaks and still wraps long lines
+     normally — what she typed is what the page shows. */
+  white-space: pre-wrap;
+}
 .data-side { font-size: 13px; font-weight: 500; color: var(--text-mid); }
 .state { font-size: 16px; color: var(--text-mid); }
 .member-since { font-size: 13px; font-weight: 600; color: var(--text-dim); }
