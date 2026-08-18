@@ -357,17 +357,17 @@ a.data-row:hover .data-title { color: var(--accent); }
    min-width: 0 lets a long unbroken word shrink instead of forcing overflow. */
 .data-row > div { flex: 1; min-width: 0; }
 
+/* The location now sits under the details, inside the text column, rather
+   than in a column of its own. Off to the right it read as a separate thing
+   floating in space, and every wrapped line of description made the gap
+   between the two look like a mistake. */
 .data-side {
+  display: block;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-dim);
-  flex-shrink: 0;
-  /* Addresses run long. Without a cap — and this used to be nowrap — a full
-     street address claims half the row and the description wraps to a column
-     narrower than the empty space beside it. */
-  max-width: 14rem;
-  text-align: right;
+  margin-top: 0.6rem;
 }
 
 /* ── gallery ── */
@@ -519,10 +519,7 @@ footer {
   main { padding: 3.5rem 1.25rem 5rem; }
   footer { padding: 1.25rem; justify-content: center; text-align: center; }
   .app-card-inner { flex-direction: column; }
-  /* Stacked, so the location is no longer in a right-hand column — align it
-     with everything above it and let it use the full width. */
   .data-row { flex-direction: column; gap: 0.4rem; }
-  .data-side { text-align: left; max-width: none; }
   .contact-line { flex-direction: column; gap: 0.2rem; }
   .member-row { gap: 1rem; }
   .member-logo { width: 56px; height: 56px; }

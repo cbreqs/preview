@@ -141,7 +141,9 @@
   </footer>
 
   <script src="../assets/site.js"></script>
-  <script>
+  <script type="module">
+    import { autoResize } from './embed.js';
+
     /* The membership application, in Jotform.
 
        This is the ReqsTech-account form. If she'd rather keep hers, swap the
@@ -150,7 +152,12 @@
     const JOTFORM_ID = '262292606476059';
 
     if (JOTFORM_ID) {
-      document.getElementById('apply-frame').src = `https://form.jotform.com/${JOTFORM_ID}`;
+      const frame = document.getElementById('apply-frame');
+      // Listener first, then load: the form reports its height as it renders,
+      // and a listener attached afterwards would miss the first message and
+      // leave the iframe stuck at its placeholder height.
+      autoResize(frame);
+      frame.src = `https://form.jotform.com/${JOTFORM_ID}`;
       document.getElementById('apply-embed').hidden = false;
       document.getElementById('apply-fallback').hidden = true;
     }

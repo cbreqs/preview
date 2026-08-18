@@ -124,15 +124,17 @@
           left.append(note);
         }
 
-        row.append(left);
-
+        // Location sits under the details rather than off in its own column.
+        // Beside the text it reads as a separate thing floating in space, and
+        // every wrapped line makes the gap between them look accidental.
         if (event.location) {
-          const side = document.createElement('span');
-          side.className = 'data-side';
-          side.textContent = event.location;
-          row.append(side);
+          const where = document.createElement('p');
+          where.className = 'data-side';
+          where.textContent = event.location;
+          left.append(where);
         }
 
+        row.append(left);
         return row;
       }));
     }

@@ -58,7 +58,8 @@
         src="https://form.jotform.com/261575349126159"
         title="Send us a message"
         style="height: 560px;"
-        loading="lazy"></iframe>
+        loading="lazy"
+        id="contact-frame"></iframe>
     </div>
 
     <div style="margin-top: 3rem;">
@@ -93,6 +94,10 @@
   </footer>
 
   <script src="../assets/site.js"></script>
+  <script type="module">
+    import { autoResize } from './embed.js';
+    autoResize(document.getElementById('contact-frame'));
+  </script>
 
 </body>
 </html>

@@ -218,15 +218,14 @@
           title.textContent = data.title ?? 'Untitled event';
           left.append(title);
 
-          row.append(left);
-
           if (data.location) {
-            const side = document.createElement('span');
-            side.className = 'data-side';
-            side.textContent = data.location;
-            row.append(side);
+            const where = document.createElement('p');
+            where.className = 'data-side';
+            where.textContent = data.location;
+            left.append(where);
           }
 
+          row.append(left);
           return row;
         }));
       }

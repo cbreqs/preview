@@ -532,16 +532,24 @@ main.wide {
   .lightbox-img { max-height: calc(100vh - 9rem); }
 }
 
-/* ── embedded Jotform ── */
+/* ── embedded Jotform ──
+   No border, no card, no background of its own. A framed box announces "this
+   bit came from somewhere else"; the form should read as part of the page.
+   The matching dark styling has to be set inside Jotform, since cross-origin
+   means this stylesheet cannot reach the form itself. Height is grown to fit
+   by embed.js so nothing scrolls inside the frame. */
 .form-embed {
   max-width: 720px;
   margin: 0 auto;
-  border: 2px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  background: var(--surface);
 }
-.form-embed iframe { display: block; width: 100%; border: none; }
+.form-embed iframe {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  /* Starting height only; embed.js replaces it once the form reports its own. */
+  transition: height 0.2s ease;
+}
 
 /* ── age gate note ── */
 .age-note {
@@ -568,7 +576,7 @@ main.wide {
      normally — what she typed is what the page shows. */
   white-space: pre-wrap;
 }
-.data-side { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+.data-side { font-size: 13px; font-weight: 600; color: var(--text-dim); }
 .state { font-size: 16px; color: var(--text-mid); }
 .member-since { font-size: 13px; font-weight: 600; color: var(--text-dim); }
 .footer-text { font-size: 13px; color: var(--text-mid); }
