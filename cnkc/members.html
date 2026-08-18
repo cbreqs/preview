@@ -87,31 +87,17 @@
       }
 
       container.replaceChildren(...members.map((member) => {
-        // A member with a website becomes a link; one without stays a plain
-        // row, so there's never a link that goes nowhere.
-        const row = document.createElement(member.link ? 'a' : 'div');
+        /* The row is a plain container, never one big anchor. It used to be an
+           <a> when the member had a website, which quietly ruled out two
+           things: a lightbox button on the logo, and any link inside the
+           description — both would have been nested inside that anchor, which
+           is invalid and leaves the browser to guess where a click should go.
+           The name and the address below it are the links instead. */
+        const row = document.createElement('div');
         row.className = 'member-row';
-        if (member.link) {
-          row.href = member.link;
-          row.rel = 'noopener';
-          row.target = '_blank';
-        }
 
         if (member.logoUrl) {
-          if (member.link) {
-            // The row is already an <a> to their website. A <button> inside an
-            // <a> is invalid, and clicking it would both open the lightbox and
-            // follow the link — so here the logo stays a plain image and the
-            // whole row does the one obvious thing: visit the business.
-            const logo = document.createElement('img');
-            logo.className = 'member-logo';
-            logo.src = member.logoUrl;
-            logo.alt = '';
-            logo.loading = 'lazy';
-            row.append(logo);
-          } else {
-            row.append(thumbButton(member.logoUrl, 'member-logo', member.name));
-          }
+          row.append(thumbButton(member.logoUrl, 'member-logo', member.name));
         }
 
         const body = document.createElement('div');
@@ -126,7 +112,16 @@
 
         const name = document.createElement('p');
         name.className = 'data-title';
-        name.textContent = member.name;
+        if (member.link) {
+          const nameLink = document.createElement('a');
+          nameLink.href = member.link;
+          nameLink.rel = 'noopener';
+          nameLink.target = '_blank';
+          nameLink.textContent = member.name;
+          name.append(nameLink);
+        } else {
+          name.textContent = member.name;
+        }
         body.append(name);
 
         if (member.blurb) {
@@ -134,6 +129,20 @@
           blurb.className = 'data-note';
           setLinkedText(blurb, member.blurb);
           body.append(blurb);
+        }
+
+        // A real link now the row isn't one. Shown without the scheme, which
+        // is noise on a page rather than something anyone needs to read.
+        if (member.link) {
+          const site = document.createElement('p');
+          site.className = 'member-link';
+          const siteLink = document.createElement('a');
+          siteLink.href = member.link;
+          siteLink.rel = 'noopener';
+          siteLink.target = '_blank';
+          siteLink.textContent = member.link.replace(/^https?:\/\//, '').replace(/\/$/, '');
+          site.append(siteLink);
+          body.append(site);
         }
 
         if (member.memberSince) {
