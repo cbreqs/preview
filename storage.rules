@@ -1,0 +1,44 @@
+rules_version = '2';
+
+// Storage rules for the client sites' uploaded images — event photos, gallery
+// pictures, business-member logos. Uploaded from /cnkc/admin.html.
+//
+// WHY THERE IS NO PER-SITE EDITOR CHECK HERE
+// Firestore rules gate writes with isEditor(siteId), which reads
+// sites/{siteId}/admin/editors. Storage rules can do cross-service reads via
+// firestore.get(), but that function only reaches the project's DEFAULT
+// Firestore database — and this project has no default database; the client
+// data lives in the named `clients` database. So the editors list is
+// unreachable from here.
+//
+// The practical effect: any signed-in account can write under any site's
+// folder. Every account in this project is created by hand in the Firebase
+// console, and today that's ReqsTech plus the client, so the blast radius is
+// small. When a third client is onboarded, move to custom claims — set a
+// `sites` claim with the Admin SDK and check
+// `siteId in request.auth.token.sites` below. Until then this is a known,
+// accepted limitation, not an oversight.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Published images. Public read, because the live site loads them by URL
+    // without signing in.
+    match /sites/{siteId}/{allPaths=**} {
+      allow read: if true;
+
+      // Images only, 10 MB ceiling. Phone photos routinely exceed the old 5 MB
+      // convention, and the admin page downscales before upload anyway.
+      allow write: if request.auth != null
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      // Deleting has no request.resource, so it needs its own clause.
+      allow delete: if request.auth != null;
+    }
+
+    // Nothing outside sites/ is reachable from the browser.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

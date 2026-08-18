@@ -5,11 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="CNKC documents — site in progress." />
   <meta name="robots" content="noindex" />
-  <title>Documents · CNKC · preview</title>
+  <title>Documents | The Cannabis Network of Kansas City</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="cnkc.css" />
   <script>
     try {
       const saved = localStorage.getItem('theme');
@@ -19,23 +20,29 @@
 </head>
 <body>
 
-  <nav class="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
     <div class="nav-left">
-      <a class="nav-home" href="../index.html">preview</a>
+      <a class="nav-home" href="index.html">CNKC</a>
       <span class="nav-sep">/</span>
-      <span class="nav-current">cnkc</span>
+      <span class="nav-current">Kansas City</span>
     </div>
     <button class="theme-btn">light / dark</button>
   </nav>
 
-  <nav class="site-nav">
+  <nav class="site-nav" aria-label="Main">
     <a href="index.html">Home</a>
-    <a href="calendar.html">Calendar</a>
-    <a href="documents.html" aria-current="page">Documents</a>
+    <a href="about.html">About</a>
+    <a href="calendar.html">Events</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="memberships.html">Memberships</a>
+    <a href="members.html">Business Members</a>
     <a href="contact.html">Contact</a>
+    <a href="admin.html" class="nav-manage">Manage</a>
   </nav>
 
-  <main>
+  <main id="main">
     <header class="page-header">
       <p class="hero-eyebrow">Documents</p>
       <h1>Downloads</h1>
@@ -47,17 +54,20 @@
     </div>
   </main>
 
+  <p class="age-note">All members and attendees must be 21+</p>
+
   <footer>
-    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
-    <nav class="footer-links">
-      <a href="../index.html">all previews</a>
-      <a href="mailto:privacy@reqs.tech">contact</a>
+    <span class="footer-text">© 2026 The Cannabis Network of Kansas City</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="../index.html">preview home</a>
+      <a href="admin.html">manage</a>
+      <a href="mailto:owner@cannabisnetworkkc.com">contact</a>
     </nav>
   </footer>
 
   <script src="../assets/site.js"></script>
   <script type="module">
-    import { db } from '../assets/firebase.js';
+    import { db } from './firebase.js';
     import {
       collection, getDocs, query, orderBy,
     } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';

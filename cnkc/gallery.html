@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC gallery — site in progress." />
+  <meta name="robots" content="noindex" />
+  <title>Gallery | The Cannabis Network of Kansas City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="cnkc.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
+    <div class="nav-left">
+      <a class="nav-home" href="index.html">CNKC</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">Kansas City</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="calendar.html">Events</a>
+    <a href="gallery.html" aria-current="page">Gallery</a>
+    <a href="memberships.html">Memberships</a>
+    <a href="members.html">Business Members</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin.html" class="nav-manage">Manage</a>
+  </nav>
+
+  <main id="main">
+    <header class="page-header">
+      <p class="hero-eyebrow">Gallery</p>
+      <h1>It's pretty lit over here</h1>
+      <p class="page-sub">Photographs from CNKC events.</p>
+    </header>
+
+    <div id="gallery">
+      <p class="state">Loading photos…</p>
+    </div>
+  </main>
+
+  <p class="age-note">All members and attendees must be 21+</p>
+
+  <footer>
+    <span class="footer-text">© 2026 The Cannabis Network of Kansas City</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="../index.html">preview home</a>
+      <a href="admin.html">manage</a>
+      <a href="mailto:owner@cannabisnetworkkc.com">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+  <script type="module">
+    import { db, toDate } from './firebase.js';
+    import { thumbButton } from './lightbox.js';
+    import {
+      collection, getDocs, query, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const container = document.getElementById('gallery');
+
+    const albumDate = new Intl.DateTimeFormat(undefined, {
+      month: 'long', day: 'numeric', year: 'numeric',
+    });
+
+    function photoGrid(photos) {
+      const grid = document.createElement('div');
+      grid.className = 'gallery-grid';
+
+      grid.append(...photos.map((photo) => {
+        const figure = document.createElement('figure');
+        figure.className = 'gallery-item';
+        figure.append(thumbButton(photo.url, '', photo.caption || ''));
+
+        if (photo.caption) {
+          const caption = document.createElement('figcaption');
+          caption.textContent = photo.caption;
+          figure.append(caption);
+        }
+
+        return figure;
+      }));
+
+      return grid;
+    }
+
+    try {
+      /* Albums are events. Both collections are read so the album heading can
+         use the event's CURRENT name — a renamed event would otherwise keep
+         showing whatever title was copied onto its photos at upload time. */
+      const [photoSnap, eventSnap] = await Promise.all([
+        getDocs(query(
+          collection(db, 'sites', 'cnkc', 'public', 'gallery', 'photos'),
+          orderBy('createdAt', 'desc'),
+        )),
+        getDocs(collection(db, 'sites', 'cnkc', 'public', 'calendar', 'events')),
+      ]);
+
+      const eventsById = new Map(eventSnap.docs.map((doc) => [doc.id, doc.data()]));
+      const photos = photoSnap.docs.map((doc) => doc.data()).filter((photo) => photo.url);
+
+      if (photos.length === 0) {
+        container.innerHTML =
+          '<p class="state">No photos yet. Anything added later appears here automatically.</p>';
+      } else {
+        // An album exists only if photos are in it, so nothing has to be
+        // published or switched on — filing a photo is what makes it appear.
+        const albums = new Map();
+        const loose = [];
+
+        for (const photo of photos) {
+          if (!photo.eventId) {
+            loose.push(photo);
+            continue;
+          }
+          if (!albums.has(photo.eventId)) {
+            const event = eventsById.get(photo.eventId);
+            albums.set(photo.eventId, {
+              // Live event name first; the copy stored on the photo is the
+              // fallback for an event that has since been deleted.
+              title: event?.title || photo.eventTitle || 'Event',
+              start: toDate(event?.start),
+              photos: [],
+            });
+          }
+          albums.get(photo.eventId).photos.push(photo);
+        }
+
+        const sections = [...albums.values()]
+          // Most recent event first; undated albums sink to the bottom.
+          .sort((a, b) => (b.start?.getTime() ?? 0) - (a.start?.getTime() ?? 0))
+          .map((album) => {
+            const section = document.createElement('section');
+            section.className = 'album';
+
+            const heading = document.createElement('h2');
+            heading.className = 'album-title';
+            heading.textContent = album.title;
+            section.append(heading);
+
+            if (album.start) {
+              const when = document.createElement('p');
+              when.className = 'album-date';
+              when.textContent = albumDate.format(album.start);
+              section.append(when);
+            }
+
+            section.append(photoGrid(album.photos));
+            return section;
+          });
+
+        if (loose.length) {
+          const section = document.createElement('section');
+          section.className = 'album';
+
+          // Only worth a heading once there's an album to distinguish it from.
+          if (albums.size) {
+            const heading = document.createElement('h2');
+            heading.className = 'album-title';
+            heading.textContent = 'More photos';
+            section.append(heading);
+          }
+
+          section.append(photoGrid(loose));
+          sections.push(section);
+        }
+
+        container.replaceChildren(...sections);
+      }
+    } catch (error) {
+      console.error('Gallery failed to load:', error);
+      container.innerHTML =
+        '<p class="state error">The gallery could not be loaded just now. Please try again shortly.</p>';
+    }
+  </script>
+
+</body>
+</html>

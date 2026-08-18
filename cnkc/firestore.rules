@@ -1,18 +1,15 @@
 rules_version = '2';
 
-// Rules for the `clients` database ONLY — see the "database" key in
-// firebase.json. The other reqs.tech database, `flexagenda`, is shared by
-// flexAgenda and leafatip and its rules live in the leafatip repo. Deploying
-// from here cannot touch it.
+// Rules for the CNKC project (`cannabis-network-kc`), default database.
 //
-// Data is namespaced per client site: sites/cnkc/..., sites/rubi/...
-// One client can never read another's data, because every path is scoped by
-// {siteId} and nothing grants cross-site access.
+// This project serves one client. The sites/{siteId}/ layout is kept anyway so
+// these rules, the admin page and scripts/add-editor.py stay identical across
+// client sites — the next client is a copy, not a rewrite.
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Who may edit a given site. The list lives at
-    //   sites/{siteId}/admin/editors  →  { uids: ["abc123", ...] }
+    // Who may edit this site. The list lives at
+    //   sites/{siteId}/admin/editors  ->  { uids: ["abc123", ...] }
     // which sits OUTSIDE public/, so the browser can never read it — but
     // get() inside rules runs server-side and bypasses that.
     //
@@ -25,8 +22,8 @@ service cloud.firestore {
     }
 
     // Published site content — anything a visitor is meant to see without
-    // signing in. Reads are open. Writes now come from /cnkc/admin.html in the
-    // browser, but only for a signed-in uid listed as an editor of THAT site.
+    // signing in. Reads are open. Writes come from cnkc/admin.html, but only
+    // for a signed-in uid listed as an editor.
     match /sites/{siteId}/public/{document=**} {
       allow read: if true;
       allow write: if isEditor(siteId);

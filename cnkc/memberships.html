@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC memberships — premium members and business members. Apply for free today." />
+  <meta name="robots" content="noindex" />
+  <title>Memberships | The Cannabis Network of Kansas City</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="cnkc.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
+    <div class="nav-left">
+      <a class="nav-home" href="index.html">CNKC</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">Kansas City</span>
+    </div>
+    <button class="theme-btn">light / dark</button>
+  </nav>
+
+  <nav class="site-nav" aria-label="Main">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="calendar.html">Events</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="memberships.html" aria-current="page">Memberships</a>
+    <a href="members.html">Business Members</a>
+    <a href="contact.html">Contact</a>
+    <a href="admin.html" class="nav-manage">Manage</a>
+  </nav>
+
+  <main class="wide" id="main">
+
+    <section class="hero" style="min-height: 42vh;">
+      <div class="hero-inner">
+        <h1>We are accepting new Premium Members!</h1>
+        <p>
+          It is our goal to support our members both socially, personally and
+          professionally. Apply for free today!
+        </p>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="container">
+        <div class="band-head">
+          <p class="band-eyebrow">Two ways to join</p>
+          <h2>Pick the one that fits</h2>
+        </div>
+
+        <div class="tier-grid">
+
+          <div class="tier tier-featured">
+            <h3>Premium Member</h3>
+            <ul>
+              <li>Access to our members-only chat</li>
+              <li>Entry into all CNKC events</li>
+              <li>A quarterly gift from our sponsors</li>
+              <li>Savings on ticketed events</li>
+              <li>Monthly or annual membership</li>
+            </ul>
+            <a class="cta" href="#apply">Apply now</a>
+          </div>
+
+          <div class="tier">
+            <h3>Business Member</h3>
+            <ul>
+              <li>Space for your business on our website</li>
+              <li>Tags on all CNKC events</li>
+              <li>Monthly e-mail blasts to our local subscriber list</li>
+              <li>Leads and referrals sent your way</li>
+              <li>Everything a Premium Member gets</li>
+            </ul>
+            <a class="cta cta-ghost" href="#apply">Apply now</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="apply">
+      <div class="container">
+        <div class="band-head">
+          <p class="band-eyebrow">Application</p>
+          <h2>Apply for free</h2>
+          <p>Fill this in and we'll be in touch.</p>
+        </div>
+
+        <!-- ── Jotform ──
+             Swap the id in JOTFORM_ID below for her membership application form
+             and this section renders it. Until then it falls back to a link, so
+             the Apply buttons never dead-end. -->
+        <div class="form-embed" id="apply-embed" hidden>
+          <iframe id="apply-frame" title="Membership application form" src="" style="height: 900px;"></iframe>
+        </div>
+
+        <p class="state" id="apply-fallback" style="text-align:center;">
+          The application form isn't connected to this preview yet.
+          <a href="contact.html">Send us a message</a> and we'll get you signed up.
+        </p>
+      </div>
+    </section>
+
+    <section class="band band-tint">
+      <div class="container subscribe">
+        <div class="band-head" style="margin-bottom: 0;">
+          <p class="band-eyebrow">Already a business member?</p>
+          <h2>See who's on the wall</h2>
+          <p>Our premium members are the lifeblood of the organization.</p>
+        </div>
+        <div class="cta-row" style="margin-top: 2rem;">
+          <a class="cta cta-ghost" href="members.html">Business members</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <p class="age-note">All members and attendees must be 21+</p>
+
+  <footer>
+    <span class="footer-text">© 2026 The Cannabis Network of Kansas City</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="../index.html">preview home</a>
+      <a href="admin.html">manage</a>
+      <a href="mailto:owner@cannabisnetworkkc.com">contact</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+  <script>
+    /* The membership application, in Jotform.
+
+       This is the ReqsTech-account form. If she'd rather keep hers, swap the
+       id below for hers and nothing else changes. Empty string falls back to
+       a link to the contact page, so the Apply buttons never dead-end. */
+    const JOTFORM_ID = '262292606476059';
+
+    if (JOTFORM_ID) {
+      document.getElementById('apply-frame').src = `https://form.jotform.com/${JOTFORM_ID}`;
+      document.getElementById('apply-embed').hidden = false;
+      document.getElementById('apply-fallback').hidden = true;
+    }
+  </script>
+
+</body>
+</html>

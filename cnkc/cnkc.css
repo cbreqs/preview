@@ -1,0 +1,607 @@
+/* CNKC brand layer — loaded AFTER assets/site.css on every /cnkc page.
+   site.css drives everything off tokens (--bg, --text, --accent, --serif …),
+   so redefining those here re-skins the whole site without touching the
+   shared file. rubi/ and the preview index keep the reqs.tech palette.
+
+   Taken from the live Wix site: pure black sections, white type, a wide
+   geometric display face. Her headings use arp-display, which is licensed to
+   Wix, so Poppins stands in — closest free geometric with the same wide feel.
+
+   The green is invented. The Wix site has no accent colour at all;
+   photography carries it. Swap --accent to change it everywhere.
+
+   ── Readability ──
+   Sized up for older eyes throughout. Two rules held to:
+   1. No body copy below 16px, and none at weight 300. Thin white type on a
+      black ground blooms and is genuinely hard to read with any astigmatism,
+      which is common past ~40. Body copy is weight 400 minimum.
+   2. Small uppercase labels get MORE size and LESS letter-spacing. Wide
+      tracking on tiny text hurts more than it helps. */
+
+[data-theme="dark"] {
+  --bg:          #000000;
+  --bg2:         #0B0B0B;
+  --bg3:         #161616;
+  --surface:     #1A1A1A;
+  --border:      rgba(255,255,255,0.14);
+  --border-mid:  rgba(255,255,255,0.28);
+  --text:        #FFFFFF;
+  --text-mid:    rgba(255,255,255,0.82);
+  --text-dim:    rgba(255,255,255,0.62);
+  /* A softer sage rather than a bright lime. On pure black the brighter green
+     measured ~11.8:1, which is far past the 4.5:1 that's needed and reads as
+     glare; this sits near 7:1 — comfortably legible, much easier to look at.
+     Raise the lightness here if it ever feels too muted. */
+  --accent:      #78A055;
+  --accent2:     #E8795A;
+  --tag-bg:      rgba(120,160,85,0.14);
+  --tag-border:  rgba(120,160,85,0.40);
+  --hero-glow:   rgba(120,160,85,0.16);
+  --on-accent:   #000000;
+}
+
+/* The Wix site is black only. A light mode isn't in her design, but the
+   preview shell has a toggle. Contrast here is deliberately a step stronger
+   than the usual muted greys — every value below clears WCAG AA on white. */
+[data-theme="light"] {
+  --bg:          #FFFFFF;
+  --bg2:         #F2F3EF;
+  --bg3:         #E6E8E1;
+  --surface:     #FFFFFF;
+  --border:      rgba(0,0,0,0.18);
+  --border-mid:  rgba(0,0,0,0.34);
+  --text:        #0A0A0A;
+  --text-mid:    rgba(0,0,0,0.80);
+  --text-dim:    rgba(0,0,0,0.64);
+  --accent:      #3D6614;
+  --accent2:     #A8300C;
+  --tag-bg:      rgba(61,102,20,0.10);
+  --tag-border:  rgba(61,102,20,0.36);
+  --hero-glow:   rgba(61,102,20,0.13);
+  --on-accent:   #FFFFFF;
+}
+
+:root {
+  /* site.css uses --serif for display type. On CNKC that's the geometric,
+     not a serif — the token name stays so nothing else has to change. */
+  --serif: 'Poppins', 'DM Sans', sans-serif;
+  --sans:  'DM Sans', sans-serif;
+}
+
+body { font-size: 17px; }
+
+/* ── keyboard focus ──
+   site.css styles no focus ring at all, so tabbing through was invisible.
+   One visible treatment for every interactive thing on the page. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Labels that a screen reader needs but the design doesn't show. Clipped
+   rather than display:none, which would take it out of the accessibility
+   tree entirely. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Jump past the two navs. Off-screen until focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 500;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0.9rem 1.5rem;
+  text-decoration: none;
+}
+.skip-link:focus { left: 0; }
+
+/* ── nav, closer to the Wix header ── */
+.site-nav {
+  justify-content: center;
+  gap: 2rem;
+}
+
+.site-nav a {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  padding: 1.15rem 0;
+  color: var(--text-mid);
+}
+.site-nav a:hover { color: var(--text); }
+
+.nav-home {
+  letter-spacing: 0.12em;
+  font-size: 15px;
+  display: inline-block;
+  padding: 0.55rem 0;
+}
+.nav-current { font-size: 13px; color: var(--text-dim); }
+
+/* site.css gives this --border-mid, which is a border colour doing duty as
+   text and lands around 2.3:1. It's only a slash, but it's rendered text. */
+.nav-sep { color: var(--text-dim); }
+
+.theme-btn { font-size: 13px; color: var(--text-mid); padding: 12px 18px; }
+
+.site-nav a.nav-manage { color: var(--accent); }
+
+/* ── full-bleed pages ──
+   site.css caps <main> at 860px, which is right for a document and wrong for
+   a marketing page. `main.wide` opts out; .container puts the measure back
+   where a section wants it. */
+main.wide {
+  max-width: none;
+  padding: 0;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+}
+
+.band { padding: 5.5rem 0; }
+.band-tint { background: var(--bg2); }
+
+/* ── hero ── */
+.hero {
+  min-height: 62vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 6rem 2rem 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The glow fades to the page background before the section ends, so the hero
+   meets the solid band below with no visible seam. The linear layer is listed
+   first because the first background layer paints on top. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom, transparent 38%, var(--bg) 99%),
+    radial-gradient(115% 95% at 50% 8%, var(--hero-glow), transparent 72%);
+  pointer-events: none;
+}
+
+.hero-inner { position: relative; max-width: 940px; }
+
+.hero h1 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin-bottom: 1.6rem;
+}
+
+.hero p {
+  font-size: clamp(1.05rem, 2vw, 1.3rem);
+  line-height: 1.6;
+  color: var(--text-mid);
+  max-width: 36rem;
+  margin: 0 auto 2.5rem;
+  font-weight: 400;
+  text-wrap: pretty;
+}
+
+/* ── buttons ── */
+.cta {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 1.05rem 2.4rem;
+  border-radius: 2px;
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 2px solid var(--accent);
+  transition: background 0.2s, color 0.2s;
+}
+.cta:hover { background: transparent; color: var(--accent); }
+
+.cta-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-mid);
+}
+.cta-ghost:hover { background: transparent; border-color: var(--accent); color: var(--accent); }
+
+.cta-row { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+/* ── section headings ── */
+.band-head { text-align: center; margin-bottom: 3.5rem; }
+
+/* Scoped with .band-head so it beats `.band-head p` below — a bare
+   .band-eyebrow is one class, which that rule's class+type outranks, and the
+   eyebrow silently loses its accent colour. */
+.band-head .band-eyebrow {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.band-head h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.85rem;
+  text-wrap: balance;
+}
+
+.band-head p {
+  color: var(--text-mid);
+  font-size: 17px;
+  font-weight: 400;
+  max-width: 40rem;
+  margin: 0 auto;
+  text-wrap: pretty;
+}
+
+/* ── the three things CNKC does ── */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2.75rem;
+}
+
+.feature h3 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.9rem;
+  letter-spacing: -0.01em;
+}
+
+.feature p {
+  color: var(--text-mid);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.65;
+  margin-bottom: 1.1rem;
+}
+
+.feature-rule {
+  width: 38px;
+  height: 3px;
+  background: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+/* Standalone call-to-action, not a link inside a sentence, so it doesn't get
+   the inline exception from the target-size rule — padded to a 44px hit area. */
+.feature a {
+  display: inline-block;
+  padding: 0.7rem 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.feature a:hover { text-decoration-thickness: 2px; }
+
+/* ── team ── */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.75rem;
+}
+
+.team-member h3 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.team-role {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.9rem;
+}
+
+.team-member p { color: var(--text-mid); font-size: 16px; font-weight: 400; }
+.team-member a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── subscribe ── */
+.subscribe { text-align: center; }
+
+.subscribe-form {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 32rem;
+  margin: 2rem auto 0;
+  flex-wrap: wrap;
+}
+
+.subscribe-form input {
+  flex: 1;
+  min-width: 12rem;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--border-mid);
+  border-radius: 2px;
+  padding: 0.95rem 1rem;
+}
+.subscribe-form input::placeholder { color: var(--text-dim); }
+
+.subscribe-note { font-size: 15px; color: var(--text-dim); margin-top: 1.1rem; }
+
+/* ── socials ── */
+.socials {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.socials a {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-decoration: none;
+  border: 2px solid var(--border-mid);
+  border-radius: 999px;
+  padding: 0.8rem 1.6rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.socials a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── membership tiers ── */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.tier {
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  padding: 2.25rem;
+  background: var(--bg2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.tier-featured { border-color: var(--accent); }
+
+.tier h3 {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+}
+
+.tier ul { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+
+.tier li {
+  position: relative;
+  padding-left: 1.6rem;
+  font-size: 16px;
+  color: var(--text-mid);
+  font-weight: 400;
+  line-height: 1.55;
+}
+.tier li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.tier .cta { margin-top: auto; text-align: center; }
+
+/* ── About: mission columns ── */
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2.75rem;
+}
+
+/* ── tap-to-expand thumbnails ── */
+.thumb-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  line-height: 0;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.thumb-btn img { transition: opacity 0.2s; }
+.thumb-btn:hover img { opacity: 0.82; }
+
+/* In the gallery the button wraps a grid cell, so it has to fill it rather
+   than shrink to the image's intrinsic size. */
+.gallery-item .thumb-btn { display: block; width: 100%; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem 2rem;
+}
+.lightbox[hidden] { display: none; }
+
+.lightbox-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.lightbox-img {
+  max-width: min(900px, 100%);
+  /* Leaves room for the caption and the close button above it. */
+  max-height: calc(100vh - 10rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.lightbox-caption {
+  font-size: 15px;
+  color: #FFFFFF;
+  text-align: center;
+  max-width: 40rem;
+}
+.lightbox-caption[hidden] { display: none; }
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.6);
+  color: #FFFFFF;
+  font-size: 26px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: border-color 0.2s, background 0.2s;
+}
+.lightbox-close:hover {
+  border-color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* The overlay paints its own dark ground in both themes, so its controls are
+   always light — they must not follow the light-theme tokens. */
+.lightbox-close:focus-visible { outline: 3px solid #FFFFFF; outline-offset: 3px; }
+
+@media (max-width: 680px) {
+  .lightbox { padding: 4rem 0.75rem 1.5rem; }
+  .lightbox-img { max-height: calc(100vh - 9rem); }
+}
+
+/* ── embedded Jotform ── */
+.form-embed {
+  max-width: 720px;
+  margin: 0 auto;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.form-embed iframe { display: block; width: 100%; border: none; }
+
+/* ── age gate note ── */
+.age-note {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 1.4rem 2rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ── shared component overrides ──
+   site.css sizes these for the reqs.tech pages; CNKC needs them larger. */
+.data-when { font-size: 13px; font-weight: 600; letter-spacing: 0.06em; }
+.data-title { font-size: 1.15rem; }
+.data-note { font-size: 16px; color: var(--text-mid); }
+.data-side { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+.state { font-size: 16px; color: var(--text-mid); }
+.member-since { font-size: 13px; font-weight: 600; color: var(--text-dim); }
+.footer-text { font-size: 13px; color: var(--text-mid); }
+.footer-links a {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-mid);
+  display: inline-block;
+  padding: 0.65rem 0;
+}
+.gallery-item figcaption { font-size: 15px; color: var(--text-mid); }
+
+/* ── gallery albums ──
+   An album is an event that has photos in it. Nothing gets published or
+   toggled: filing a photo under an event is what makes its album appear. */
+.album + .album { margin-top: 3.5rem; }
+
+.album-title {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.album-date {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1.25rem;
+}
+.page-sub { font-size: 17px; font-weight: 400; }
+
+@media (max-width: 680px) {
+  .container { padding: 0 1.25rem; }
+  .band { padding: 3.5rem 0; }
+  .hero { min-height: 52vh; padding: 4rem 1.25rem 3.5rem; }
+  .site-nav { justify-content: flex-start; gap: 1.4rem; }
+  .feature-grid, .team-grid, .story-grid { gap: 2.25rem; }
+  .tier { padding: 1.5rem; }
+  .cta { display: block; text-align: center; }
+  .cta-row { flex-direction: column; align-items: stretch; }
+}

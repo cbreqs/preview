@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CNKC site admin." />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Manage the site · CNKC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="cnkc.css" />
+  <link rel="stylesheet" href="../assets/admin.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#auth-loading">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
+    <div class="nav-left">
+      <a class="nav-home" href="index.html">CNKC</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">manage</span>
+    </div>
+    <div style="display:flex; gap:0.75rem; align-items:center;">
+      <button class="theme-btn" id="signout" hidden>Sign out</button>
+      <button class="theme-btn">light / dark</button>
+    </div>
+  </nav>
+
+  <!-- ── working out whether you're already signed in ──
+       Firebase restores a session asynchronously, so without this the sign-in
+       form would be the first thing an already-signed-in person sees, and it
+       reads as having been logged out. Nothing is shown until we know. -->
+  <main class="signin-wrap" id="auth-loading">
+    <p class="state">Checking your sign-in…</p>
+  </main>
+
+  <!-- ── signed out ──
+       A <main>, not a <div>, so there's a landmark to skip to before sign-in.
+       Several <main> elements are valid HTML as long as all but one are
+       hidden, which is exactly the case here. -->
+  <main class="signin-wrap" id="signin-view" hidden>
+    <form class="signin" id="signin-form">
+      <h1>Manage the site</h1>
+      <p class="hint">Sign in to add events, photos and business members.</p>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="username" required />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required />
+      </div>
+
+      <button class="btn" type="submit" id="signin-btn">Sign in</button>
+
+      <!-- type="button" so it can't submit the form. Forgetting a password is
+           normal, so this sits in plain sight rather than being tucked away. -->
+      <button class="link-btn" type="button" id="forgot-btn">Forgot your password?</button>
+
+      <p class="status" id="signin-status" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <!-- ── signed in ── -->
+  <main id="admin-view" hidden>
+    <header class="page-header">
+      <p class="hero-eyebrow">CNKC</p>
+      <h1>Manage the site</h1>
+      <p class="page-sub">
+        Changes show up on the live site straight away. Nothing here changes the
+        layout, so you can't break how a page looks.
+      </p>
+    </header>
+
+    <div class="admin-tabs" role="tablist">
+      <button class="admin-tab" role="tab" id="tab-events"  aria-selected="true"  aria-controls="panel-events">Events</button>
+      <button class="admin-tab" role="tab" id="tab-photos"  aria-selected="false" aria-controls="panel-photos">Photos</button>
+      <button class="admin-tab" role="tab" id="tab-members" aria-selected="false" aria-controls="panel-members">Business members</button>
+    </div>
+
+    <!-- ── events ── -->
+    <section class="panel" id="panel-events" role="tabpanel" aria-labelledby="tab-events">
+      <form class="form" id="event-form">
+        <p class="form-title" id="event-form-title">Add an event</p>
+
+        <div class="field">
+          <label for="ev-title">Event name</label>
+          <input type="text" id="ev-title" required placeholder="Higher Ladies Club" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ev-date">Date</label>
+            <input type="date" id="ev-date" required />
+          </div>
+          <div class="field">
+            <label for="ev-time">Start time</label>
+            <input type="time" id="ev-time" />
+          </div>
+        </div>
+
+        <div class="field check">
+          <input type="checkbox" id="ev-allday" />
+          <label for="ev-allday">All day — don't show a time</label>
+        </div>
+
+        <div class="field">
+          <label for="ev-location">Where</label>
+          <input type="text" id="ev-location" placeholder="Cafe Ca Phe, 916 E 5th St" />
+        </div>
+
+        <div class="field">
+          <label for="ev-note">Details</label>
+          <textarea id="ev-note" placeholder="Fellowship and smoke one. No tickets necessary, 21+."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Photo <span class="help">— optional</span></label>
+          <div class="image-picker">
+            <img class="image-preview" id="ev-preview" alt="" data-empty="true" />
+            <input type="file" class="file-input" id="ev-image" accept="image/*" />
+            <label class="file-label" for="ev-image">Choose photo</label>
+            <button type="button" class="link-btn danger" id="ev-image-clear" hidden>Remove</button>
+          </div>
+          <div class="progress" id="ev-progress" hidden><span></span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="ev-save">Add event</button>
+          <button class="btn btn-ghost" type="button" id="ev-cancel" hidden>Cancel</button>
+          <span class="status" id="ev-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <h2>Events on the site</h2>
+      <div class="admin-list" id="event-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+
+    <!-- ── photos ── -->
+    <section class="panel" id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden>
+      <form class="form" id="photo-form">
+        <p class="form-title">Add photos</p>
+
+        <div class="field">
+          <label for="ph-album">Album</label>
+          <select id="ph-album">
+            <option value="">No album — loose in the gallery</option>
+          </select>
+          <p class="help">
+            Albums are your events. Pick one and these photos are filed under it;
+            the album shows on the Gallery page as soon as it has a photo in it.
+          </p>
+        </div>
+
+        <div class="image-picker">
+          <input type="file" class="file-input" id="ph-files" accept="image/*" multiple />
+          <label class="file-label" for="ph-files">Choose photos</label>
+          <span class="status" id="ph-status" role="status" aria-live="polite"></span>
+        </div>
+        <p class="help">Pick as many as you like. Big phone photos get shrunk automatically.</p>
+        <div class="progress" id="ph-progress" hidden><span></span></div>
+      </form>
+
+      <h2>Photos on the site</h2>
+      <div class="photo-grid" id="photo-grid"></div>
+      <p class="state" id="photo-empty" hidden>No photos yet.</p>
+    </section>
+
+    <!-- ── members ── -->
+    <section class="panel" id="panel-members" role="tabpanel" aria-labelledby="tab-members" hidden>
+      <form class="form" id="member-form">
+        <p class="form-title" id="member-form-title">Add a business member</p>
+
+        <div class="field">
+          <label for="mb-name">Business name</label>
+          <input type="text" id="mb-name" required placeholder="Hemp Knightz" />
+        </div>
+
+        <div class="field">
+          <label for="mb-category">What they do</label>
+          <input type="text" id="mb-category" placeholder="Shopping &amp; Retail" />
+        </div>
+
+        <div class="field">
+          <label for="mb-blurb">About them</label>
+          <textarea id="mb-blurb" placeholder="A sentence or two about the business."></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="mb-link">Website</label>
+            <input type="url" id="mb-link" placeholder="https://example.com" />
+          </div>
+          <div class="field">
+            <label for="mb-since">Member since</label>
+            <input type="number" id="mb-since" min="2000" max="2100" step="1" placeholder="2025" />
+          </div>
+          <div class="field">
+            <label for="mb-order">Order</label>
+            <input type="number" id="mb-order" step="1" placeholder="1" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Logo <span class="help">— optional</span></label>
+          <div class="image-picker">
+            <img class="image-preview" id="mb-preview" alt="" data-empty="true" />
+            <input type="file" class="file-input" id="mb-image" accept="image/*" />
+            <label class="file-label" for="mb-image">Choose logo</label>
+            <button type="button" class="link-btn danger" id="mb-image-clear" hidden>Remove</button>
+          </div>
+          <div class="progress" id="mb-progress" hidden><span></span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="mb-save">Add member</button>
+          <button class="btn btn-ghost" type="button" id="mb-cancel" hidden>Cancel</button>
+          <span class="status" id="mb-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <h2>Members on the site</h2>
+      <div class="admin-list" id="member-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="index.html">back to the site</a>
+    </nav>
+  </footer>
+
+  <script src="../assets/site.js"></script>
+  <script type="module">
+    import { app, db, toDate } from './firebase.js';
+    import { thumbButton } from './lightbox.js';
+    import {
+      getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+      sendPasswordResetEmail,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
+    import {
+      getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js';
+    import {
+      collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, orderBy, Timestamp,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+    const SITE = 'cnkc';
+
+    const events  = collection(db, 'sites', SITE, 'public', 'calendar', 'events');
+    const photos  = collection(db, 'sites', SITE, 'public', 'gallery', 'photos');
+    const members = collection(db, 'sites', SITE, 'public', 'members', 'items');
+
+    const $ = (id) => document.getElementById(id);
+
+    /* Gallery captions are a label under a thumbnail, not a description —
+       long ones wrap to three lines and wreck the grid. Enforced by maxlength
+       on the input and trimmed again before saving, so a paste can't slip past. */
+    const PHOTO_CAPTION_MAX = 25;
+
+    /* ── helpers ───────────────────────────────────────────────────────── */
+
+    /** Firestore's permission-denied is the one error a real editor might hit,
+        so it gets a sentence that says what to do instead of a code. */
+    function explain(error) {
+      if (error?.code === 'permission-denied') {
+        return "This account isn't set up to edit CNKC yet — ask ReqsTech to add it.";
+      }
+      if (error?.code === 'storage/unauthorized') {
+        return "This account can't upload images. If everything else here works, "
+          + "it's the Storage rules rather than your account — see the README.";
+      }
+      if (error?.code === 'auth/invalid-credential' || error?.code === 'auth/wrong-password') {
+        return 'That email and password don’t match. Try again, or use “Forgot your password?” below.';
+      }
+      if (error?.code === 'auth/invalid-email') {
+        return "That doesn't look like an email address.";
+      }
+      if (error?.code === 'auth/too-many-requests') {
+        return 'Too many attempts. Wait a minute and try again.';
+      }
+      if (error?.code === 'auth/network-request-failed') {
+        return 'No connection. Check your internet and try again.';
+      }
+      return error?.message ?? 'Something went wrong. Try again.';
+    }
+
+    /** Who to credit for an upload. Prefers the username set on the account;
+        falls back to the part of the email before the @ so older accounts
+        without a display name still read as a person rather than blank. */
+    function displayName(user) {
+      if (!user) return '';
+      return (user.displayName || '').trim() || (user.email || '').split('@')[0] || 'Someone';
+    }
+
+    function setStatus(el, message, kind = '') {
+      el.textContent = message;
+      el.className = `status${kind ? ` ${kind}` : ''}`;
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const dateValue = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const timeValue = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    const dayFormat = new Intl.DateTimeFormat(undefined, {
+      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    });
+    const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+
+    /** Phone photos are routinely 4–8 MB, which is slow to upload and pointless
+        on a web page. Shrink the long edge to 1600px and re-encode as JPEG.
+        Small files pass through untouched. */
+    async function prepareImage(file, maxDim = 1600) {
+      if (!file.type.startsWith('image/')) throw new Error('That file is not an image.');
+      let bitmap;
+      try {
+        bitmap = await createImageBitmap(file);
+      } catch {
+        return file; // Unusual format the browser can't decode — send as-is.
+      }
+      const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+      if (scale === 1 && file.size < 1_500_000) {
+        bitmap.close();
+        return file;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+      return blob ?? file;
+    }
+
+    /** Upload one image and return { url, path }. `onProgress` gets 0–100. */
+    async function uploadImage(file, kind, onProgress) {
+      const prepared = await prepareImage(file);
+      const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-').slice(-60);
+      const path = `sites/${SITE}/${kind}/${Date.now()}-${safe}`;
+      const task = uploadBytesResumable(ref(storage, path), prepared, {
+        contentType: prepared.type || 'image/jpeg',
+      });
+
+      await new Promise((resolve, reject) => {
+        task.on('state_changed',
+          (snap) => onProgress?.(snap.totalBytes ? (snap.bytesTransferred / snap.totalBytes) * 100 : 0),
+          reject,
+          resolve);
+      });
+
+      return { url: await getDownloadURL(task.snapshot.ref), path };
+    }
+
+    /** Storage delete that doesn't derail the caller if the object is already
+        gone — the Firestore doc is the source of truth for what's on the site. */
+    async function removeImage(path) {
+      if (!path) return;
+      try {
+        await deleteObject(ref(storage, path));
+      } catch (error) {
+        if (error?.code !== 'storage/object-not-found') console.warn('Image not removed:', error);
+      }
+    }
+
+    /* ── auth ──────────────────────────────────────────────────────────── */
+
+    const signinView = $('signin-view');
+    const adminView = $('admin-view');
+    const authLoading = $('auth-loading');
+
+    /** Show whichever pane matches the current user, and load their data once.
+
+        Called from the auth observer AND straight after a successful sign-in.
+        Relying on the observer alone used to hang: signing in while already
+        signed in as the same account is not a state *change*, so the callback
+        never fired and the form sat on "Signing in…" indefinitely. */
+    function applyAuthState(user) {
+      const signedIn = Boolean(user);
+      const wasAlreadyIn = !adminView.hidden;
+
+      authLoading.hidden = true;
+      signinView.hidden = signedIn;
+      adminView.hidden = !signedIn;
+      $('signout').hidden = !signedIn;
+      // Point the skip link at whichever pane is actually on screen.
+      document.querySelector('.skip-link')
+        ?.setAttribute('href', signedIn ? '#admin-view' : '#signin-view');
+
+      if (!signedIn) return;
+
+      $('password').value = '';
+      setStatus($('signin-status'), '');
+      // Both callers can fire for one sign-in; don't fetch everything twice.
+      if (wasAlreadyIn) return;
+      loadEvents();
+      loadPhotos();
+      loadMembers();
+    }
+
+    $('signin-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('signin-btn');
+      btn.disabled = true;
+      setStatus($('signin-status'), 'Signing in…');
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth, $('email').value.trim(), $('password').value,
+        );
+        applyAuthState(credential.user);
+      } catch (error) {
+        setStatus($('signin-status'), explain(error), 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('forgot-btn').addEventListener('click', async () => {
+      const email = $('email').value.trim();
+      if (!email) {
+        setStatus($('signin-status'), 'Type your email address above first, then press this again.');
+        $('email').focus();
+        return;
+      }
+
+      const btn = $('forgot-btn');
+      btn.disabled = true;
+      setStatus($('signin-status'), 'Sending…');
+      try {
+        await sendPasswordResetEmail(auth, email);
+        // Deliberately not "we found your account" — Firebase hides whether an
+        // address is registered, and so should this message.
+        setStatus($('signin-status'),
+          `If ${email} has an account, a reset link is on its way. Check spam if it's slow.`, 'ok');
+      } catch (error) {
+        console.error(error);
+        setStatus($('signin-status'), explain(error), 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('signout').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, applyAuthState);
+
+    /* ── tabs ──────────────────────────────────────────────────────────── */
+
+    const tabs = [...document.querySelectorAll('.admin-tab')];
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((other) => {
+          const on = other === tab;
+          other.setAttribute('aria-selected', String(on));
+          $(other.getAttribute('aria-controls')).hidden = !on;
+        });
+      });
+    });
+
+    /* ── events ────────────────────────────────────────────────────────── */
+
+    let editingEvent = null;      // doc id while editing, else null
+    let eventImage = null;        // { url, path } already on the doc, or null
+    let eventFile = null;         // freshly chosen File awaiting upload
+
+    const evPreview = $('ev-preview');
+    const evStatus = $('ev-status');
+
+    function showEventImage(url) {
+      const has = Boolean(url);
+      evPreview.src = has ? url : '';
+      evPreview.dataset.empty = String(!has);
+      $('ev-image-clear').hidden = !has;
+    }
+
+    $('ev-image').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      eventFile = file;
+      showEventImage(URL.createObjectURL(file));
+    });
+
+    $('ev-image-clear').addEventListener('click', () => {
+      eventFile = null;
+      eventImage = null;
+      $('ev-image').value = '';
+      showEventImage('');
+    });
+
+    // An all-day event has no meaningful start time, so hide the field.
+    $('ev-allday').addEventListener('change', (e) => {
+      $('ev-time').disabled = e.target.checked;
+      if (e.target.checked) $('ev-time').value = '';
+    });
+
+    function resetEventForm() {
+      editingEvent = null;
+      eventImage = null;
+      eventFile = null;
+      $('event-form').reset();
+      $('ev-time').disabled = false;
+      showEventImage('');
+      $('event-form-title').textContent = 'Add an event';
+      $('ev-save').textContent = 'Add event';
+      $('ev-cancel').hidden = true;
+      setStatus(evStatus, '');
+    }
+
+    $('ev-cancel').addEventListener('click', resetEventForm);
+
+    $('event-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const allDay = $('ev-allday').checked;
+      const date = $('ev-date').value;
+      const time = $('ev-time').value;
+      if (!date) return;
+
+      // Parsed in the browser's own zone, which is what the client means when
+      // they type 6pm. Stored as a Timestamp so the public page can sort on it.
+      const start = new Date(`${date}T${allDay || !time ? '00:00' : time}`);
+      if (Number.isNaN(start.getTime())) {
+        setStatus(evStatus, 'That date looks wrong. Check it and try again.', 'error');
+        return;
+      }
+
+      $('ev-save').disabled = true;
+      setStatus(evStatus, 'Saving…');
+
+      try {
+        let image = eventImage;
+        if (eventFile) {
+          const bar = $('ev-progress');
+          bar.hidden = false;
+          image = await uploadImage(eventFile, 'events', (pct) => {
+            bar.firstElementChild.style.width = `${pct}%`;
+          });
+          bar.hidden = true;
+          if (eventImage?.path && eventImage.path !== image.path) await removeImage(eventImage.path);
+        }
+
+        const payload = {
+          title: $('ev-title').value.trim(),
+          start: Timestamp.fromDate(start),
+          allDay,
+          location: $('ev-location').value.trim(),
+          note: $('ev-note').value.trim(),
+          imageUrl: image?.url ?? '',
+          storagePath: image?.path ?? '',
+        };
+
+        if (editingEvent) {
+          await updateDoc(doc(events, editingEvent), payload);
+        } else {
+          await addDoc(events, payload);
+        }
+
+        resetEventForm();
+        setStatus(evStatus, 'Saved.', 'ok');
+        loadEvents();
+      } catch (error) {
+        console.error(error);
+        setStatus(evStatus, explain(error), 'error');
+        $('ev-progress').hidden = true;
+      } finally {
+        $('ev-save').disabled = false;
+      }
+    });
+
+    function startEditEvent(id, data) {
+      editingEvent = id;
+      eventFile = null;
+      eventImage = data.storagePath ? { url: data.imageUrl, path: data.storagePath } : null;
+
+      $('ev-title').value = data.title ?? '';
+      const start = toDate(data.start);
+      $('ev-date').value = start ? dateValue(start) : '';
+      $('ev-allday').checked = data.allDay === true;
+      $('ev-time').disabled = data.allDay === true;
+      $('ev-time').value = start && !data.allDay ? timeValue(start) : '';
+      $('ev-location').value = data.location ?? '';
+      $('ev-note').value = data.note ?? '';
+      showEventImage(data.imageUrl ?? '');
+
+      $('event-form-title').textContent = 'Edit event';
+      $('ev-save').textContent = 'Save changes';
+      $('ev-cancel').hidden = false;
+      $('event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /** Copy an event into the form as a NEW one — for the regulars that come
+        round every few weeks, sometimes at a different address. Everything
+        carries over except the date, which is blanked deliberately: leaving
+        the old one there is how you end up publishing a duplicate stuck in
+        the past. */
+    async function startDuplicateEvent(data) {
+      resetEventForm();
+      editingEvent = null;               // saving creates, not updates
+
+      $('ev-title').value = data.title ?? '';
+      $('ev-allday').checked = data.allDay === true;
+      $('ev-time').disabled = data.allDay === true;
+      const start = toDate(data.start);
+      $('ev-time').value = start && !data.allDay ? timeValue(start) : '';
+      $('ev-location').value = data.location ?? '';
+      $('ev-note').value = data.note ?? '';
+      $('ev-date').value = '';
+
+      $('event-form-title').textContent = 'Copy of an event';
+      $('ev-save').textContent = 'Add event';
+      $('ev-cancel').hidden = false;
+      $('event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      $('ev-date').focus();
+
+      if (!data.imageUrl) {
+        setStatus(evStatus, 'Copied. Pick a new date, then add it.');
+        return;
+      }
+
+      // Pull the photo down and hand it to the normal upload path, so the copy
+      // gets its OWN file in Storage. Pointing both events at one file would
+      // mean deleting either one breaks the other's picture.
+      setStatus(evStatus, 'Copied. Fetching the photo…');
+      try {
+        const blob = await (await fetch(data.imageUrl)).blob();
+        const name = (data.storagePath || 'photo.jpg').split('/').pop();
+        eventFile = new File([blob], name, { type: blob.type || 'image/jpeg' });
+        showEventImage(URL.createObjectURL(blob));
+        setStatus(evStatus, 'Copied, photo and all. Pick a new date, then add it.');
+      } catch (error) {
+        console.warn('Photo not copied:', error);
+        setStatus(evStatus, 'Copied, but not the photo — choose one if you want it.');
+      }
+    }
+
+    async function loadEvents() {
+      const list = $('event-list');
+      try {
+        // Every event, not just upcoming — past ones still need editing and
+        // deleting from here, even though the public page hides them.
+        const snap = await getDocs(query(events, orderBy('start', 'desc')));
+
+        // Same snapshot feeds the album pickers; photos are usually filed
+        // against events that have already happened.
+        albumOptions = snap.docs.map((docSnap) => ({
+          id: docSnap.id,
+          title: docSnap.data().title || 'Untitled event',
+          start: toDate(docSnap.data().start),
+        }));
+        refreshAlbumPickers();
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No events yet. Add one above.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+          const start = toDate(data.start);
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const main = document.createElement('div');
+          main.className = 'admin-row-main';
+
+          if (data.imageUrl) {
+            main.append(thumbButton(data.imageUrl, 'admin-thumb', data.title || 'event photo'));
+          }
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const when = document.createElement('p');
+          when.className = 'admin-row-when';
+          when.textContent = start
+            ? (data.allDay ? dayFormat.format(start) : `${dayFormat.format(start)} · ${timeFormat.format(start)}`)
+            : 'No date';
+          text.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = data.title || 'Untitled event';
+          text.append(title);
+
+          // Details, then location — same reasoning as the member blurb: this
+          // list is the only place to read back what was typed.
+          if (data.note) {
+            const note = document.createElement('p');
+            note.className = 'admin-row-note';
+            note.textContent = data.note;
+            text.append(note);
+          }
+
+          if (data.location) {
+            const loc = document.createElement('p');
+            loc.className = 'admin-row-note admin-row-meta';
+            loc.textContent = data.location;
+            text.append(loc);
+          }
+
+          main.append(text);
+          row.append(main);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const edit = document.createElement('button');
+          edit.className = 'link-btn';
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => startEditEvent(d.id, data));
+          actions.append(edit);
+
+          const copy = document.createElement('button');
+          copy.className = 'link-btn';
+          copy.type = 'button';
+          copy.textContent = 'Duplicate';
+          copy.addEventListener('click', () => startDuplicateEvent(data));
+          actions.append(copy);
+
+          const del = document.createElement('button');
+          del.className = 'link-btn danger';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Delete "${data.title || 'this event'}"? This can't be undone.`)) return;
+            del.disabled = true;
+            try {
+              await deleteDoc(doc(events, d.id));
+              await removeImage(data.storagePath);
+              if (editingEvent === d.id) resetEventForm();
+              loadEvents();
+            } catch (error) {
+              console.error(error);
+              setStatus(evStatus, explain(error), 'error');
+              del.disabled = false;
+            }
+          });
+          actions.append(del);
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+
+    /* ── photos ────────────────────────────────────────────────────────── */
+
+    const phStatus = $('ph-status');
+
+    /* Albums are events — there is no separate album entity. A photo either
+       points at an event or it doesn't, which gets us albums, "tagging" and
+       automatic go-live from one field instead of three concepts for someone
+       to keep tidy.
+
+       Filled from the snapshot loadEvents() already fetches, so picking an
+       album costs no extra reads and the list can't drift out of sync. */
+    let albumOptions = [];
+
+    const albumDate = new Intl.DateTimeFormat(undefined, {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
+
+    /** Populate one <select> with the album list.
+        `fallbackTitle` covers a photo filed under an event that has since been
+        deleted: the option is kept so the album keeps its name instead of the
+        photo silently jumping to "no album". */
+    function fillAlbumSelect(select, selectedId, fallbackTitle) {
+      select.replaceChildren();
+
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = 'No album';
+      select.append(none);
+
+      for (const album of albumOptions) {
+        const option = document.createElement('option');
+        option.value = album.id;
+        option.textContent = album.start
+          ? `${album.title} — ${albumDate.format(album.start)}`
+          : album.title;
+        select.append(option);
+      }
+
+      const known = albumOptions.some((a) => a.id === selectedId);
+      if (selectedId && !known) {
+        const gone = document.createElement('option');
+        gone.value = selectedId;
+        gone.textContent = `${fallbackTitle || 'Deleted event'} (event removed)`;
+        select.append(gone);
+      }
+
+      select.value = selectedId || '';
+    }
+
+    function refreshAlbumPickers() {
+      fillAlbumSelect($('ph-album'), $('ph-album').value, '');
+    }
+
+    $('ph-files').addEventListener('change', async (e) => {
+      const files = [...(e.target.files ?? [])];
+      if (files.length === 0) return;
+      e.target.value = '';
+
+      const bar = $('ph-progress');
+      bar.hidden = false;
+      let done = 0;
+
+      // Read the album once, up front. If it changed mid-upload every photo
+      // in one batch should still land in the same place.
+      const albumId = $('ph-album').value;
+      const album = {
+        id: albumId,
+        title: albumOptions.find((a) => a.id === albumId)?.title ?? '',
+      };
+
+      try {
+        // Sequential rather than parallel: a dozen phone photos at once will
+        // stall on a phone connection, and the count reads more honestly.
+        for (const file of files) {
+          setStatus(phStatus, `Uploading ${done + 1} of ${files.length}…`);
+          const { url, path } = await uploadImage(file, 'gallery', (pct) => {
+            const overall = ((done + pct / 100) / files.length) * 100;
+            bar.firstElementChild.style.width = `${overall}%`;
+          });
+          // A username, not an email address: this document is world-readable,
+          // and an editor's email has no business being queryable by anyone
+          // who finds the collection.
+          await addDoc(photos, {
+            url,
+            storagePath: path,
+            caption: '',
+            createdAt: Timestamp.now(),
+            uploadedBy: auth.currentUser?.uid ?? '',
+            uploadedByName: displayName(auth.currentUser),
+            eventId: album.id,
+            eventTitle: album.title,
+          });
+          done += 1;
+        }
+        setStatus(phStatus, `Added ${done} photo${done === 1 ? '' : 's'}.`, 'ok');
+        loadPhotos();
+      } catch (error) {
+        console.error(error);
+        setStatus(phStatus, explain(error), 'error');
+      } finally {
+        bar.hidden = true;
+        bar.firstElementChild.style.width = '0';
+      }
+    });
+
+    async function loadPhotos() {
+      const grid = $('photo-grid');
+      const empty = $('photo-empty');
+      try {
+        const snap = await getDocs(query(photos, orderBy('createdAt', 'desc')));
+        empty.hidden = !snap.empty;
+        grid.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+
+          const item = document.createElement('figure');
+          item.className = 'photo-item';
+
+          const cell = document.createElement('div');
+          cell.className = 'photo-cell';
+          cell.append(thumbButton(data.url, '', data.caption || ''));
+
+          const remove = document.createElement('button');
+          remove.className = 'photo-remove';
+          remove.type = 'button';
+          remove.textContent = '×';
+          remove.setAttribute('aria-label', 'Delete this photo');
+          remove.addEventListener('click', async () => {
+            if (!confirm("Delete this photo? This can't be undone.")) return;
+            remove.disabled = true;
+            try {
+              await deleteDoc(doc(photos, d.id));
+              await removeImage(data.storagePath);
+              loadPhotos();
+            } catch (error) {
+              console.error(error);
+              setStatus(phStatus, explain(error), 'error');
+              remove.disabled = false;
+            }
+          });
+          cell.append(remove);
+          item.append(cell);
+
+          // Caption, edited in place. Saves when you click away or press
+          // Enter — no separate save button for a 25-character field.
+          const caption = document.createElement('input');
+          caption.type = 'text';
+          caption.className = 'photo-caption';
+          caption.maxLength = PHOTO_CAPTION_MAX;
+          caption.value = data.caption ?? '';
+          caption.placeholder = 'Add a caption';
+          caption.setAttribute('aria-label', 'Caption for this photo');
+
+          let saved = caption.value;
+          const persist = async () => {
+            const next = caption.value.trim().slice(0, PHOTO_CAPTION_MAX);
+            if (next === saved) return;
+            caption.disabled = true;
+            try {
+              await updateDoc(doc(photos, d.id), { caption: next });
+              saved = next;
+              caption.value = next;
+              setStatus(phStatus, next ? 'Caption saved.' : 'Caption cleared.', 'ok');
+            } catch (error) {
+              console.error(error);
+              caption.value = saved;   // put back what's actually stored
+              setStatus(phStatus, explain(error), 'error');
+            } finally {
+              caption.disabled = false;
+            }
+          };
+
+          caption.addEventListener('change', persist);
+          caption.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') { event.preventDefault(); caption.blur(); }
+          });
+
+          item.append(caption);
+
+          // Move a photo between albums after the fact — you rarely know how
+          // you want them filed at the moment you're uploading.
+          const album = document.createElement('select');
+          album.className = 'photo-album';
+          album.setAttribute('aria-label', 'Album for this photo');
+          fillAlbumSelect(album, data.eventId ?? '', data.eventTitle);
+
+          album.addEventListener('change', async () => {
+            const id = album.value;
+            const title = albumOptions.find((a) => a.id === id)?.title
+              ?? (id ? data.eventTitle ?? '' : '');
+            album.disabled = true;
+            try {
+              await updateDoc(doc(photos, d.id), { eventId: id, eventTitle: title });
+              setStatus(phStatus, id ? `Filed under ${title}.` : 'Removed from its album.', 'ok');
+            } catch (error) {
+              console.error(error);
+              fillAlbumSelect(album, data.eventId ?? '', data.eventTitle);
+              setStatus(phStatus, explain(error), 'error');
+            } finally {
+              album.disabled = false;
+            }
+          });
+          item.append(album);
+
+          // Who added it and when. Older photos predate these fields, so both
+          // parts are optional and the line is skipped if neither is known.
+          const added = toDate(data.createdAt);
+          const who = data.uploadedByName || data.uploadedByEmail || '';
+          const when = added
+            ? new Intl.DateTimeFormat(undefined, {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit',
+              }).format(added)
+            : '';
+          if (who || when) {
+            const meta = document.createElement('figcaption');
+            meta.className = 'photo-meta';
+            meta.textContent = [who, when].filter(Boolean).join(' · ');
+            meta.title = meta.textContent;   // full text on hover when clipped
+            item.append(meta);
+          }
+
+          return item;
+        }));
+      } catch (error) {
+        console.error(error);
+        grid.replaceChildren();
+        empty.hidden = false;
+        empty.textContent = explain(error);
+        empty.className = 'state error';
+      }
+    }
+
+    /* ── members ───────────────────────────────────────────────────────── */
+
+    let editingMember = null;
+    let memberImage = null;
+    let memberFile = null;
+
+    const mbPreview = $('mb-preview');
+    const mbStatus = $('mb-status');
+
+    function showMemberImage(url) {
+      const has = Boolean(url);
+      mbPreview.src = has ? url : '';
+      mbPreview.dataset.empty = String(!has);
+      $('mb-image-clear').hidden = !has;
+    }
+
+    $('mb-image').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      memberFile = file;
+      showMemberImage(URL.createObjectURL(file));
+    });
+
+    $('mb-image-clear').addEventListener('click', () => {
+      memberFile = null;
+      memberImage = null;
+      $('mb-image').value = '';
+      showMemberImage('');
+    });
+
+    function resetMemberForm() {
+      editingMember = null;
+      memberImage = null;
+      memberFile = null;
+      $('member-form').reset();
+      showMemberImage('');
+      $('member-form-title').textContent = 'Add a business member';
+      $('mb-save').textContent = 'Add member';
+      $('mb-cancel').hidden = true;
+      setStatus(mbStatus, '');
+    }
+
+    $('mb-cancel').addEventListener('click', resetMemberForm);
+
+    $('member-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('mb-save').disabled = true;
+      setStatus(mbStatus, 'Saving…');
+
+      try {
+        let image = memberImage;
+        if (memberFile) {
+          const bar = $('mb-progress');
+          bar.hidden = false;
+          image = await uploadImage(memberFile, 'members', (pct) => {
+            bar.firstElementChild.style.width = `${pct}%`;
+          });
+          bar.hidden = true;
+          if (memberImage?.path && memberImage.path !== image.path) await removeImage(memberImage.path);
+        }
+
+        const order = Number($('mb-order').value);
+        const since = Number($('mb-since').value);
+
+        const payload = {
+          name: $('mb-name').value.trim(),
+          category: $('mb-category').value.trim(),
+          blurb: $('mb-blurb').value.trim(),
+          link: $('mb-link').value.trim(),
+          memberSince: Number.isFinite(since) && since > 0 ? since : null,
+          displayOrder: Number.isFinite(order) ? order : 0,
+          logoUrl: image?.url ?? '',
+          storagePath: image?.path ?? '',
+        };
+
+        if (editingMember) {
+          await updateDoc(doc(members, editingMember), payload);
+        } else {
+          await addDoc(members, payload);
+        }
+
+        resetMemberForm();
+        setStatus(mbStatus, 'Saved.', 'ok');
+        loadMembers();
+      } catch (error) {
+        console.error(error);
+        setStatus(mbStatus, explain(error), 'error');
+        $('mb-progress').hidden = true;
+      } finally {
+        $('mb-save').disabled = false;
+      }
+    });
+
+    function startEditMember(id, data) {
+      editingMember = id;
+      memberFile = null;
+      memberImage = data.storagePath ? { url: data.logoUrl, path: data.storagePath } : null;
+
+      $('mb-name').value = data.name ?? '';
+      $('mb-category').value = data.category ?? '';
+      $('mb-blurb').value = data.blurb ?? '';
+      $('mb-link').value = data.link ?? '';
+      $('mb-since').value = data.memberSince ?? '';
+      $('mb-order').value = data.displayOrder ?? 0;
+      showMemberImage(data.logoUrl ?? '');
+
+      $('member-form-title').textContent = 'Edit member';
+      $('mb-save').textContent = 'Save changes';
+      $('mb-cancel').hidden = false;
+      $('member-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function loadMembers() {
+      const list = $('member-list');
+      try {
+        const snap = await getDocs(query(members, orderBy('displayOrder')));
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No members yet. Add one above.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const main = document.createElement('div');
+          main.className = 'admin-row-main';
+
+          if (data.logoUrl) {
+            main.append(thumbButton(data.logoUrl, 'admin-thumb', data.name || 'logo'));
+          }
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          if (data.category) {
+            const cat = document.createElement('p');
+            cat.className = 'admin-row-when';
+            cat.textContent = data.category;
+            text.append(cat);
+          }
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = data.name || 'Untitled';
+          text.append(title);
+
+          // The blurb, so you can read back what you typed without opening
+          // Edit — this list is the only place it's visible while managing.
+          if (data.blurb) {
+            const blurb = document.createElement('p');
+            blurb.className = 'admin-row-note';
+            blurb.textContent = data.blurb;
+            text.append(blurb);
+          }
+
+          const meta = document.createElement('p');
+          meta.className = 'admin-row-note admin-row-meta';
+
+          if (data.memberSince) {
+            meta.append(document.createTextNode(`Member since ${data.memberSince}`));
+          }
+
+          // A real link, not text — so you can check it actually goes where
+          // you meant without copying it out of the page.
+          if (data.link) {
+            if (meta.childNodes.length) meta.append(document.createTextNode(' · '));
+            const link = document.createElement('a');
+            link.href = data.link;
+            link.target = '_blank';
+            link.rel = 'noopener';
+            link.textContent = data.link;
+            meta.append(link);
+          }
+
+          if (meta.childNodes.length) text.append(meta);
+
+          main.append(text);
+          row.append(main);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const edit = document.createElement('button');
+          edit.className = 'link-btn';
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => startEditMember(d.id, data));
+          actions.append(edit);
+
+          const del = document.createElement('button');
+          del.className = 'link-btn danger';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Remove ${data.name || 'this member'}? This can't be undone.`)) return;
+            del.disabled = true;
+            try {
+              await deleteDoc(doc(members, d.id));
+              await removeImage(data.storagePath);
+              if (editingMember === d.id) resetMemberForm();
+              loadMembers();
+            } catch (error) {
+              console.error(error);
+              setStatus(mbStatus, explain(error), 'error');
+              del.disabled = false;
+            }
+          });
+          actions.append(del);
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+  </script>
+
+</body>
+</html>

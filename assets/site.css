@@ -338,6 +338,19 @@ a.data-row:hover .data-title { color: var(--accent); }
   max-width: 55ch;
 }
 
+.event-thumb {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 3px;
+  background: var(--bg3);
+  flex-shrink: 0;
+}
+
+/* With a thumbnail present the text column takes up the slack, so the
+   right-hand location still sits against the edge instead of being spread. */
+.data-row > .event-thumb + div { flex: 1; }
+
 .data-side {
   font-size: 12px;
   letter-spacing: 0.06em;
@@ -345,6 +358,62 @@ a.data-row:hover .data-title { color: var(--accent); }
   color: var(--text-dim);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* ── gallery ── */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-item { margin: 0; }
+
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 3px;
+  background: var(--bg3);
+}
+
+.gallery-item figcaption {
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-top: 0.5rem;
+}
+
+/* ── business members ── */
+.member-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.75rem 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+}
+.member-row:first-child { border-top: 1px solid var(--border); }
+
+a.member-row:hover .data-title { color: var(--accent); }
+
+.member-logo {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 3px;
+  background: var(--bg3);
+  flex-shrink: 0;
+}
+
+.member-body { min-width: 0; }
+
+.member-since {
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 0.6rem;
 }
 
 /* Placeholder shown while Firestore loads, and when it returns nothing. */
@@ -442,4 +511,6 @@ footer {
   .app-card-inner { flex-direction: column; }
   .data-row { flex-direction: column; gap: 0.4rem; }
   .contact-line { flex-direction: column; gap: 0.2rem; }
+  .member-row { gap: 1rem; }
+  .member-logo { width: 56px; height: 56px; }
 }

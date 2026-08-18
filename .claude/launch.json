@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "preview",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["scripts/serve.py", "9004"],
       "port": 9004
     }
   ]

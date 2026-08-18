@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// Storage rules for the CNKC project — event photos, gallery pictures and
+// business-member logos uploaded from cnkc/admin.html.
+//
+// These now check the SAME editors list Firestore does. That wasn't possible
+// in the old shared project: cross-service firestore.get() only reaches a
+// project's DEFAULT database, and the client data there lived in a named
+// database (`clients`), so these rules could do no better than "any signed-in
+// account". Giving CNKC its own project — and therefore its own default
+// database — is what closed that gap.
+//
+// Budget note: cross-service rules may touch at most two Firestore documents
+// per evaluation. exists() + get() on the same path is exactly two, so there
+// is no room to add another lookup here without restructuring.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isEditor(siteId) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/sites/$(siteId)/admin/editors)
+        && request.auth.uid in firestore.get(/databases/(default)/documents/sites/$(siteId)/admin/editors).data.uids;
+    }
+
+    // Published images. Public read, because the live site loads them by URL
+    // without signing in.
+    match /sites/{siteId}/{allPaths=**} {
+      allow read: if true;
+
+      // Images only, 10 MB ceiling. Phone photos routinely exceed the old 5 MB
+      // convention, and the admin page downscales before upload anyway.
+      allow write: if isEditor(siteId)
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+
+      // Deleting has no request.resource, so the size and type checks above
+      // would fail on it. It needs its own clause.
+      allow delete: if isEditor(siteId);
+    }
+
+    // Nothing outside sites/ is reachable from the browser.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="CNKC — site in progress." />
+  <meta name="description" content="The Cannabis Network of Kansas City — consumption friendly events, volunteer work and event services for the KC cannabis community." />
   <meta name="robots" content="noindex" />
-  <title>CNKC · preview</title>
+  <title>Home | The Cannabis Network of Kansas City</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/site.css" />
+  <link rel="stylesheet" href="cnkc.css" />
   <script>
     try {
       const saved = localStorage.getItem('theme');
@@ -19,75 +20,229 @@
 </head>
 <body>
 
-  <nav class="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
     <div class="nav-left">
-      <a class="nav-home" href="../index.html">preview</a>
+      <a class="nav-home" href="index.html">CNKC</a>
       <span class="nav-sep">/</span>
-      <span class="nav-current">cnkc</span>
+      <span class="nav-current">Kansas City</span>
     </div>
     <button class="theme-btn">light / dark</button>
   </nav>
 
-  <nav class="site-nav">
+  <nav class="site-nav" aria-label="Main">
     <a href="index.html" aria-current="page">Home</a>
-    <a href="calendar.html">Calendar</a>
-    <a href="documents.html">Documents</a>
+    <a href="about.html">About</a>
+    <a href="calendar.html">Events</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="memberships.html">Memberships</a>
+    <a href="members.html">Business Members</a>
     <a href="contact.html">Contact</a>
+    <a href="admin.html" class="nav-manage">Manage</a>
   </nav>
 
-  <main>
-    <header class="page-header">
-      <p class="hero-eyebrow">In progress</p>
-      <h1>CNKC</h1>
-      <p class="page-sub">
-        A working draft. The structure is here; the words and pictures are yours to send.
-      </p>
-    </header>
+  <main class="wide" id="main">
 
-    <div class="notice">
-      <strong>This is a preview.</strong> Everything you see is placeholder content,
-      here to show the shape of the site. Nothing is public — the pages ask search
-      engines not to index them.
-    </div>
-
-    <section class="prose">
-      <h2>About</h2>
-      <p>
-        This is where the introduction goes — who you are, what you do, and why someone
-        landing here should keep reading. A few short paragraphs work better than one
-        long one.
-      </p>
-      <p>
-        Send over the text you'd like here, along with any photographs, and this page
-        stops being a placeholder.
-      </p>
+    <section class="hero">
+      <div class="hero-inner">
+        <h1>The Cannabis Network of Kansas City</h1>
+        <p>
+          A community of cannabis lovers, advocates and friends in Kansas City.
+          Come find your smoke circle.
+        </p>
+        <div class="cta-row">
+          <a class="cta" href="memberships.html">Join us</a>
+          <a class="cta cta-ghost" href="calendar.html">See upcoming events</a>
+        </div>
+      </div>
     </section>
 
-    <section class="prose" style="margin-top: 3rem;">
-      <h2>What's on the site</h2>
-      <p>
-        <strong>Calendar</strong> — upcoming events, with dates, times and locations.
-        Managed centrally, so a change shows up here straight away.
-      </p>
-      <p>
-        <strong>Documents</strong> — forms, schedules, anything worth handing out.
-        Visitors download them directly.
-      </p>
-      <p>
-        <strong>Contact</strong> — how to reach you.
-      </p>
+    <section class="band">
+      <div class="container">
+        <div class="band-head">
+          <p class="band-eyebrow">What we do</p>
+          <h2>Come hang with us</h2>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature">
+            <div class="feature-rule"></div>
+            <h3>Consumption Friendly Events</h3>
+            <p>
+              Network and fellowship with like-minded individuals when you attend any CNKC
+              event. From Girl Bluntz and SMOGA to Growers Socials and Movie Nights, we
+              provide the smoke circle you've been looking for!
+            </p>
+            <a href="calendar.html">See upcoming events</a>
+          </div>
+
+          <div class="feature">
+            <div class="feature-rule"></div>
+            <h3>Volunteer Work</h3>
+            <p>
+              It is our mission to destigmatize Cannabis through serving and uplifting our
+              community. Keep an eye out for our bi-annual #StonerServiceProjects! Snack
+              bags and 21+ gifts provided to volunteers.
+            </p>
+            <a href="calendar.html">Find the next one</a>
+          </div>
+
+          <div class="feature">
+            <div class="feature-rule"></div>
+            <h3>Event Services</h3>
+            <p>
+              Looking for party planning packages? We can elevate any event with options
+              from coordinating to all-inclusive DJ and mobile bar services. Packages
+              include access to our email list and marketing on our socials.
+            </p>
+            <a href="contact.html">Reach out to Bradlee</a>
+          </div>
+        </div>
+      </div>
     </section>
+
+    <section class="band band-tint">
+      <div class="container">
+        <div class="band-head">
+          <p class="band-eyebrow">Coming up</p>
+          <h2>On the calendar</h2>
+          <p>Soonest first. Once a date passes it comes off on its own.</p>
+        </div>
+
+        <div class="data-list" id="upcoming">
+          <p class="state">Loading events…</p>
+        </div>
+
+        <div class="cta-row" style="margin-top: 2.5rem;">
+          <a class="cta cta-ghost" href="calendar.html">All events</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="container subscribe">
+        <div class="band-head" style="margin-bottom: 0;">
+          <p class="band-eyebrow">Newsletter</p>
+          <h2>Stay in the loop. Subscribe below!</h2>
+          <p>Event announcements and members-only news.</p>
+        </div>
+
+        <form class="subscribe-form" id="subscribe">
+          <label class="visually-hidden" for="subscribe-email">Email address</label>
+          <input type="email" id="subscribe-email" placeholder="you@example.com" required />
+          <button class="cta" type="submit">Subscribe</button>
+        </form>
+        <p class="subscribe-note" id="subscribe-note" role="status" aria-live="polite">
+          This one isn't hooked up yet in the preview.
+        </p>
+
+        <div class="socials">
+          <a href="https://www.instagram.com/" rel="noopener" target="_blank">Instagram</a>
+          <a href="https://www.facebook.com/" rel="noopener" target="_blank">Facebook</a>
+          <a href="mailto:owner@cannabisnetworkkc.com">Email us</a>
+        </div>
+      </div>
+    </section>
+
   </main>
 
+  <p class="age-note">All members and attendees must be 21+</p>
+
   <footer>
-    <span class="footer-text">© 2026 TYPICAL LLC · REQS TECH</span>
-    <nav class="footer-links">
-      <a href="../index.html">all previews</a>
-      <a href="mailto:privacy@reqs.tech">contact</a>
+    <span class="footer-text">© 2026 The Cannabis Network of Kansas City</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="../index.html">preview home</a>
+      <a href="admin.html">manage</a>
+      <a href="mailto:owner@cannabisnetworkkc.com">contact</a>
     </nav>
   </footer>
 
   <script src="../assets/site.js"></script>
+  <script type="module">
+    import { db, toDate } from './firebase.js';
+    import { thumbButton } from './lightbox.js';
+    import {
+      collection, getDocs, query, orderBy, where, limit,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    /* The home page pulls the next three events from the same collection the
+       Events page uses. This is the bit that stops the front page going stale
+       the way the Wix one did — nobody has to remember to update it. */
+    const container = document.getElementById('upcoming');
+
+    const dayFormat = new Intl.DateTimeFormat(undefined, {
+      weekday: 'short', month: 'short', day: 'numeric',
+    });
+    const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+
+    try {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const snapshot = await getDocs(query(
+        collection(db, 'sites', 'cnkc', 'public', 'calendar', 'events'),
+        where('start', '>=', startOfToday),
+        orderBy('start'),
+        limit(3),
+      ));
+
+      if (snapshot.empty) {
+        container.innerHTML =
+          '<p class="state">Nothing on the calendar just yet — check back soon.</p>';
+      } else {
+        container.replaceChildren(...snapshot.docs.map((docSnap) => {
+          const data = docSnap.data();
+          const start = toDate(data.start);
+
+          const row = document.createElement('div');
+          row.className = 'data-row';
+
+          if (data.imageUrl) {
+            row.append(thumbButton(data.imageUrl, 'event-thumb', data.title ?? ''));
+          }
+
+          const left = document.createElement('div');
+
+          const when = document.createElement('p');
+          when.className = 'data-when';
+          when.textContent = start
+            ? (data.allDay === true
+                ? dayFormat.format(start)
+                : `${dayFormat.format(start)} · ${timeFormat.format(start)}`)
+            : '';
+          left.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'data-title';
+          title.textContent = data.title ?? 'Untitled event';
+          left.append(title);
+
+          row.append(left);
+
+          if (data.location) {
+            const side = document.createElement('span');
+            side.className = 'data-side';
+            side.textContent = data.location;
+            row.append(side);
+          }
+
+          return row;
+        }));
+      }
+    } catch (error) {
+      console.error('Upcoming events failed to load:', error);
+      container.innerHTML =
+        '<p class="state error">Events could not be loaded just now. Please try again shortly.</p>';
+    }
+
+    // Placeholder so the field doesn't silently do nothing when clicked.
+    document.getElementById('subscribe').addEventListener('submit', (event) => {
+      event.preventDefault();
+      document.getElementById('subscribe-note').textContent =
+        'Thanks! Nothing was sent — this form is still a placeholder.';
+    });
+  </script>
 
 </body>
 </html>

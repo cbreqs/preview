@@ -1,0 +1,13 @@
+[
+  {
+    "origin": [
+      "http://localhost:9004",
+      "http://localhost:9007",
+      "https://preview.reqs.tech",
+      "https://cbreqs.github.io"
+    ],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": ["Content-Type", "Content-Length"]
+  }
+]

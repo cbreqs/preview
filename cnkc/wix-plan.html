@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="How to make the CNKC Wix site quicker to update." />
+<title>CNKC — Making the Site Easy to Update</title>
+</head>
+<body>
+
+<style>
+  /* ---- Light palette: complete definition on bare :root ---- */
+  :root {
+    --ground:        #F2F3EE;
+    --surface:       #FAFBF7;
+    --surface-sunk:  #EAECE4;
+    --ink:           #1A1F17;
+    --ink-soft:      #4A5244;
+    --ink-mute:      #6E7668;
+    --rule:          #D6DACE;
+    --rule-soft:     #E3E6DD;
+    --accent:        #2E6B41;
+    --accent-soft:   #E2EDE5;
+    --accent-ink:    #234F32;
+    --warn:          #8A5E14;
+    --warn-soft:     #F5EBD7;
+    --shadow:        0 1px 2px rgba(26,31,23,.06), 0 4px 14px rgba(26,31,23,.05);
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  }
+
+  /* ---- Dark by system setting. Guarded so an explicit light choice wins. ---- */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:       #131610;
+      --surface:      #1B1F18;
+      --surface-sunk: #0E110B;
+      --ink:          #E8EBE3;
+      --ink-soft:     #B6BDAF;
+      --ink-mute:     #8A9382;
+      --rule:         #2E342A;
+      --rule-soft:    #232820;
+      --accent:       #6FBF86;
+      --accent-soft:  #1E2C21;
+      --accent-ink:   #9AD8AB;
+      --warn:         #D9A441;
+      --warn-soft:    #2B2415;
+      --shadow:       0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+    }
+  }
+  /* ---- Dark by explicit toggle, beats a light OS ---- */
+  :root[data-theme="dark"] {
+    --ground:       #131610;
+    --surface:      #1B1F18;
+    --surface-sunk: #0E110B;
+    --ink:          #E8EBE3;
+    --ink-soft:     #B6BDAF;
+    --ink-mute:     #8A9382;
+    --rule:         #2E342A;
+    --rule-soft:    #232820;
+    --accent:       #6FBF86;
+    --accent-soft:  #1E2C21;
+    --accent-ink:   #9AD8AB;
+    --warn:         #D9A441;
+    --warn-soft:    #2B2415;
+    --shadow:       0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0 1.25rem 6rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 46rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+    padding: 4rem 0 0;
+  }
+  .eyebrow {
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0;
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.1rem, 5.5vw, 3rem);
+    line-height: 1.12;
+    font-weight: 600;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .standfirst {
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 34rem;
+    text-wrap: pretty;
+  }
+
+  /* ---------- Sections ---------- */
+  section { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin: 0;
+    padding-bottom: .6rem;
+    border-bottom: 2px solid var(--accent);
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--body);
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0;
+  }
+  p { margin: 0; text-wrap: pretty; }
+  section > p + p { margin-top: -.35rem; }
+  strong { font-weight: 650; color: var(--ink); }
+
+  /* ---------- Audit cards ---------- */
+  .audit { display: flex; flex-direction: column; gap: .75rem; }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    box-shadow: var(--shadow);
+  }
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .card-name {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .chip {
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    padding: .22rem .55rem;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .chip-bad  { background: var(--warn-soft);   color: var(--warn); }
+  .chip-good { background: var(--accent-soft); color: var(--accent-ink); }
+  .card p { font-size: .95rem; color: var(--ink-soft); }
+  .measure {
+    font-family: var(--mono);
+    font-size: .82rem;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Callout ---------- */
+  .callout {
+    background: var(--surface-sunk);
+    border-left: 3px solid var(--accent);
+    padding: 1rem 1.25rem;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+  }
+  .callout p { font-size: .97rem; color: var(--ink-soft); }
+
+  /* ---------- Numbered procedures ----------
+     Each <li> holds exactly one <div>, so grid is safe here. */
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .steps > li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 1.85rem 1fr;
+    gap: .9rem;
+    align-items: start;
+  }
+  .steps > li::before {
+    content: counter(step);
+    font-family: var(--mono);
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    height: 1.6rem;
+    display: grid;
+    place-items: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .steps > li > div { display: flex; flex-direction: column; gap: .3rem; padding-top: .1rem; }
+  .steps p { font-size: .97rem; }
+  .aside { font-size: .87rem; color: var(--ink-mute); }
+
+  code {
+    font-family: var(--mono);
+    font-size: .88em;
+    color: var(--accent-ink);
+  }
+
+  kbd {
+    font-family: var(--body);
+    font-size: .88em;
+    font-weight: 650;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: .08em .38em;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  /* ---------- Guide blocks ---------- */
+  .guide {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    box-shadow: var(--shadow);
+  }
+  .guide-title {
+    font-family: var(--display);
+    font-size: 1.28rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -.005em;
+  }
+  .guide-sub { font-size: .92rem; color: var(--ink-mute); margin: 0; }
+
+  /* ---------- Field table ---------- */
+  .table-scroll { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .9rem;
+    min-width: 30rem;
+  }
+  caption {
+    text-align: left;
+    font-size: .87rem;
+    color: var(--ink-mute);
+    padding-bottom: .6rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .55rem .75rem .55rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-size: .7rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 700;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { font-family: var(--mono); font-size: .85rem; color: var(--accent-ink); white-space: nowrap; }
+  td:nth-child(2) { color: var(--ink-soft); white-space: nowrap; font-size: .85rem; }
+  td:last-child { color: var(--ink-soft); }
+
+  /* ---------- Checklist ----------
+     Absolute marker, not grid: inline tags like <strong> inside an item
+     would each become their own grid item and overlap the next line. */
+  .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .65rem; }
+  .checks li {
+    position: relative;
+    padding-left: 1.85rem;
+    font-size: .97rem;
+  }
+  .checks li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .4rem;
+    width: .95rem;
+    height: .95rem;
+    border: 1.5px solid var(--accent);
+    border-radius: 2px;
+  }
+
+  .leave { display: flex; flex-direction: column; gap: .5rem; }
+  .leave p { font-size: .95rem; color: var(--ink-soft); }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    font-size: .85rem;
+    color: var(--ink-mute);
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+  }
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  @media (max-width: 34rem) {
+    body { font-size: 16px; padding: 0 1rem 4rem; }
+    .guide { padding: 1.15rem; }
+    .masthead { padding-top: 2.5rem; }
+    .wrap { gap: 2.75rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">The Cannabis Network of Kansas City</p>
+    <h1>Making the site easier to update</h1>
+    <p class="standfirst">
+      You mentioned that putting up a new event takes way more work than it should.
+      I went through the site to see why, and there's a fix that doesn't mean leaving
+      Wix or learning anything new.
+    </p>
+  </header>
+
+  <section>
+    <h2>Why it takes so long right now</h2>
+    <p>
+      When the Events page was built, each event got typed into its own text box and
+      dragged into place by hand. Wix lets you work that way, and for a page you set up
+      once it's fine. The catch is that nothing on the page knows it's looking at an
+      event. It's just a stack of boxes sitting in positions you chose. So every time you
+      add one, you're doing the layout over again from scratch.
+    </p>
+    <p>
+      That's also why things drift out of order, and why old events sit there until
+      somebody remembers to take them down. Here's what's actually on each page:
+    </p>
+
+    <div class="audit">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-name">/events</span>
+          <span class="chip chip-bad">Rebuild</span>
+        </div>
+        <p class="measure">9 hand-placed text boxes · 4 loose images · 0 templates</p>
+        <p>
+          Nine separate boxes for four events. The dates are in three different formats
+          right now, "Wednesday, July 15th", "8/3/26", and "Monday July 27th 2026", and
+          they're not in date order, because nothing is sorting them.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-name">/hubs — Business Members</span>
+          <span class="chip chip-bad">Rebuild</span>
+        </div>
+        <p class="measure">18 hand-placed text boxes · 7 loose images · 0 templates</p>
+        <p>
+          Five members, eighteen boxes. Every logo, blurb, category and link gets placed
+          on its own, so adding a member is the same slow job as adding an event.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-name">/gallery</span>
+          <span class="chip chip-good">Already good</span>
+        </div>
+        <p class="measure">25 photos · 1 gallery element</p>
+        <p>
+          This one's already set up the right way. All 25 photos are in a single Wix
+          gallery, so adding more is a few clicks with no dragging involved. If photos
+          have been feeling like a hassle, I'd guess it's because event pictures were
+          going onto the Events page instead of here.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <h3>Two things that are quietly out of date</h3>
+      <p>
+        The home page still lists the Harvesters Food Bank volunteer day on
+        <strong>November 22nd, 2025</strong>, so it's about nine months back now. Easy to
+        miss, since it's not the page you'd think to go update. Once events live in one
+        place the home page can pull from it and stay current on its own.
+      </p>
+      <p>
+        The Business Members page is still titled <strong>"Employee Retreats"</strong>.
+        That title doesn't show up on the page itself, it's the browser tab and the
+        headline Google shows in search results, so anyone searching for your small
+        business members is seeing something unrelated. It's a quick change in that
+        page's settings, and worth doing because it's costing you the search traffic
+        that page should be getting.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>What I'd change</h2>
+    <p>
+      Two pages get rebuilt using tools that come with the plan you're already on. The
+      look stays the same, black background, white type, same fonts, so nobody visiting
+      will notice a difference. The difference is on your end.
+    </p>
+
+    <div class="guide">
+      <p class="guide-title">Events → the Wix Events app</p>
+      <p class="guide-sub">
+        Wix has a tool built specifically for this and it's free to install. It handles
+        everything the text boxes were doing by hand.
+      </p>
+      <ul class="checks">
+        <li>Events get added from your <strong>dashboard</strong> instead of the editor, so you're not opening the drag-and-drop canvas to post one anymore.</li>
+        <li>They sort themselves by date, so the ordering problem goes away.</li>
+        <li>You can set the list to show <strong>upcoming only</strong>, and once a date passes it comes down on its own. That's one less thing to keep track of.</li>
+        <li>Free RSVPs come with it, so you'd get a rough headcount for Girl Bluntz or SMOGA ahead of time if you want one.</li>
+        <li>Something like the twice-monthly coffee networking gets set up once as a repeating event.</li>
+      </ul>
+      <p class="aside">
+        If you ever want to sell tickets, that's possible later. It needs a Business
+        Premium plan and Wix takes 2.5%. Free events and RSVPs don't cost anything.
+      </p>
+    </div>
+
+    <div class="guide">
+      <p class="guide-title">Business Members → a CMS collection</p>
+      <p class="guide-sub">
+        There's no off-the-shelf app for this one, so I'd build a small table instead. You
+        fill in a row for each member and the page draws them all the same way.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <caption>Fields in the Business Members collection</caption>
+          <thead>
+            <tr><th>Field</th><th>Type</th><th>What goes in it</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>name</td><td>Text</td><td>Hemp Knightz, FlipSwitch, ReqsTech…</td></tr>
+            <tr><td>logo</td><td>Image</td><td>Their logo or a storefront photo</td></tr>
+            <tr><td>category</td><td>Text</td><td>Shopping &amp; Retail, Party &amp; Event Venue…</td></tr>
+            <tr><td>blurb</td><td>Rich text</td><td>The paragraph about them</td></tr>
+            <tr><td>link</td><td>URL</td><td>Where "Learn More" goes</td></tr>
+            <tr><td>memberSince</td><td>Number</td><td>2023, 2024, 2025</td></tr>
+            <tr><td>displayOrder</td><td>Number</td><td>Change the order without moving anything</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="aside">
+        Adding a member turns into opening the collection, clicking
+        <kbd>+ New Item</kbd>, and filling in seven fields. You wouldn't touch the layout.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Adding an event, start to finish</h2>
+    <p>Once this is set up, here's the whole thing. It all happens in your dashboard, so the editor stays closed.</p>
+    <ol class="steps">
+      <li><div><p>Go to <strong>manage.wix.com</strong> and open your site.</p></div></li>
+      <li><div><p>Click <strong>Events</strong> in the left menu.</p></div></li>
+      <li><div><p>Click <kbd>+ Create Event</kbd>.</p></div></li>
+      <li><div>
+        <p>Put in the name, date, time and location, and add a photo if you have one.</p>
+        <p class="aside">For location you can use a real address like "Cafe Ca Phe, 916 E 5th St" and it'll show a map.</p>
+      </div></li>
+      <li><div>
+        <p>Write the description, same kind of thing you're typing now.</p>
+      </div></li>
+      <li><div>
+        <p>Turn on <strong>RSVP</strong> if you want a headcount, or leave it off for the no-ticket events.</p>
+      </div></li>
+      <li><div>
+        <p>Click <kbd>Publish</kbd>. It shows up on the Events page right away, in the right order.</p>
+        <p class="aside">No layout involved, and when the date passes it takes itself down.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Adding photos</h2>
+    <p>This part doesn't change, it already works. I'm writing it down because it's easy to not realize how quick it is.</p>
+    <ol class="steps">
+      <li><div><p>Open the <strong>Gallery</strong> page in the editor.</p></div></li>
+      <li><div><p>Click the gallery, then <kbd>Manage Media</kbd>.</p></div></li>
+      <li><div>
+        <p>Click <kbd>Add Media</kbd> and upload from your computer or your phone. Drag any photo to reorder it.</p>
+        <p class="aside">Event photos should go here rather than on the Events page. That's most likely what's been making photos feel like work.</p>
+      </div></li>
+      <li><div><p>Hit <kbd>Publish</kbd> in the top right.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Adding a business member</h2>
+    <ol class="steps">
+      <li><div><p>In your dashboard, open <strong>CMS</strong>. It might be labeled Content Manager.</p></div></li>
+      <li><div><p>Open the <strong>Business Members</strong> collection.</p></div></li>
+      <li><div><p>Click <kbd>+ New Item</kbd>.</p></div></li>
+      <li><div>
+        <p>Fill in the seven fields, name through display order.</p>
+      </div></li>
+      <li><div>
+        <p>Close it and the page updates itself.</p>
+        <p class="aside">To take someone down, delete the row or untick its visibility. Nothing to remove from the page.</p>
+      </div></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>What I'd be doing</h2>
+    <p class="guide-sub" style="margin-top:-.4rem">The setup work on my end, roughly a day.</p>
+    <ul class="checks">
+      <li>Install <strong>Wix Events &amp; Tickets</strong>.</li>
+      <li>Re-enter the current events as real events: Coffee &amp; Networking, Higher Ladies Club, Sound Mandala, Summer Kick-Off.</li>
+      <li>Set Coffee &amp; Networking to repeat twice a month.</li>
+      <li>Style the event list to match the site, black ground, white type, same headings.</li>
+      <li>Set the list to <strong>upcoming only</strong>.</li>
+      <li>Clear the 9 old text boxes and 4 loose images off /events.</li>
+      <li>Build the <strong>Business Members</strong> collection with the seven fields.</li>
+      <li>Move the five current members into it, logos and all.</li>
+      <li>Set up one repeater on /hubs, connect it to the collection, sort by <code>displayOrder</code>.</li>
+      <li>Clear the 18 old text boxes and 7 loose images off /hubs.</li>
+      <li>Fix the /hubs page title that still says "Employee Retreats".</li>
+      <li>Point the home page events blurb at the live list so it can't go stale again.</li>
+      <li>Sit down with you and add one real event together, start to finish.</li>
+    </ul>
+  </section>
+
+  <section class="leave">
+    <h2>What I'd leave alone</h2>
+    <p>
+      <strong>About</strong>, <strong>Memberships</strong> and <strong>Contact</strong>
+      stay as they are. They're built by hand too, but they hardly ever change, and
+      hand-placed is fine for a page you're not constantly editing. Redoing them would be
+      a bunch of work you'd never see the benefit of.
+    </p>
+    <p>
+      The drag-and-drop editor is still there for everything. If you want to nudge a
+      heading or swap out a background, that works exactly like it does today.
+    </p>
+  </section>
+
+  <footer>
+    <span>Put together by Asteres at ReqsTech · August 2026</span>
+    <span>Everything above measured from the live site at cannabisnetworkkc.com</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
