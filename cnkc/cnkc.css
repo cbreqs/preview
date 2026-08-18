@@ -395,12 +395,20 @@ main.wide {
 /* ── membership tiers ── */
 /* Explicit two columns rather than auto-fit, so the divider below always
    knows which way it is running. */
-/* The gap and the padding below are deliberately the same value: the rule
+/* Columns sized to their content, then centred as a pair — not two equal
+   halves of the container. With 1fr each, a short list still occupied half
+   the page, leaving 200px of empty space between the last word and the rule
+   and making the gap look enormous however small the grid gap actually was.
+   minmax(0, max-content) lets each column be as wide as its own longest line
+   and no wider, while still able to shrink if the viewport is tight.
+
+   The gap and the padding below are deliberately the same value: the rule
    sits at the start of the second column, so equal amounts either side are
    what centre it in the space between them. */
 .tier-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  justify-content: center;
   gap: 2rem;
 }
 
