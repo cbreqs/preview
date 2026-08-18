@@ -393,22 +393,28 @@ main.wide {
 .socials a:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ── membership tiers ── */
+/* Explicit two columns rather than auto-fit, so the divider below always
+   knows which way it is running. */
 .tier-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.5rem;
 }
 
+/* No cards. A bordered box with a button in it reads as something you pick,
+   and highlighting one made it look already chosen — but these are two
+   descriptions, and the single form underneath covers both. A plain rule
+   between them says "two things" without implying a choice. */
 .tier {
-  border: 2px solid var(--border);
-  border-radius: 4px;
-  padding: 2.25rem;
-  background: var(--bg2);
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
 }
-.tier-featured { border-color: var(--accent); }
+
+.tier + .tier {
+  border-left: 1px solid var(--border);
+  padding-left: 3.5rem;
+}
 
 .tier h3 {
   font-family: var(--serif);
@@ -437,7 +443,6 @@ main.wide {
   background: var(--accent);
 }
 
-.tier .cta { margin-top: auto; text-align: center; }
 
 /* ── About: mission columns ── */
 .story-grid {
@@ -617,7 +622,15 @@ main.wide {
   .hero { min-height: 52vh; padding: 4rem 1.25rem 3.5rem; }
   .site-nav { justify-content: flex-start; gap: 1.4rem; }
   .feature-grid, .team-grid, .story-grid { gap: 2.25rem; }
-  .tier { padding: 1.5rem; }
+
+  /* Stacked, so the rule between them turns horizontal. */
+  .tier-grid { grid-template-columns: 1fr; gap: 2.25rem; }
+  .tier + .tier {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid var(--border);
+    padding-top: 2.25rem;
+  }
   .cta { display: block; text-align: center; }
   .cta-row { flex-direction: column; align-items: stretch; }
 }
