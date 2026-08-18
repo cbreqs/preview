@@ -46,23 +46,12 @@
     <header class="page-header">
       <h1>Contact Us</h1>
       <p class="page-sub">
-        Questions about events, memberships or booking? Send us a message and someone
-        will get back to you.
+        Questions about events, booking or event services? Reach out any of these ways
+        and someone will get back to you.
       </p>
     </header>
 
-    <!-- The live "Send us a message!" form from the ReqsTech Jotform account.
-         Swap the id in the src to point at a different form. -->
-    <div class="form-embed">
-      <iframe
-        src="https://form.jotform.com/261575349126159"
-        title="Send us a message"
-        style="height: 560px;"
-        loading="lazy"
-        id="contact-frame"></iframe>
-    </div>
-
-    <div style="margin-top: 3rem;">
+    <div>
       <div class="contact-line">
         <span class="contact-label">Email</span>
         <span><a href="mailto:owner@cannabisnetworkkc.com">owner@cannabisnetworkkc.com</a></span>
@@ -80,6 +69,19 @@
         </span>
       </div>
     </div>
+
+    <!-- One form on the site, on the Memberships page. Sending people there
+         rather than embedding a second one keeps every enquiry in one place. -->
+    <section class="prose" style="margin-top: 3.5rem;">
+      <h2>Want to join?</h2>
+      <p>
+        Premium and business memberships are free to apply for, and the application
+        takes a minute.
+      </p>
+      <p style="margin-top: 1.5rem;">
+        <a class="cta" href="memberships.html#apply">Apply for membership</a>
+      </p>
+    </section>
   </main>
 
   <p class="age-note">All members and attendees must be 21+</p>
@@ -94,10 +96,6 @@
   </footer>
 
   <script src="../assets/site.js"></script>
-  <script type="module">
-    import { autoResize } from './embed.js';
-    autoResize(document.getElementById('contact-frame'));
-  </script>
 
 </body>
 </html>
