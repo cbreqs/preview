@@ -164,6 +164,38 @@ the collection. The username comes from the Firebase Auth profile's
 `displayName`, set with `add-editor.py --name`, and falls back to the part
 before the `@` for accounts that predate it.
 
+## The API key in cnkc/firebase.js is meant to be public
+
+GitHub secret scanning flags it as a "Google API Key". It is not a secret and
+must not be rotated in a panic — every Firebase web app ships this value to the
+browser, because it identifies the project rather than authorising anything.
+Access is controlled by `firestore.rules` and `storage.rules`, which is why
+those files matter and this string doesn't.
+
+Two conditions make that true, and both hold here:
+
+* the key is restricted to Firebase APIs only (automatic for Firebase-created
+  browser keys — verify with `gcloud services api-keys describe`)
+* the security rules actually restrict access, rather than being left open
+
+The one real exposure is that anyone holding the key can call Identity
+Platform's sign-up endpoint and create accounts in the project. Such an account
+can't edit anything, since writes require the uid to be in the site's `editors`
+list, but it's junk data and quota. So the key is also restricted by HTTP
+referrer:
+
+```
+gcloud services api-keys update <key-uid> --project cannabis-network-kc \
+  --allowed-referrers="https://preview.reqs.tech/*,https://cbreqs.github.io/*,\
+https://cannabis-network-kc.firebaseapp.com/*,https://cannabis-network-kc.web.app/*,\
+http://localhost:9004/*,http://localhost:9007/*,http://127.0.0.1:9004/*"
+```
+
+**Serving the site from a new domain means adding it to that list**, or every
+Firebase call from it fails. That is the one way this bites later.
+
+Close the GitHub alert as a false positive rather than rotating the key.
+
 ## Albums
 
 An album **is** an event — there is no separate album collection. A photo either
