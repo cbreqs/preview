@@ -12,6 +12,12 @@
 }
 
 .wizard-step {
+  /* A completed step renders as a real <button> (clickable, jumps back to
+     it — see book.html), so this needs to reset native button chrome the
+     same way it'd style a plain <span>: no default background, no border
+     beyond the one set here, pointer cursor. */
+  background: none;
+  cursor: default;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.07em;
@@ -22,7 +28,12 @@
   border-radius: 999px;
 }
 .wizard-step.is-active { color: var(--bg); background: var(--accent); border-color: var(--accent); }
-.wizard-step.is-done { color: var(--accent); border-color: var(--tag-border); }
+.wizard-step.is-done {
+  color: var(--accent);
+  border-color: var(--tag-border);
+  cursor: pointer;
+}
+.wizard-step.is-done:hover { border-color: var(--accent); }
 
 .wizard-actions {
   display: flex;

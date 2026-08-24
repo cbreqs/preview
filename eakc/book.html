@@ -95,10 +95,17 @@
     function renderSteps() {
       stepsEl.replaceChildren(...STEPS.map((label, i) => {
         const n = i + 1;
-        const pill = document.createElement('span');
+        const isDone = n < state.step;
+        // Only a completed step is clickable — jumping ahead of where you
+        // are doesn't make sense (step 4 needs what steps 1-3 collected).
+        // Jumping back does, the same as the Back button, just from any
+        // point instead of one step at a time.
+        const pill = document.createElement(isDone ? 'button' : 'span');
+        if (isDone) pill.type = 'button';
         pill.className = 'wizard-step'
-          + (n === state.step ? ' is-active' : n < state.step ? ' is-done' : '');
+          + (n === state.step ? ' is-active' : isDone ? ' is-done' : '');
         pill.textContent = `${n}. ${label}`;
+        if (isDone) pill.addEventListener('click', () => goTo(n));
         return pill;
       }));
     }

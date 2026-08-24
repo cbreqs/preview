@@ -163,6 +163,16 @@ textarea { resize: vertical; min-height: 6rem; line-height: 1.6; }
 [data-theme="dark"] input[type="date"],
 [data-theme="dark"] input[type="time"] { color-scheme: dark; }
 
+/* The native up/down spinner reads as an odd outlier next to every other
+   field — typing a number, or using the keyboard's up/down arrows, still
+   works without it. */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }
+
 .field-row { display: flex; gap: 1rem; flex-wrap: wrap; }
 .field-row .field { flex: 1; min-width: 9rem; }
 

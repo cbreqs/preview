@@ -236,6 +236,11 @@ header nav a:hover, header nav a[aria-current="page"] { color: var(--eakc-accent
 .tour-card .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
 .tour-card .actions .cta-button { margin-left: 0; }
 
+/* Same shape as .tour-card .actions, for the Private Group Tours card on
+   tours.html, which isn't wrapped in a .tour-card. */
+.tour-card-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.tour-card-actions .cta-button { margin-left: 0; }
+
 /* ── 9. Blazing Trails timeline ───────────────────────────────────────── */
 
 .timeline { display: flex; flex-direction: column; gap: 1.5rem; }
