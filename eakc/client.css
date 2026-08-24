@@ -238,7 +238,12 @@ header nav a:hover, header nav a[aria-current="page"] { color: var(--eakc-accent
   margin-bottom: 2rem;
 }
 @media (min-width: 800px) {
-  .tour-card { grid-template-columns: 1fr 1fr; align-items: center; }
+  /* 2fr/3fr, not an even 1fr/1fr — at 4:3 an even-width image column ran
+     tall enough to feel oversized for what's just a placeholder. Aligned
+     to start, not center: center was letting each column float to its
+     own vertical middle independently, so the photo and the heading next
+     to it didn't line up at the top. */
+  .tour-card { grid-template-columns: 2fr 3fr; align-items: start; }
   /* Every other card mirrors — image right, text left — same as the real
      site alternating which column the photo lands in per tour. */
   .tour-card:nth-child(even) .tour-card-media { order: 2; }
@@ -246,6 +251,7 @@ header nav a:hover, header nav a[aria-current="page"] { color: var(--eakc-accent
 
 .tour-card-media {
   aspect-ratio: 4 / 3;
+  max-height: 320px;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--eakc-border);
