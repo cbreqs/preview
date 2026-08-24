@@ -281,6 +281,46 @@ header nav a:hover, header nav a[aria-current="page"] { color: var(--eakc-accent
 .faq-item h3 { font-size: 1rem; margin-bottom: 0.5rem; }
 .faq-item p { font-size: 0.9rem; color: var(--eakc-text-mid); }
 
+/* ── 11b. booking page shell (book.html's wizard) ─────────────────────
+   Dropped when this file was rewritten to match the real site — the
+   wizard's own step/card/button styling comes from core/booking.css and
+   core/admin.css regardless, but with no width constraint or card chrome
+   on the shell itself, the form stretched to the full page width instead
+   of reading as a card. */
+.booking-body {
+  background-color: var(--eakc-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.booking-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem 4rem;
+  text-align: center;
+}
+.booking-container h1 { margin-bottom: 2rem; }
+
+.booking-form {
+  width: 100%;
+  max-width: 560px;
+  background-color: var(--eakc-surface-2);
+  border: 1px solid var(--eakc-border);
+  border-radius: 14px;
+  padding: 2rem;
+  box-shadow: var(--eakc-shadow);
+  text-align: left;
+}
+
+.booking-note {
+  margin-top: 1.5rem;
+  color: var(--eakc-text-dim);
+  font-size: 0.9rem;
+}
+
 /* ── 12. inquiry form (universal — Tours, B2B, Signup) ───────────────── */
 
 .inquiry-form { display: flex; flex-direction: column; gap: 1.25rem; max-width: 640px; }
