@@ -91,6 +91,11 @@
 
     <!-- ── events ── -->
     <section class="panel" id="panel-events" role="tabpanel" aria-labelledby="tab-events">
+      <h2>Events on the site</h2>
+      <div class="admin-list" id="event-list">
+        <p class="state">Loading…</p>
+      </div>
+
       <form class="form" id="event-form">
         <p class="form-title" id="event-form-title">Add an event</p>
 
@@ -142,15 +147,14 @@
           <span class="status" id="ev-status" role="status" aria-live="polite"></span>
         </div>
       </form>
-
-      <h2>Events on the site</h2>
-      <div class="admin-list" id="event-list">
-        <p class="state">Loading…</p>
-      </div>
     </section>
 
     <!-- ── photos ── -->
     <section class="panel" id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden>
+      <h2>Photos on the site</h2>
+      <div class="photo-grid" id="photo-grid"></div>
+      <p class="state" id="photo-empty" hidden>No photos yet.</p>
+
       <form class="form" id="photo-form">
         <p class="form-title">Add photos</p>
 
@@ -173,14 +177,15 @@
         <p class="help">Pick as many as you like. Big phone photos get shrunk automatically.</p>
         <div class="progress" id="ph-progress" hidden><span></span></div>
       </form>
-
-      <h2>Photos on the site</h2>
-      <div class="photo-grid" id="photo-grid"></div>
-      <p class="state" id="photo-empty" hidden>No photos yet.</p>
     </section>
 
     <!-- ── booking types ── -->
     <section class="panel" id="panel-types" role="tabpanel" aria-labelledby="tab-types" hidden>
+      <h2>Booking types on the site</h2>
+      <div class="admin-list" id="type-list">
+        <p class="state">Loading…</p>
+      </div>
+
       <form class="form" id="type-form">
         <p class="form-title" id="type-form-title">Add a booking type</p>
 
@@ -294,15 +299,15 @@
           <span class="status" id="ty-status" role="status" aria-live="polite"></span>
         </div>
       </form>
-
-      <h2>Booking types on the site</h2>
-      <div class="admin-list" id="type-list">
-        <p class="state">Loading…</p>
-      </div>
     </section>
 
     <!-- ── slots ── -->
     <section class="panel" id="panel-slots" role="tabpanel" aria-labelledby="tab-slots" hidden>
+      <h2>Bookable times</h2>
+      <div class="admin-list" id="slot-list">
+        <p class="state">Loading…</p>
+      </div>
+
       <form class="form" id="slot-form">
         <p class="form-title" id="slot-form-title">Add a bookable time</p>
 
@@ -344,11 +349,6 @@
           <span class="status" id="sl-status" role="status" aria-live="polite"></span>
         </div>
       </form>
-
-      <h2>Bookable times</h2>
-      <div class="admin-list" id="slot-list">
-        <p class="state">Loading…</p>
-      </div>
     </section>
 
     <!-- ── bookings ── -->

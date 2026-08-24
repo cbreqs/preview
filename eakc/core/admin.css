@@ -39,6 +39,23 @@
 
 .signin p.hint { font-size: 14px; color: var(--text-mid); }
 
+/* ── page header ──
+   core/site.css's .page-header is sized for a marketing page's hero — on a
+   utility screen like this one it reads as oversized. Scoped to #admin-view
+   only, so book.html and the public pages (which don't use #admin-view)
+   keep the bigger display type where it actually fits. */
+#admin-view .page-header {
+  margin-bottom: 2rem;
+}
+#admin-view .page-header h1 {
+  font-size: 1.6rem;
+  animation: none;
+}
+#admin-view .page-header .page-sub {
+  font-size: 14px;
+  animation: none;
+}
+
 /* ── tabs ── */
 .admin-tabs {
   display: flex;
@@ -70,7 +87,11 @@
 
 .panel[hidden] { display: none; }
 
-/* ── forms ── */
+/* ── forms ──
+   The "add new" form sits below the existing-items list in every panel
+   (see admin.html — reordered so you see what's already there before
+   making more of it), so the breathing room it used to add below itself
+   now needs to come from above instead. */
 .form {
   display: flex;
   flex-direction: column;
@@ -79,7 +100,7 @@
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   background: var(--bg2);
-  margin-bottom: 2.5rem;
+  margin-top: 2.5rem;
 }
 
 .form-title {
