@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Photos from past tours and events | Elevated Adventures KC" />
+  <meta name="robots" content="noindex" />
+  <title>Gallery | Elevated Adventures KC</title>
+  <link rel="stylesheet" href="./core/site.css" />
+  <link rel="stylesheet" href="client.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div class="logo-container">
+      <a href="index.html">
+        <div class="brand-text">
+          <span class="brand-name">Elevated Adventures</span>
+          <span class="brand-subtitle">Kansas City's Premier Cannabis Education &amp; Tours</span>
+        </div>
+      </a>
+    </div>
+    <nav id="main-nav">
+      <a href="index.html">Home</a>
+      <a href="tours.html">Tours</a>
+      <a href="community.html">Community</a>
+      <a href="b2b.html">B2B</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html" aria-current="page">Gallery</a>
+      <a href="community.html" class="cta-button">RSVP Free Walk</a>
+    </nav>
+    <button class="hamburger-menu" aria-label="Toggle menu" aria-controls="main-nav" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- core/site.css's `main` is capped at 860px for the generic template's
+       narrower layout; this page overrides it inline to match the ~1100px
+       containers the rest of this client's design uses (.container). -->
+  <main id="main" style="max-width: 1100px; padding: 4rem 5% 6rem;">
+    <h2>Gallery</h2>
+    <p style="color: var(--eakc-text-mid); margin-bottom: 2rem;">Photos from past tours, filed by the tour date they were taken at.</p>
+
+    <div id="gallery">
+      <p class="state">Loading photos…</p>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Elevated Adventures, LLC</p>
+    <div class="legal-links">
+      <a href="mailto:hello@elevatedadventureskc.com">hello@elevatedadventureskc.com</a>
+      <a href="admin.html">Manage</a>
+    </div>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script type="module">
+    import { db, toDate, SITE_ID } from './firebase.js';
+    import { thumbButton } from './core/lightbox.js';
+    import {
+      collection, getDocs, query, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const container = document.getElementById('gallery');
+
+    const albumDate = new Intl.DateTimeFormat(undefined, {
+      month: 'long', day: 'numeric', year: 'numeric',
+    });
+
+    function photoGrid(photos) {
+      const grid = document.createElement('div');
+      grid.className = 'gallery-grid';
+
+      grid.append(...photos.map((photo) => {
+        const figure = document.createElement('figure');
+        figure.className = 'gallery-item';
+        figure.append(thumbButton(photo.url, '', photo.caption || ''));
+
+        if (photo.caption) {
+          const caption = document.createElement('figcaption');
+          caption.textContent = photo.caption;
+          figure.append(caption);
+        }
+
+        return figure;
+      }));
+
+      return grid;
+    }
+
+    try {
+      /* Albums are events. Both collections are read so the album heading can
+         use the event's CURRENT name — a renamed event would otherwise keep
+         showing whatever title was copied onto its photos at upload time. */
+      const [photoSnap, eventSnap] = await Promise.all([
+        getDocs(query(
+          collection(db, 'sites', SITE_ID, 'public', 'gallery', 'photos'),
+          orderBy('createdAt', 'desc'),
+        )),
+        getDocs(collection(db, 'sites', SITE_ID, 'public', 'calendar', 'events')),
+      ]);
+
+      const eventsById = new Map(eventSnap.docs.map((doc) => [doc.id, doc.data()]));
+      const photos = photoSnap.docs.map((doc) => doc.data()).filter((photo) => photo.url);
+
+      if (photos.length === 0) {
+        container.innerHTML =
+          '<p class="state">No photos yet. Anything added later appears here automatically.</p>';
+      } else {
+        // An album exists only if photos are in it, so nothing has to be
+        // published or switched on — filing a photo is what makes it appear.
+        const albums = new Map();
+        const loose = [];
+
+        for (const photo of photos) {
+          if (!photo.eventId) {
+            loose.push(photo);
+            continue;
+          }
+          if (!albums.has(photo.eventId)) {
+            const event = eventsById.get(photo.eventId);
+            albums.set(photo.eventId, {
+              // Live event name first; the copy stored on the photo is the
+              // fallback for an event that has since been deleted.
+              title: event?.title || photo.eventTitle || 'Event',
+              start: toDate(event?.start),
+              photos: [],
+            });
+          }
+          albums.get(photo.eventId).photos.push(photo);
+        }
+
+        const sections = [...albums.values()]
+          // Most recent event first; undated albums sink to the bottom.
+          .sort((a, b) => (b.start?.getTime() ?? 0) - (a.start?.getTime() ?? 0))
+          .map((album) => {
+            const section = document.createElement('section');
+            section.className = 'album';
+
+            const heading = document.createElement('h2');
+            heading.className = 'album-title';
+            heading.textContent = album.title;
+            section.append(heading);
+
+            if (album.start) {
+              const when = document.createElement('p');
+              when.className = 'album-date';
+              when.textContent = albumDate.format(album.start);
+              section.append(when);
+            }
+
+            section.append(photoGrid(album.photos));
+            return section;
+          });
+
+        if (loose.length) {
+          const section = document.createElement('section');
+          section.className = 'album';
+
+          // Only worth a heading once there's an album to distinguish it from.
+          if (albums.size) {
+            const heading = document.createElement('h2');
+            heading.className = 'album-title';
+            heading.textContent = 'More photos';
+            section.append(heading);
+          }
+
+          section.append(photoGrid(loose));
+          sections.push(section);
+        }
+
+        container.replaceChildren(...sections);
+      }
+    } catch (error) {
+      console.error('Gallery failed to load:', error);
+      container.innerHTML =
+        '<p class="state error">The gallery could not be loaded just now. Please try again shortly.</p>';
+    }
+  </script>
+
+</body>
+</html>

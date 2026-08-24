@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Site admin." />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Manage the site · Elevated Adventures KC</title>
+  <link rel="stylesheet" href="./core/site.css" />
+  <link rel="stylesheet" href="client.css" />
+  <link rel="stylesheet" href="./core/admin.css" />
+  <script>
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    } catch {}
+  </script>
+</head>
+<body>
+
+  <a class="skip-link" href="#auth-loading">Skip to content</a>
+
+  <nav class="top" aria-label="Site utilities">
+    <div class="nav-left">
+      <a class="nav-home" href="index.html">Elevated Adventures KC</a>
+      <span class="nav-sep">/</span>
+      <span class="nav-current">manage</span>
+    </div>
+    <div style="display:flex; gap:0.75rem; align-items:center;">
+      <button class="theme-btn" id="signout" hidden>Sign out</button>
+      <button class="theme-btn">light / dark</button>
+    </div>
+  </nav>
+
+  <!-- ── working out whether you're already signed in ──
+       Firebase restores a session asynchronously, so without this the sign-in
+       form would be the first thing an already-signed-in person sees, and it
+       reads as having been logged out. Nothing is shown until we know. -->
+  <main class="signin-wrap" id="auth-loading">
+    <p class="state">Checking your sign-in…</p>
+  </main>
+
+  <!-- ── signed out ──
+       A <main>, not a <div>, so there's a landmark to skip to before sign-in.
+       Several <main> elements are valid HTML as long as all but one are
+       hidden, which is exactly the case here. -->
+  <main class="signin-wrap" id="signin-view" hidden>
+    <form class="signin" id="signin-form">
+      <h1>Manage the site</h1>
+      <p class="hint">Sign in to add events and photos.</p>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" autocomplete="username" required />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" autocomplete="current-password" required />
+      </div>
+
+      <button class="btn" type="submit" id="signin-btn">Sign in</button>
+
+      <!-- type="button" so it can't submit the form. Forgetting a password is
+           normal, so this sits in plain sight rather than being tucked away. -->
+      <button class="link-btn" type="button" id="forgot-btn">Forgot your password?</button>
+
+      <p class="status" id="signin-status" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <!-- ── signed in ── -->
+  <main id="admin-view" hidden>
+    <header class="page-header">
+      <p class="hero-eyebrow">Elevated Adventures KC</p>
+      <h1>Manage the site</h1>
+      <p class="page-sub">
+        Changes show up on the live site straight away. Nothing here changes the
+        layout, so you can't break how a page looks.
+      </p>
+    </header>
+
+    <div class="admin-tabs" role="tablist">
+      <button class="admin-tab" role="tab" id="tab-events"   aria-selected="true"  aria-controls="panel-events">Events</button>
+      <button class="admin-tab" role="tab" id="tab-photos"   aria-selected="false" aria-controls="panel-photos">Photos</button>
+      <button class="admin-tab" role="tab" id="tab-types"    aria-selected="false" aria-controls="panel-types">Booking types</button>
+      <button class="admin-tab" role="tab" id="tab-slots"    aria-selected="false" aria-controls="panel-slots">Slots</button>
+      <button class="admin-tab" role="tab" id="tab-bookings" aria-selected="false" aria-controls="panel-bookings">Bookings</button>
+      <button class="admin-tab" role="tab" id="tab-inquiries" aria-selected="false" aria-controls="panel-inquiries">Inquiries</button>
+    </div>
+
+    <!-- ── events ── -->
+    <section class="panel" id="panel-events" role="tabpanel" aria-labelledby="tab-events">
+      <form class="form" id="event-form">
+        <p class="form-title" id="event-form-title">Add an event</p>
+
+        <div class="field">
+          <label for="ev-title">Event name</label>
+          <input type="text" id="ev-title" required placeholder="Event name" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ev-date">Date</label>
+            <input type="date" id="ev-date" required />
+          </div>
+          <div class="field">
+            <label for="ev-time">Start time</label>
+            <input type="time" id="ev-time" />
+          </div>
+        </div>
+
+        <div class="field check">
+          <input type="checkbox" id="ev-allday" />
+          <label for="ev-allday">All day — don't show a time</label>
+        </div>
+
+        <div class="field">
+          <label for="ev-location">Where</label>
+          <input type="text" id="ev-location" placeholder="Address or venue" />
+        </div>
+
+        <div class="field">
+          <label for="ev-note">Details</label>
+          <textarea id="ev-note" placeholder="Anything people should know before they come."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Photo <span class="help">— optional</span></label>
+          <div class="image-picker">
+            <img class="image-preview" id="ev-preview" alt="" data-empty="true" />
+            <input type="file" class="file-input" id="ev-image" accept="image/*" />
+            <label class="file-label" for="ev-image">Choose photo</label>
+            <button type="button" class="link-btn danger" id="ev-image-clear" hidden>Remove</button>
+          </div>
+          <div class="progress" id="ev-progress" hidden><span></span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="ev-save">Add event</button>
+          <button class="btn btn-ghost" type="button" id="ev-cancel" hidden>Cancel</button>
+          <span class="status" id="ev-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <h2>Events on the site</h2>
+      <div class="admin-list" id="event-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+
+    <!-- ── photos ── -->
+    <section class="panel" id="panel-photos" role="tabpanel" aria-labelledby="tab-photos" hidden>
+      <form class="form" id="photo-form">
+        <p class="form-title">Add photos</p>
+
+        <div class="field">
+          <label for="ph-album">Album</label>
+          <select id="ph-album">
+            <option value="">No album — loose in the gallery</option>
+          </select>
+          <p class="help">
+            Albums are your events. Pick one and these photos are filed under it;
+            the album shows on the Gallery page as soon as it has a photo in it.
+          </p>
+        </div>
+
+        <div class="image-picker">
+          <input type="file" class="file-input" id="ph-files" accept="image/*" multiple />
+          <label class="file-label" for="ph-files">Choose photos</label>
+          <span class="status" id="ph-status" role="status" aria-live="polite"></span>
+        </div>
+        <p class="help">Pick as many as you like. Big phone photos get shrunk automatically.</p>
+        <div class="progress" id="ph-progress" hidden><span></span></div>
+      </form>
+
+      <h2>Photos on the site</h2>
+      <div class="photo-grid" id="photo-grid"></div>
+      <p class="state" id="photo-empty" hidden>No photos yet.</p>
+    </section>
+
+    <!-- ── booking types ── -->
+    <section class="panel" id="panel-types" role="tabpanel" aria-labelledby="tab-types" hidden>
+      <form class="form" id="type-form">
+        <p class="form-title" id="type-form-title">Add a booking type</p>
+
+        <div class="field">
+          <label for="ty-name">Name</label>
+          <input type="text" id="ty-name" required placeholder="e.g. Group tour" />
+        </div>
+
+        <div class="field">
+          <label for="ty-desc">Description <span class="help">— shown to the person booking</span></label>
+          <textarea id="ty-desc" placeholder="A sentence or two about what this is."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="ty-tagline">Tagline <span class="help">— optional, shown under the name</span></label>
+          <input type="text" id="ty-tagline" placeholder="e.g. Award-Winning BBQ &amp; Cannabis Education Experience" />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ty-duration-label">Duration, as shown <span class="help">— e.g. "3.5 Hours"</span></label>
+            <input type="text" id="ty-duration-label" placeholder="3.5 Hours" />
+          </div>
+          <div class="field">
+            <label for="ty-stops-label">Stops, as shown <span class="help">— e.g. "BBQ, Dispensary &amp; Hemp Shop"</span></label>
+            <input type="text" id="ty-stops-label" placeholder="BBQ, Dispensary &amp; Hemp Shop" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ty-status">Status</label>
+          <select id="ty-status">
+            <option value="active">Now booking</option>
+            <option value="paused">Temporarily paused</option>
+            <option value="upcoming">In development (not bookable)</option>
+          </select>
+          <p class="help">Controls the badge shown on the Tours page, and whether this shows up in the booking wizard.</p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ty-duration">Duration for the booking wizard (minutes) <span class="help">— only matters while Status is "Now booking"</span></label>
+            <input type="number" id="ty-duration" min="5" step="5" required placeholder="60" />
+          </div>
+          <div class="field">
+            <label for="ty-min">Min group size</label>
+            <input type="number" id="ty-min" min="1" step="1" required placeholder="1" />
+          </div>
+          <div class="field">
+            <label for="ty-max">Max group size</label>
+            <input type="number" id="ty-max" min="1" step="1" required placeholder="10" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ty-order">Display order <span class="help">— lower numbers show first on the Tours page</span></label>
+          <input type="number" id="ty-order" step="1" placeholder="1" />
+        </div>
+
+        <div class="field">
+          <label for="ty-client-types">Who can book this <span class="help">— optional</span></label>
+          <input type="text" id="ty-client-types" placeholder="e.g. personal, business" />
+          <p class="help">
+            Comma-separated. Leave blank if this isn't different for different kinds of client — the
+            person booking won't be asked to choose. First one listed is the default.
+          </p>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ty-price-model">Price</label>
+            <select id="ty-price-model">
+              <option value="flat">Flat, per booking</option>
+              <option value="perPerson">Per person</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ty-price">Amount ($)</label>
+            <input type="number" id="ty-price" min="0" step="0.01" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="ty-price-overrides">Different price by client type <span class="help">— optional</span></label>
+          <textarea id="ty-price-overrides" placeholder="business: 40&#10;personal: 25"></textarea>
+          <p class="help">
+            One per line, as "client type: amount". Only needed if the price above isn't the same for
+            everyone — leave blank to charge the same amount regardless of who's booking.
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="ty-highlights">Official tour stops <span class="help">— optional, one per line, shown as a bullet list</span></label>
+          <textarea id="ty-highlights" placeholder="One per line, e.g.&#10;Two Barbecue Restaurants: Taste and compare premium slow-smoked burnt ends and ribs.&#10;Licensed Dispensary &amp; Hemp Shop: Compliant retail and cannabinoid education."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Photo <span class="help">— optional</span></label>
+          <div class="image-picker">
+            <img class="image-preview" id="ty-preview" alt="" data-empty="true" />
+            <input type="file" class="file-input" id="ty-image" accept="image/*" />
+            <label class="file-label" for="ty-image">Choose photo</label>
+            <button type="button" class="link-btn danger" id="ty-image-clear" hidden>Remove</button>
+          </div>
+          <div class="progress" id="ty-progress" hidden><span></span></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="ty-save">Add booking type</button>
+          <button class="btn btn-ghost" type="button" id="ty-cancel" hidden>Cancel</button>
+          <span class="status" id="ty-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <h2>Booking types on the site</h2>
+      <div class="admin-list" id="type-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+
+    <!-- ── slots ── -->
+    <section class="panel" id="panel-slots" role="tabpanel" aria-labelledby="tab-slots" hidden>
+      <form class="form" id="slot-form">
+        <p class="form-title" id="slot-form-title">Add a bookable time</p>
+
+        <div class="field">
+          <label for="sl-type">Booking type</label>
+          <select id="sl-type" required>
+            <option value="">Choose one…</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="sl-date">Date</label>
+            <input type="date" id="sl-date" required />
+          </div>
+          <div class="field">
+            <label for="sl-time">Start time</label>
+            <input type="time" id="sl-time" required />
+          </div>
+          <div class="field">
+            <label for="sl-capacity">Capacity</label>
+            <input type="number" id="sl-capacity" min="1" step="1" required placeholder="10" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="sl-location">Where <span class="help">— optional</span></label>
+          <input type="text" id="sl-location" placeholder="Address or venue" />
+        </div>
+
+        <div class="field">
+          <label for="sl-note">Note <span class="help">— optional, shown to whoever books it</span></label>
+          <textarea id="sl-note"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="sl-save">Add time</button>
+          <button class="btn btn-ghost" type="button" id="sl-cancel" hidden>Cancel</button>
+          <span class="status" id="sl-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <h2>Bookable times</h2>
+      <div class="admin-list" id="slot-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+
+    <!-- ── bookings ── -->
+    <section class="panel" id="panel-bookings" role="tabpanel" aria-labelledby="tab-bookings" hidden>
+      <p class="page-sub" style="margin-bottom: 1.5rem;">
+        What customers have booked. There's no form here — bookings are only created by
+        someone booking through the site; this is for viewing and cancelling them.
+      </p>
+      <h2>Bookings</h2>
+      <div class="admin-list" id="booking-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+
+    <!-- ── inquiries ── -->
+    <section class="panel" id="panel-inquiries" role="tabpanel" aria-labelledby="tab-inquiries" hidden>
+      <p class="page-sub" style="margin-bottom: 1.5rem;">
+        Submissions from the inquiry form on Tours, B2B and Signup. No form here either — same reason as Bookings.
+      </p>
+      <h2>Inquiries</h2>
+      <div class="admin-list" id="inquiries-list">
+        <p class="state">Loading…</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span class="footer-text">© 2026 Elevated Adventures KC</span>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="index.html">back to the site</a>
+    </nav>
+  </footer>
+
+  <script src="./core/site.js"></script>
+  <script type="module">
+    import { app, db, toDate, SITE_ID } from './firebase.js';
+    import { thumbButton } from './core/lightbox.js';
+    import { setLinkedText } from './core/text.js';
+    import {
+      getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+      sendPasswordResetEmail,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
+    import {
+      getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js';
+    import {
+      collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, orderBy, where,
+      Timestamp, runTransaction,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+
+    const events       = collection(db, 'sites', SITE_ID, 'public', 'calendar', 'events');
+    const photos       = collection(db, 'sites', SITE_ID, 'public', 'gallery', 'photos');
+    const bookingTypes = collection(db, 'sites', SITE_ID, 'public', 'catalog', 'bookingTypes');
+    const slots        = collection(db, 'sites', SITE_ID, 'public', 'schedule', 'slots');
+    const bookings     = collection(db, 'sites', SITE_ID, 'public', 'orders', 'bookings');
+    const leadEntries = collection(db, 'sites', SITE_ID, 'public', 'leads', 'entries');
+
+    const $ = (id) => document.getElementById(id);
+
+    /* Gallery captions are a label under a thumbnail, not a description —
+       long ones wrap to three lines and wreck the grid. Enforced by maxlength
+       on the input and trimmed again before saving, so a paste can't slip past. */
+    const PHOTO_CAPTION_MAX = 25;
+
+    /* ── helpers ───────────────────────────────────────────────────────── */
+
+    /** Firestore's permission-denied is the one error a real editor might hit,
+        so it gets a sentence that says what to do instead of a code. */
+    function explain(error) {
+      if (error?.code === 'permission-denied') {
+        return "This account isn't set up to edit this site yet — ask your web admin to add it.";
+      }
+      if (error?.code === 'storage/unauthorized') {
+        return "This account can't upload images. If everything else here works, "
+          + "it's the Storage rules rather than your account — see the README.";
+      }
+      if (error?.code === 'auth/invalid-credential' || error?.code === 'auth/wrong-password') {
+        return 'That email and password don’t match. Try again, or use “Forgot your password?” below.';
+      }
+      if (error?.code === 'auth/invalid-email') {
+        return "That doesn't look like an email address.";
+      }
+      if (error?.code === 'auth/too-many-requests') {
+        return 'Too many attempts. Wait a minute and try again.';
+      }
+      if (error?.code === 'auth/network-request-failed') {
+        return 'No connection. Check your internet and try again.';
+      }
+      return error?.message ?? 'Something went wrong. Try again.';
+    }
+
+    /** Who to credit for an upload. Prefers the username set on the account;
+        falls back to the part of the email before the @ so older accounts
+        without a display name still read as a person rather than blank. */
+    function displayName(user) {
+      if (!user) return '';
+      return (user.displayName || '').trim() || (user.email || '').split('@')[0] || 'Someone';
+    }
+
+    function setStatus(el, message, kind = '') {
+      el.textContent = message;
+      el.className = `status${kind ? ` ${kind}` : ''}`;
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const dateValue = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const timeValue = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    const dayFormat = new Intl.DateTimeFormat(undefined, {
+      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    });
+    const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+
+    /** Phone photos are routinely 4–8 MB, which is slow to upload and pointless
+        on a web page. Shrink the long edge to 1600px and re-encode as JPEG.
+        Small files pass through untouched. */
+    async function prepareImage(file, maxDim = 1600) {
+      if (!file.type.startsWith('image/')) throw new Error('That file is not an image.');
+      let bitmap;
+      try {
+        bitmap = await createImageBitmap(file);
+      } catch {
+        return file; // Unusual format the browser can't decode — send as-is.
+      }
+      const scale = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height));
+      if (scale === 1 && file.size < 1_500_000) {
+        bitmap.close();
+        return file;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+      return blob ?? file;
+    }
+
+    /** Upload one image and return { url, path }. `onProgress` gets 0–100. */
+    async function uploadImage(file, kind, onProgress) {
+      const prepared = await prepareImage(file);
+      const safe = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-').slice(-60);
+      const path = `sites/${SITE_ID}/${kind}/${Date.now()}-${safe}`;
+      const task = uploadBytesResumable(ref(storage, path), prepared, {
+        contentType: prepared.type || 'image/jpeg',
+      });
+
+      await new Promise((resolve, reject) => {
+        task.on('state_changed',
+          (snap) => onProgress?.(snap.totalBytes ? (snap.bytesTransferred / snap.totalBytes) * 100 : 0),
+          reject,
+          resolve);
+      });
+
+      return { url: await getDownloadURL(task.snapshot.ref), path };
+    }
+
+    /** Storage delete that doesn't derail the caller if the object is already
+        gone — the Firestore doc is the source of truth for what's on the site. */
+    async function removeImage(path) {
+      if (!path) return;
+      try {
+        await deleteObject(ref(storage, path));
+      } catch (error) {
+        if (error?.code !== 'storage/object-not-found') console.warn('Image not removed:', error);
+      }
+    }
+
+    /* ── auth ──────────────────────────────────────────────────────────── */
+
+    const signinView = $('signin-view');
+    const adminView = $('admin-view');
+    const authLoading = $('auth-loading');
+
+    /** Show whichever pane matches the current user, and load their data once.
+
+        Called from the auth observer AND straight after a successful sign-in.
+        Relying on the observer alone used to hang: signing in while already
+        signed in as the same account is not a state *change*, so the callback
+        never fired and the form sat on "Signing in…" indefinitely. */
+    function applyAuthState(user) {
+      const signedIn = Boolean(user);
+      const wasAlreadyIn = !adminView.hidden;
+
+      authLoading.hidden = true;
+      signinView.hidden = signedIn;
+      adminView.hidden = !signedIn;
+      $('signout').hidden = !signedIn;
+      // Point the skip link at whichever pane is actually on screen.
+      document.querySelector('.skip-link')
+        ?.setAttribute('href', signedIn ? '#admin-view' : '#signin-view');
+
+      if (!signedIn) return;
+
+      $('password').value = '';
+      setStatus($('signin-status'), '');
+      // Both callers can fire for one sign-in; don't fetch everything twice.
+      if (wasAlreadyIn) return;
+      loadEvents();
+      loadPhotos();
+      loadBookingTypes();
+      loadSlots();
+      loadBookings();
+      loadInquiries();
+    }
+
+    $('signin-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('signin-btn');
+      btn.disabled = true;
+      setStatus($('signin-status'), 'Signing in…');
+      try {
+        const credential = await signInWithEmailAndPassword(
+          auth, $('email').value.trim(), $('password').value,
+        );
+        applyAuthState(credential.user);
+      } catch (error) {
+        setStatus($('signin-status'), explain(error), 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('forgot-btn').addEventListener('click', async () => {
+      const email = $('email').value.trim();
+      if (!email) {
+        setStatus($('signin-status'), 'Type your email address above first, then press this again.');
+        $('email').focus();
+        return;
+      }
+
+      const btn = $('forgot-btn');
+      btn.disabled = true;
+      setStatus($('signin-status'), 'Sending…');
+      try {
+        await sendPasswordResetEmail(auth, email);
+        // Deliberately not "we found your account" — Firebase hides whether an
+        // address is registered, and so should this message.
+        setStatus($('signin-status'),
+          `If ${email} has an account, a reset link is on its way. Check spam if it's slow.`, 'ok');
+      } catch (error) {
+        console.error(error);
+        setStatus($('signin-status'), explain(error), 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    $('signout').addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, applyAuthState);
+
+    /* ── tabs ──────────────────────────────────────────────────────────── */
+
+    const tabs = [...document.querySelectorAll('.admin-tab')];
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((other) => {
+          const on = other === tab;
+          other.setAttribute('aria-selected', String(on));
+          $(other.getAttribute('aria-controls')).hidden = !on;
+        });
+      });
+    });
+
+    /* ── events ────────────────────────────────────────────────────────── */
+
+    let editingEvent = null;      // doc id while editing, else null
+    let eventImage = null;        // { url, path } already on the doc, or null
+    let eventFile = null;         // freshly chosen File awaiting upload
+
+    const evPreview = $('ev-preview');
+    const evStatus = $('ev-status');
+
+    function showEventImage(url) {
+      const has = Boolean(url);
+      evPreview.src = has ? url : '';
+      evPreview.dataset.empty = String(!has);
+      $('ev-image-clear').hidden = !has;
+    }
+
+    $('ev-image').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      eventFile = file;
+      showEventImage(URL.createObjectURL(file));
+    });
+
+    $('ev-image-clear').addEventListener('click', () => {
+      eventFile = null;
+      eventImage = null;
+      $('ev-image').value = '';
+      showEventImage('');
+    });
+
+    // An all-day event has no meaningful start time, so hide the field.
+    $('ev-allday').addEventListener('change', (e) => {
+      $('ev-time').disabled = e.target.checked;
+      if (e.target.checked) $('ev-time').value = '';
+    });
+
+    function resetEventForm() {
+      editingEvent = null;
+      eventImage = null;
+      eventFile = null;
+      $('event-form').reset();
+      $('ev-time').disabled = false;
+      showEventImage('');
+      $('event-form-title').textContent = 'Add an event';
+      $('ev-save').textContent = 'Add event';
+      $('ev-cancel').hidden = true;
+      setStatus(evStatus, '');
+    }
+
+    $('ev-cancel').addEventListener('click', resetEventForm);
+
+    $('event-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const allDay = $('ev-allday').checked;
+      const date = $('ev-date').value;
+      const time = $('ev-time').value;
+      if (!date) return;
+
+      // Parsed in the browser's own zone, which is what the client means when
+      // they type 6pm. Stored as a Timestamp so the public page can sort on it.
+      const start = new Date(`${date}T${allDay || !time ? '00:00' : time}`);
+      if (Number.isNaN(start.getTime())) {
+        setStatus(evStatus, 'That date looks wrong. Check it and try again.', 'error');
+        return;
+      }
+
+      $('ev-save').disabled = true;
+      setStatus(evStatus, 'Saving…');
+
+      try {
+        let image = eventImage;
+        if (eventFile) {
+          const bar = $('ev-progress');
+          bar.hidden = false;
+          image = await uploadImage(eventFile, 'events', (pct) => {
+            bar.firstElementChild.style.width = `${pct}%`;
+          });
+          bar.hidden = true;
+          if (eventImage?.path && eventImage.path !== image.path) await removeImage(eventImage.path);
+        }
+
+        const payload = {
+          title: $('ev-title').value.trim(),
+          start: Timestamp.fromDate(start),
+          allDay,
+          location: $('ev-location').value.trim(),
+          note: $('ev-note').value.trim(),
+          imageUrl: image?.url ?? '',
+          storagePath: image?.path ?? '',
+        };
+
+        if (editingEvent) {
+          await updateDoc(doc(events, editingEvent), payload);
+        } else {
+          await addDoc(events, payload);
+        }
+
+        resetEventForm();
+        setStatus(evStatus, 'Saved.', 'ok');
+        loadEvents();
+      } catch (error) {
+        console.error(error);
+        setStatus(evStatus, explain(error), 'error');
+        $('ev-progress').hidden = true;
+      } finally {
+        $('ev-save').disabled = false;
+      }
+    });
+
+    function startEditEvent(id, data) {
+      editingEvent = id;
+      eventFile = null;
+      eventImage = data.storagePath ? { url: data.imageUrl, path: data.storagePath } : null;
+
+      $('ev-title').value = data.title ?? '';
+      const start = toDate(data.start);
+      $('ev-date').value = start ? dateValue(start) : '';
+      $('ev-allday').checked = data.allDay === true;
+      $('ev-time').disabled = data.allDay === true;
+      $('ev-time').value = start && !data.allDay ? timeValue(start) : '';
+      $('ev-location').value = data.location ?? '';
+      $('ev-note').value = data.note ?? '';
+      showEventImage(data.imageUrl ?? '');
+
+      $('event-form-title').textContent = 'Edit event';
+      $('ev-save').textContent = 'Save changes';
+      $('ev-cancel').hidden = false;
+      $('event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /** Copy an event into the form as a NEW one — for the regulars that come
+        round every few weeks, sometimes at a different address. Everything
+        carries over except the date, which is blanked deliberately: leaving
+        the old one there is how you end up publishing a duplicate stuck in
+        the past. */
+    async function startDuplicateEvent(data) {
+      resetEventForm();
+      editingEvent = null;               // saving creates, not updates
+
+      $('ev-title').value = data.title ?? '';
+      $('ev-allday').checked = data.allDay === true;
+      $('ev-time').disabled = data.allDay === true;
+      const start = toDate(data.start);
+      $('ev-time').value = start && !data.allDay ? timeValue(start) : '';
+      $('ev-location').value = data.location ?? '';
+      $('ev-note').value = data.note ?? '';
+      $('ev-date').value = '';
+
+      $('event-form-title').textContent = 'Copy of an event';
+      $('ev-save').textContent = 'Add event';
+      $('ev-cancel').hidden = false;
+      $('event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      $('ev-date').focus();
+
+      if (!data.imageUrl) {
+        setStatus(evStatus, 'Copied. Pick a new date, then add it.');
+        return;
+      }
+
+      // Pull the photo down and hand it to the normal upload path, so the copy
+      // gets its OWN file in Storage. Pointing both events at one file would
+      // mean deleting either one breaks the other's picture.
+      setStatus(evStatus, 'Copied. Fetching the photo…');
+      try {
+        const blob = await (await fetch(data.imageUrl)).blob();
+        const name = (data.storagePath || 'photo.jpg').split('/').pop();
+        eventFile = new File([blob], name, { type: blob.type || 'image/jpeg' });
+        showEventImage(URL.createObjectURL(blob));
+        setStatus(evStatus, 'Copied, photo and all. Pick a new date, then add it.');
+      } catch (error) {
+        console.warn('Photo not copied:', error);
+        setStatus(evStatus, 'Copied, but not the photo — choose one if you want it.');
+      }
+    }
+
+    async function loadEvents() {
+      const list = $('event-list');
+      try {
+        // Every event, not just upcoming — past ones still need editing and
+        // deleting from here, even though the public page hides them.
+        const snap = await getDocs(query(events, orderBy('start')));
+
+        /* Ordered the way you actually work: the next event first, the rest of
+           the diary after it, then past events at the bottom with the most
+           recent first. Sorting everything by date descending — which this
+           used to do — buries the thing you're most likely here to change
+           under every date further out. */
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        const upcoming = [];
+        const past = [];
+        for (const docSnap of snap.docs) {
+          const start = toDate(docSnap.data().start);
+          (start && start >= startOfToday ? upcoming : past).push(docSnap);
+        }
+        past.reverse();
+        const ordered = [...upcoming, ...past];
+
+        // Same order feeds the album pickers.
+        albumOptions = ordered.map((docSnap) => ({
+          id: docSnap.id,
+          title: docSnap.data().title || 'Untitled event',
+          start: toDate(docSnap.data().start),
+        }));
+        refreshAlbumPickers();
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No events yet. Add one above.</p>';
+          return;
+        }
+
+        list.replaceChildren(...ordered.map((d) => {
+          const data = d.data();
+          const start = toDate(data.start);
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const main = document.createElement('div');
+          main.className = 'admin-row-main';
+
+          if (data.imageUrl) {
+            main.append(thumbButton(data.imageUrl, 'admin-thumb', data.title || 'event photo'));
+          }
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const when = document.createElement('p');
+          when.className = 'admin-row-when';
+          when.textContent = start
+            ? (data.allDay ? dayFormat.format(start) : `${dayFormat.format(start)} · ${timeFormat.format(start)}`)
+            : 'No date';
+          text.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = data.title || 'Untitled event';
+          text.append(title);
+
+          if (data.note) {
+            const note = document.createElement('p');
+            note.className = 'admin-row-note';
+            setLinkedText(note, data.note);
+            text.append(note);
+          }
+
+          if (data.location) {
+            const loc = document.createElement('p');
+            loc.className = 'admin-row-note admin-row-meta';
+            loc.textContent = data.location;
+            text.append(loc);
+          }
+
+          main.append(text);
+          row.append(main);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const edit = document.createElement('button');
+          edit.className = 'link-btn';
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => startEditEvent(d.id, data));
+          actions.append(edit);
+
+          const copy = document.createElement('button');
+          copy.className = 'link-btn';
+          copy.type = 'button';
+          copy.textContent = 'Duplicate';
+          copy.addEventListener('click', () => startDuplicateEvent(data));
+          actions.append(copy);
+
+          const del = document.createElement('button');
+          del.className = 'link-btn danger';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Delete "${data.title || 'this event'}"? This can't be undone.`)) return;
+            del.disabled = true;
+            try {
+              await deleteDoc(doc(events, d.id));
+              await removeImage(data.storagePath);
+              if (editingEvent === d.id) resetEventForm();
+              loadEvents();
+            } catch (error) {
+              console.error(error);
+              setStatus(evStatus, explain(error), 'error');
+              del.disabled = false;
+            }
+          });
+          actions.append(del);
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+
+    /* ── photos ────────────────────────────────────────────────────────── */
+
+    const phStatus = $('ph-status');
+
+    /* Albums are events — there is no separate album entity. A photo either
+       points at an event or it doesn't, which gets us albums, "tagging" and
+       automatic go-live from one field instead of three concepts for someone
+       to keep tidy.
+
+       Filled from the snapshot loadEvents() already fetches, so picking an
+       album costs no extra reads and the list can't drift out of sync. */
+    let albumOptions = [];
+
+    const albumDate = new Intl.DateTimeFormat(undefined, {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
+
+    /** Populate one <select> with the album list.
+        `fallbackTitle` covers a photo filed under an event that has since been
+        deleted: the option is kept so the album keeps its name instead of the
+        photo silently jumping to "no album". */
+    function fillAlbumSelect(select, selectedId, fallbackTitle) {
+      select.replaceChildren();
+
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = 'No album';
+      select.append(none);
+
+      for (const album of albumOptions) {
+        const option = document.createElement('option');
+        option.value = album.id;
+        option.textContent = album.start
+          ? `${album.title} — ${albumDate.format(album.start)}`
+          : album.title;
+        select.append(option);
+      }
+
+      const known = albumOptions.some((a) => a.id === selectedId);
+      if (selectedId && !known) {
+        const gone = document.createElement('option');
+        gone.value = selectedId;
+        gone.textContent = `${fallbackTitle || 'Deleted event'} (event removed)`;
+        select.append(gone);
+      }
+
+      select.value = selectedId || '';
+    }
+
+    function refreshAlbumPickers() {
+      fillAlbumSelect($('ph-album'), $('ph-album').value, '');
+    }
+
+    $('ph-files').addEventListener('change', async (e) => {
+      const files = [...(e.target.files ?? [])];
+      if (files.length === 0) return;
+      e.target.value = '';
+
+      const bar = $('ph-progress');
+      bar.hidden = false;
+      let done = 0;
+
+      // Read the album once, up front. If it changed mid-upload every photo
+      // in one batch should still land in the same place.
+      const albumId = $('ph-album').value;
+      const album = {
+        id: albumId,
+        title: albumOptions.find((a) => a.id === albumId)?.title ?? '',
+      };
+
+      try {
+        // Sequential rather than parallel: a dozen phone photos at once will
+        // stall on a phone connection, and the count reads more honestly.
+        for (const file of files) {
+          setStatus(phStatus, `Uploading ${done + 1} of ${files.length}…`);
+          const { url, path } = await uploadImage(file, 'gallery', (pct) => {
+            const overall = ((done + pct / 100) / files.length) * 100;
+            bar.firstElementChild.style.width = `${overall}%`;
+          });
+          // A username, not an email address: this document is world-readable,
+          // and an editor's email has no business being queryable by anyone
+          // who finds the collection.
+          await addDoc(photos, {
+            url,
+            storagePath: path,
+            caption: '',
+            createdAt: Timestamp.now(),
+            uploadedBy: auth.currentUser?.uid ?? '',
+            uploadedByName: displayName(auth.currentUser),
+            eventId: album.id,
+            eventTitle: album.title,
+          });
+          done += 1;
+        }
+        setStatus(phStatus, `Added ${done} photo${done === 1 ? '' : 's'}.`, 'ok');
+        loadPhotos();
+      } catch (error) {
+        console.error(error);
+        setStatus(phStatus, explain(error), 'error');
+      } finally {
+        bar.hidden = true;
+        bar.firstElementChild.style.width = '0';
+      }
+    });
+
+    async function loadPhotos() {
+      const grid = $('photo-grid');
+      const empty = $('photo-empty');
+      try {
+        const snap = await getDocs(query(photos, orderBy('createdAt', 'desc')));
+        empty.hidden = !snap.empty;
+        grid.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+
+          const item = document.createElement('figure');
+          item.className = 'photo-item';
+
+          const cell = document.createElement('div');
+          cell.className = 'photo-cell';
+          cell.append(thumbButton(data.url, '', data.caption || ''));
+
+          const remove = document.createElement('button');
+          remove.className = 'photo-remove';
+          remove.type = 'button';
+          remove.textContent = '×';
+          remove.setAttribute('aria-label', 'Delete this photo');
+          remove.addEventListener('click', async () => {
+            if (!confirm("Delete this photo? This can't be undone.")) return;
+            remove.disabled = true;
+            try {
+              await deleteDoc(doc(photos, d.id));
+              await removeImage(data.storagePath);
+              loadPhotos();
+            } catch (error) {
+              console.error(error);
+              setStatus(phStatus, explain(error), 'error');
+              remove.disabled = false;
+            }
+          });
+          cell.append(remove);
+          item.append(cell);
+
+          // Caption, edited in place. Saves when you click away or press
+          // Enter — no separate save button for a 25-character field.
+          const caption = document.createElement('input');
+          caption.type = 'text';
+          caption.className = 'photo-caption';
+          caption.maxLength = PHOTO_CAPTION_MAX;
+          caption.value = data.caption ?? '';
+          caption.placeholder = 'Add a caption';
+          caption.setAttribute('aria-label', 'Caption for this photo');
+
+          let saved = caption.value;
+          const persist = async () => {
+            const next = caption.value.trim().slice(0, PHOTO_CAPTION_MAX);
+            if (next === saved) return;
+            caption.disabled = true;
+            try {
+              await updateDoc(doc(photos, d.id), { caption: next });
+              saved = next;
+              caption.value = next;
+              setStatus(phStatus, next ? 'Caption saved.' : 'Caption cleared.', 'ok');
+            } catch (error) {
+              console.error(error);
+              caption.value = saved;   // put back what's actually stored
+              setStatus(phStatus, explain(error), 'error');
+            } finally {
+              caption.disabled = false;
+            }
+          };
+
+          caption.addEventListener('change', persist);
+          caption.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') { event.preventDefault(); caption.blur(); }
+          });
+
+          item.append(caption);
+
+          // Move a photo between albums after the fact — you rarely know how
+          // you want them filed at the moment you're uploading.
+          const album = document.createElement('select');
+          album.className = 'photo-album';
+          album.setAttribute('aria-label', 'Album for this photo');
+          fillAlbumSelect(album, data.eventId ?? '', data.eventTitle);
+
+          album.addEventListener('change', async () => {
+            const id = album.value;
+            const title = albumOptions.find((a) => a.id === id)?.title
+              ?? (id ? data.eventTitle ?? '' : '');
+            album.disabled = true;
+            try {
+              await updateDoc(doc(photos, d.id), { eventId: id, eventTitle: title });
+              setStatus(phStatus, id ? `Filed under ${title}.` : 'Removed from its album.', 'ok');
+            } catch (error) {
+              console.error(error);
+              fillAlbumSelect(album, data.eventId ?? '', data.eventTitle);
+              setStatus(phStatus, explain(error), 'error');
+            } finally {
+              album.disabled = false;
+            }
+          });
+          item.append(album);
+
+          // Who added it and when. Older photos predate these fields, so both
+          // parts are optional and the line is skipped if neither is known.
+          const added = toDate(data.createdAt);
+          const who = data.uploadedByName || data.uploadedByEmail || '';
+          const when = added
+            ? new Intl.DateTimeFormat(undefined, {
+                month: 'short', day: 'numeric', year: 'numeric',
+                hour: 'numeric', minute: '2-digit',
+              }).format(added)
+            : '';
+          if (who || when) {
+            const meta = document.createElement('figcaption');
+            meta.className = 'photo-meta';
+            meta.textContent = [who, when].filter(Boolean).join(' · ');
+            meta.title = meta.textContent;   // full text on hover when clipped
+            item.append(meta);
+          }
+
+          return item;
+        }));
+      } catch (error) {
+        console.error(error);
+        grid.replaceChildren();
+        empty.hidden = false;
+        empty.textContent = explain(error);
+        empty.className = 'state error';
+      }
+    }
+
+    /* ── booking types ─────────────────────────────────────────────────── */
+
+    let editingType = null;
+    let typeImage = null;
+    let typeFile = null;
+
+    // Fed to the Slots tab's "booking type" picker, the same way albumOptions
+    // feeds the Photos tab — one load, no extra reads to populate a select.
+    let typeOptions = [];
+
+    const tyPreview = $('ty-preview');
+    const tyStatus = $('ty-status');
+
+    function showTypeImage(url) {
+      const has = Boolean(url);
+      tyPreview.src = has ? url : '';
+      tyPreview.dataset.empty = String(!has);
+      $('ty-image-clear').hidden = !has;
+    }
+
+    $('ty-image').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      typeFile = file;
+      showTypeImage(URL.createObjectURL(file));
+    });
+
+    $('ty-image-clear').addEventListener('click', () => {
+      typeFile = null;
+      typeImage = null;
+      $('ty-image').value = '';
+      showTypeImage('');
+    });
+
+    /** "business: 40\npersonal: 25" -> { business: 40, personal: 25 }.
+        Blank lines and lines without a colon are skipped rather than
+        rejected — a stray blank line at the end is normal typing, not an
+        error worth blocking the save over. */
+    function parsePriceOverrides(text) {
+      const out = {};
+      for (const line of text.split('\n')) {
+        const i = line.indexOf(':');
+        if (i === -1) continue;
+        const key = line.slice(0, i).trim();
+        const value = Number(line.slice(i + 1).trim());
+        if (key && Number.isFinite(value)) out[key] = value;
+      }
+      return Object.keys(out).length ? out : null;
+    }
+
+    function serializePriceOverrides(overrides) {
+      if (!overrides) return '';
+      return Object.entries(overrides).map(([k, v]) => `${k}: ${v}`).join('\n');
+    }
+
+    function resetTypeForm() {
+      editingType = null;
+      typeImage = null;
+      typeFile = null;
+      $('type-form').reset();
+      $('ty-price-model').value = 'flat';
+      $('ty-status').value = 'active';
+      showTypeImage('');
+      $('type-form-title').textContent = 'Add a booking type';
+      $('ty-save').textContent = 'Add booking type';
+      $('ty-cancel').hidden = true;
+      setStatus(tyStatus, '');
+    }
+
+    $('ty-cancel').addEventListener('click', resetTypeForm);
+
+    $('type-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const minSize = Number($('ty-min').value);
+      const maxSize = Number($('ty-max').value);
+      if (minSize > maxSize) {
+        setStatus(tyStatus, 'Min group size can’t be larger than the max.', 'error');
+        return;
+      }
+
+      $('ty-save').disabled = true;
+      setStatus(tyStatus, 'Saving…');
+
+      try {
+        let image = typeImage;
+        if (typeFile) {
+          const bar = $('ty-progress');
+          bar.hidden = false;
+          image = await uploadImage(typeFile, 'bookingTypes', (pct) => {
+            bar.firstElementChild.style.width = `${pct}%`;
+          });
+          bar.hidden = true;
+          if (typeImage?.path && typeImage.path !== image.path) await removeImage(typeImage.path);
+        }
+
+        const clientTypes = $('ty-client-types').value
+          .split(',').map((s) => s.trim()).filter(Boolean);
+
+        const payload = {
+          name: $('ty-name').value.trim(),
+          tagline: $('ty-tagline').value.trim(),
+          description: $('ty-desc').value.trim(),
+          durationLabel: $('ty-duration-label').value.trim(),
+          stopsLabel: $('ty-stops-label').value.trim(),
+          status: $('ty-status').value,
+          durationMinutes: Number($('ty-duration').value),
+          minGroupSize: minSize,
+          maxGroupSize: maxSize,
+          clientTypes,
+          priceModel: $('ty-price-model').value,
+          price: Number($('ty-price').value) || 0,
+          priceByClientType: parsePriceOverrides($('ty-price-overrides').value),
+          displayOrder: Number($('ty-order').value) || 0,
+          highlights: $('ty-highlights').value.split('\n').map((s) => s.trim()).filter(Boolean),
+          imageUrl: image?.url ?? '',
+          storagePath: image?.path ?? '',
+        };
+
+        if (editingType) {
+          await updateDoc(doc(bookingTypes, editingType), payload);
+        } else {
+          await addDoc(bookingTypes, payload);
+        }
+
+        resetTypeForm();
+        setStatus(tyStatus, 'Saved.', 'ok');
+        loadBookingTypes();
+      } catch (error) {
+        console.error(error);
+        setStatus(tyStatus, explain(error), 'error');
+        $('ty-progress').hidden = true;
+      } finally {
+        $('ty-save').disabled = false;
+      }
+    });
+
+    function startEditType(id, data) {
+      editingType = id;
+      typeFile = null;
+      typeImage = data.storagePath ? { url: data.imageUrl, path: data.storagePath } : null;
+
+      $('ty-name').value = data.name ?? '';
+      $('ty-tagline').value = data.tagline ?? '';
+      $('ty-desc').value = data.description ?? '';
+      $('ty-duration-label').value = data.durationLabel ?? '';
+      $('ty-stops-label').value = data.stopsLabel ?? '';
+      $('ty-status').value = data.status ?? 'active';
+      $('ty-duration').value = data.durationMinutes ?? '';
+      $('ty-min').value = data.minGroupSize ?? 1;
+      $('ty-max').value = data.maxGroupSize ?? 1;
+      $('ty-client-types').value = (data.clientTypes ?? []).join(', ');
+      $('ty-price-model').value = data.priceModel === 'perPerson' ? 'perPerson' : 'flat';
+      $('ty-price').value = data.price ?? 0;
+      $('ty-price-overrides').value = serializePriceOverrides(data.priceByClientType);
+      $('ty-order').value = data.displayOrder ?? 0;
+      $('ty-highlights').value = (data.highlights ?? []).join('\n');
+      showTypeImage(data.imageUrl ?? '');
+
+      $('type-form-title').textContent = 'Edit booking type';
+      $('ty-save').textContent = 'Save changes';
+      $('ty-cancel').hidden = false;
+      $('type-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function loadBookingTypes() {
+      const list = $('type-list');
+      try {
+        const snap = await getDocs(query(bookingTypes, orderBy('name')));
+
+        typeOptions = snap.docs.map((d) => ({
+          id: d.id,
+          name: d.data().name || 'Untitled',
+          maxGroupSize: d.data().maxGroupSize ?? 1,
+        }));
+        refreshSlotTypePicker();
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No booking types yet. Add one above.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const main = document.createElement('div');
+          main.className = 'admin-row-main';
+
+          if (data.imageUrl) {
+            main.append(thumbButton(data.imageUrl, 'admin-thumb', data.name || 'booking type photo'));
+          }
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const when = document.createElement('p');
+          when.className = 'admin-row-when';
+          const sizeLabel = data.minGroupSize === data.maxGroupSize
+            ? `${data.maxGroupSize} people`
+            : `${data.minGroupSize}–${data.maxGroupSize} people`;
+          when.textContent = `${sizeLabel} · ${data.durationLabel || `${data.durationMinutes ?? '?'} min`}`
+            + (data.status && data.status !== 'active' ? ` · ${data.status}` : '');
+          text.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = data.name || 'Untitled';
+          text.append(title);
+
+          if (data.description) {
+            const desc = document.createElement('p');
+            desc.className = 'admin-row-note';
+            setLinkedText(desc, data.description);
+            text.append(desc);
+          }
+
+          main.append(text);
+          row.append(main);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const edit = document.createElement('button');
+          edit.className = 'link-btn';
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => startEditType(d.id, data));
+          actions.append(edit);
+
+          const del = document.createElement('button');
+          del.className = 'link-btn danger';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Delete "${data.name || 'this booking type'}"? Existing slots for it are left as-is. This can't be undone.`)) return;
+            del.disabled = true;
+            try {
+              await deleteDoc(doc(bookingTypes, d.id));
+              await removeImage(data.storagePath);
+              if (editingType === d.id) resetTypeForm();
+              loadBookingTypes();
+            } catch (error) {
+              console.error(error);
+              setStatus(tyStatus, explain(error), 'error');
+              del.disabled = false;
+            }
+          });
+          actions.append(del);
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+
+    /* ── slots ─────────────────────────────────────────────────────────── */
+
+    let editingSlot = null;
+
+    const slStatus = $('sl-status');
+
+    function refreshSlotTypePicker() {
+      const select = $('sl-type');
+      const previous = select.value;
+      select.replaceChildren();
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Choose one…';
+      select.append(placeholder);
+
+      select.append(...typeOptions.map((type) => {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = type.name;
+        return option;
+      }));
+
+      select.value = typeOptions.some((t) => t.id === previous) ? previous : '';
+    }
+
+    // Suggest the type's max group size as the slot's capacity — the common
+    // case is one party filling the whole slot. Only while adding a new
+    // slot: editing an existing one shouldn't clobber a capacity someone
+    // already deliberately changed.
+    $('sl-type').addEventListener('change', () => {
+      if (editingSlot) return;
+      const type = typeOptions.find((t) => t.id === $('sl-type').value);
+      if (type) $('sl-capacity').value = type.maxGroupSize;
+    });
+
+    function resetSlotForm() {
+      editingSlot = null;
+      $('slot-form').reset();
+      $('slot-form-title').textContent = 'Add a bookable time';
+      $('sl-save').textContent = 'Add time';
+      $('sl-cancel').hidden = true;
+      setStatus(slStatus, '');
+    }
+
+    $('sl-cancel').addEventListener('click', resetSlotForm);
+
+    $('slot-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const typeId = $('sl-type').value;
+      const type = typeOptions.find((t) => t.id === typeId);
+      if (!type) {
+        setStatus(slStatus, 'Choose a booking type first.', 'error');
+        return;
+      }
+
+      const date = $('sl-date').value;
+      const time = $('sl-time').value;
+      const start = new Date(`${date}T${time}`);
+      if (Number.isNaN(start.getTime())) {
+        setStatus(slStatus, 'That date and time look wrong. Check them and try again.', 'error');
+        return;
+      }
+
+      const capacity = Number($('sl-capacity').value);
+
+      $('sl-save').disabled = true;
+      setStatus(slStatus, 'Saving…');
+
+      try {
+        const payload = {
+          bookingTypeId: type.id,
+          bookingTypeName: type.name,
+          start: Timestamp.fromDate(start),
+          capacity,
+          location: $('sl-location').value.trim(),
+          note: $('sl-note').value.trim(),
+          isCancelled: false,
+        };
+
+        if (editingSlot) {
+          // bookedCount is never part of this form — it's only ever changed
+          // by a booking being made or cancelled, never by hand here.
+          await updateDoc(doc(slots, editingSlot), payload);
+        } else {
+          await addDoc(slots, { ...payload, bookedCount: 0 });
+        }
+
+        resetSlotForm();
+        setStatus(slStatus, 'Saved.', 'ok');
+        loadSlots();
+      } catch (error) {
+        console.error(error);
+        setStatus(slStatus, explain(error), 'error');
+      } finally {
+        $('sl-save').disabled = false;
+      }
+    });
+
+    function startEditSlot(id, data) {
+      editingSlot = id;
+      $('sl-type').value = data.bookingTypeId ?? '';
+      const start = toDate(data.start);
+      $('sl-date').value = start ? dateValue(start) : '';
+      $('sl-time').value = start ? timeValue(start) : '';
+      $('sl-capacity').value = data.capacity ?? 1;
+      $('sl-location').value = data.location ?? '';
+      $('sl-note').value = data.note ?? '';
+
+      $('slot-form-title').textContent = 'Edit bookable time';
+      $('sl-save').textContent = 'Save changes';
+      $('sl-cancel').hidden = false;
+      $('slot-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function loadSlots() {
+      const list = $('slot-list');
+      try {
+        const snap = await getDocs(query(slots, orderBy('start')));
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        // Same ordering rationale as Events: what's coming up first, then
+        // the past at the bottom, most recent first.
+        const upcoming = [];
+        const past = [];
+        for (const docSnap of snap.docs) {
+          const start = toDate(docSnap.data().start);
+          (start && start >= startOfToday ? upcoming : past).push(docSnap);
+        }
+        past.reverse();
+        const ordered = [...upcoming, ...past];
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No bookable times yet. Add one above.</p>';
+          return;
+        }
+
+        list.replaceChildren(...ordered.map((d) => {
+          const data = d.data();
+          const start = toDate(data.start);
+          const booked = data.bookedCount ?? 0;
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const when = document.createElement('p');
+          when.className = 'admin-row-when';
+          when.textContent = (start ? `${dayFormat.format(start)} · ${timeFormat.format(start)}` : 'No date')
+            + (data.isCancelled ? ' · cancelled' : '');
+          text.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = data.bookingTypeName || 'Untitled';
+          text.append(title);
+
+          const meta = document.createElement('p');
+          meta.className = 'admin-row-note admin-row-meta';
+          meta.textContent = `${booked} of ${data.capacity ?? 0} booked`
+            + (data.location ? ` · ${data.location}` : '');
+          text.append(meta);
+
+          row.append(text);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const edit = document.createElement('button');
+          edit.className = 'link-btn';
+          edit.type = 'button';
+          edit.textContent = 'Edit';
+          edit.addEventListener('click', () => startEditSlot(d.id, data));
+          actions.append(edit);
+
+          if (data.isCancelled) {
+            const restore = document.createElement('button');
+            restore.className = 'link-btn';
+            restore.type = 'button';
+            restore.textContent = 'Un-cancel';
+            restore.addEventListener('click', async () => {
+              restore.disabled = true;
+              try {
+                await updateDoc(doc(slots, d.id), { isCancelled: false });
+                loadSlots();
+              } catch (error) {
+                console.error(error);
+                setStatus(slStatus, explain(error), 'error');
+                restore.disabled = false;
+              }
+            });
+            actions.append(restore);
+          } else if (booked > 0) {
+            // Booked slots are cancelled, not deleted — deleting would orphan
+            // the bookings that point at it. Cancelling still shows on the
+            // Bookings tab so those customers can be reached.
+            const cancel = document.createElement('button');
+            cancel.className = 'link-btn danger';
+            cancel.type = 'button';
+            cancel.textContent = 'Cancel';
+            cancel.addEventListener('click', async () => {
+              if (!confirm(`Cancel this time? ${booked} booking(s) are on it — they aren't notified automatically.`)) return;
+              cancel.disabled = true;
+              try {
+                await updateDoc(doc(slots, d.id), { isCancelled: true });
+                loadSlots();
+              } catch (error) {
+                console.error(error);
+                setStatus(slStatus, explain(error), 'error');
+                cancel.disabled = false;
+              }
+            });
+            actions.append(cancel);
+          } else {
+            const del = document.createElement('button');
+            del.className = 'link-btn danger';
+            del.type = 'button';
+            del.textContent = 'Delete';
+            del.addEventListener('click', async () => {
+              if (!confirm('Delete this time? This can’t be undone.')) return;
+              del.disabled = true;
+              try {
+                await deleteDoc(doc(slots, d.id));
+                if (editingSlot === d.id) resetSlotForm();
+                loadSlots();
+              } catch (error) {
+                console.error(error);
+                setStatus(slStatus, explain(error), 'error');
+                del.disabled = false;
+              }
+            });
+            actions.append(del);
+          }
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+
+    /* ── bookings ──────────────────────────────────────────────────────── */
+
+    async function loadBookings() {
+      const list = $('booking-list');
+      try {
+        const snap = await getDocs(query(bookings, orderBy('start', 'desc')));
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No bookings yet.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+          const start = toDate(data.start);
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const when = document.createElement('p');
+          when.className = 'admin-row-when';
+          when.textContent = (start ? `${dayFormat.format(start)} · ${timeFormat.format(start)}` : 'No date')
+            + (data.status === 'cancelled' ? ' · cancelled' : '');
+          text.append(when);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = `${data.bookingTypeName || 'Booking'} · ${data.partySize ?? 1} people`;
+          text.append(title);
+
+          const meta = document.createElement('p');
+          meta.className = 'admin-row-note admin-row-meta';
+          meta.textContent = [data.name, data.email, data.phone].filter(Boolean).join(' · ');
+          text.append(meta);
+
+          if (data.note) {
+            const note = document.createElement('p');
+            note.className = 'admin-row-note';
+            setLinkedText(note, data.note);
+            text.append(note);
+          }
+
+          row.append(text);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          if (data.status !== 'cancelled') {
+            const cancel = document.createElement('button');
+            cancel.className = 'link-btn danger';
+            cancel.type = 'button';
+            cancel.textContent = 'Cancel';
+            cancel.addEventListener('click', async () => {
+              if (!confirm(`Cancel ${data.name || 'this'}’s booking? This can't be undone.`)) return;
+              cancel.disabled = true;
+              try {
+                // One transaction: mark the booking cancelled AND give its
+                // spots back to the slot, so cancelling here actually frees
+                // room for someone else to book — not just a status flip.
+                await runTransaction(db, async (tx) => {
+                  const bookingRef = doc(bookings, d.id);
+                  const bookingSnap = await tx.get(bookingRef);
+                  if (!bookingSnap.exists() || bookingSnap.data().status === 'cancelled') return;
+
+                  const slotRef = doc(slots, bookingSnap.data().slotId);
+                  const slotSnap = await tx.get(slotRef);
+                  if (slotSnap.exists()) {
+                    const freed = Math.max(0, (slotSnap.data().bookedCount ?? 0) - (bookingSnap.data().partySize ?? 0));
+                    tx.update(slotRef, { bookedCount: freed });
+                  }
+                  tx.update(bookingRef, { status: 'cancelled' });
+                });
+                loadBookings();
+                loadSlots();
+              } catch (error) {
+                console.error(error);
+                alert(explain(error));
+                cancel.disabled = false;
+              }
+            });
+            actions.append(cancel);
+          }
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+
+    /* ── inquiries ─────────────────────────────────────────────────────── */
+
+    async function loadInquiries() {
+      const list = $('inquiries-list');
+      try {
+        const snap = await getDocs(query(leadEntries, orderBy('createdAt', 'desc')));
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">No inquiries yet.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+          const when = toDate(data.createdAt);
+
+          const row = document.createElement('div');
+          row.className = 'admin-row';
+
+          const text = document.createElement('div');
+          text.className = 'admin-row-text';
+
+          const whenP = document.createElement('p');
+          whenP.className = 'admin-row-when';
+          whenP.textContent = (when
+            ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).format(when)
+            : 'No date') + (data.interestedIn ? ` · ${data.interestedIn}` : '');
+          text.append(whenP);
+
+          const title = document.createElement('p');
+          title.className = 'admin-row-title';
+          title.textContent = [data.firstName, data.lastName].filter(Boolean).join(' ') || 'Someone';
+          text.append(title);
+
+          const meta = document.createElement('p');
+          meta.className = 'admin-row-note admin-row-meta';
+          const bits = [data.companyName, data.email, data.phone].filter(Boolean);
+          meta.textContent = bits.join(' · ');
+          text.append(meta);
+
+          if (data.message) {
+            const note = document.createElement('p');
+            note.className = 'admin-row-note';
+            setLinkedText(note, data.message);
+            text.append(note);
+          }
+
+          row.append(text);
+
+          const actions = document.createElement('div');
+          actions.className = 'admin-row-actions';
+
+          const del = document.createElement('button');
+          del.className = 'link-btn danger';
+          del.type = 'button';
+          del.textContent = 'Delete';
+          del.addEventListener('click', async () => {
+            if (!confirm(`Delete ${data.firstName || 'this'}'s inquiry? This can't be undone.`)) return;
+            del.disabled = true;
+            try {
+              await deleteDoc(doc(leadEntries, d.id));
+              loadInquiries();
+            } catch (error) {
+              console.error(error);
+              alert(explain(error));
+              del.disabled = false;
+            }
+          });
+          actions.append(del);
+
+          row.append(actions);
+          return row;
+        }));
+      } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="state error">${explain(error)}</p>`;
+      }
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Book a tour | Elevated Adventures KC" />
+  <meta name="robots" content="noindex" />
+  <title>Book a tour | Elevated Adventures KC</title>
+  <link rel="stylesheet" href="./core/admin.css" />
+  <link rel="stylesheet" href="./core/booking.css" />
+  <link rel="stylesheet" href="client.css" />
+</head>
+<body class="booking-body">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div class="logo-container">
+      <a href="index.html">
+        <div class="brand-text">
+          <span class="brand-name">Elevated Adventures</span>
+          <span class="brand-subtitle">Kansas City's Premier Cannabis Education &amp; Tours</span>
+        </div>
+      </a>
+    </div>
+    <nav id="main-nav">
+      <a href="index.html">Home</a>
+      <a href="tours.html">Tours</a>
+      <a href="community.html">Community</a>
+      <a href="b2b.html">B2B</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html">Gallery</a>
+    </nav>
+    <button class="hamburger-menu" aria-label="Toggle menu" aria-controls="main-nav" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main class="booking-container" id="main">
+    <h1>Book a tour</h1>
+
+    <div class="booking-form">
+      <div class="wizard-steps" id="wizard-steps"></div>
+      <div id="wizard">
+        <p class="state">Loading…</p>
+      </div>
+    </div>
+
+    <p class="booking-note">Questions first? <a href="mailto:hello@elevatedadventureskc.com">Email us</a> or call <a href="tel:8164331232">816-433-1232</a>.</p>
+  </main>
+
+  <footer>
+    <p>© 2026 Elevated Adventures, LLC</p>
+    <div class="legal-links">
+      <a href="mailto:hello@elevatedadventureskc.com">hello@elevatedadventureskc.com</a>
+      <a href="admin.html">Manage</a>
+    </div>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script type="module">
+    import { db, toDate, SITE_ID } from './firebase.js';
+    import { setLinkedText } from './core/text.js';
+    import { priceFor, remainingCapacity, bookSlot, BookingError } from './core/booking.js';
+    import {
+      collection, getDocs, query, where, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const $ = (id) => document.getElementById(id);
+    const stepsEl = $('wizard-steps');
+    const wizard = $('wizard');
+
+    const STEPS = ['Type', 'Time', 'Details', 'Review'];
+
+    const dayFormat = new Intl.DateTimeFormat(undefined, {
+      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    });
+    const timeFormat = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' });
+    const money = (n) => `$${n.toFixed(2)}`;
+
+    /* ── wizard state ──────────────────────────────────────────────────── */
+
+    const state = {
+      step: 1,
+      bookingTypes: [],
+      slots: [],
+      chosenType: null,
+      chosenSlot: null,
+      partySize: 1,
+      clientType: null,
+      contact: { name: '', email: '', phone: '' },
+      note: '',
+    };
+
+    function renderSteps() {
+      stepsEl.replaceChildren(...STEPS.map((label, i) => {
+        const n = i + 1;
+        const pill = document.createElement('span');
+        pill.className = 'wizard-step'
+          + (n === state.step ? ' is-active' : n < state.step ? ' is-done' : '');
+        pill.textContent = `${n}. ${label}`;
+        return pill;
+      }));
+    }
+
+    function goTo(step) {
+      state.step = step;
+      render();
+    }
+
+    /* ── step 1: booking type ─────────────────────────────────────────── */
+
+    function renderTypeStep() {
+      wizard.replaceChildren();
+
+      if (state.bookingTypes.length === 0) {
+        wizard.innerHTML = '<p class="state">Nothing is bookable yet — check back soon.</p>';
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'type-grid';
+
+      grid.append(...state.bookingTypes.map((type) => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'type-card' + (state.chosenType?.id === type.id ? ' is-selected' : '');
+
+        const name = document.createElement('p');
+        name.className = 'type-card-name';
+        name.textContent = type.name;
+        card.append(name);
+
+        if (type.description) {
+          const desc = document.createElement('p');
+          desc.className = 'type-card-desc';
+          setLinkedText(desc, type.description);
+          card.append(desc);
+        }
+
+        const meta = document.createElement('p');
+        meta.className = 'type-card-meta';
+        const sizeLabel = type.minGroupSize === type.maxGroupSize
+          ? `${type.maxGroupSize} ${type.maxGroupSize === 1 ? 'person' : 'people'}`
+          : `${type.minGroupSize}–${type.maxGroupSize} people`;
+        meta.textContent = `${sizeLabel} · ${type.durationMinutes} min`;
+        card.append(meta);
+
+        card.addEventListener('click', () => selectType(type));
+        return card;
+      }));
+
+      wizard.append(grid);
+    }
+
+    async function selectType(type) {
+      state.chosenType = type;
+      state.chosenSlot = null;
+      state.partySize = Math.min(Math.max(1, type.minGroupSize ?? 1), type.maxGroupSize ?? 1);
+      state.clientType = type.clientTypes?.[0] ?? null;
+      goTo(2);
+      await loadSlots(type);
+      render();
+    }
+
+    /* ── step 2: slot ──────────────────────────────────────────────────── */
+
+    async function loadSlots(type) {
+      wizard.innerHTML = '<p class="state">Loading available times…</p>';
+      try {
+        const now = new Date();
+        const snap = await getDocs(query(
+          collection(db, 'sites', SITE_ID, 'public', 'schedule', 'slots'),
+          where('bookingTypeId', '==', type.id),
+          orderBy('start'),
+        ));
+        state.slots = snap.docs
+          .map((d) => ({ id: d.id, ...d.data(), start: toDate(d.data().start) }))
+          .filter((slot) => !slot.isCancelled && slot.start && slot.start >= now);
+      } catch (error) {
+        console.error('Loading slots failed:', error);
+        wizard.innerHTML = '<p class="state error">Available times could not be loaded just now. Please try again shortly.</p>';
+        state.slots = null;
+      }
+    }
+
+    function renderSlotStep() {
+      wizard.replaceChildren();
+
+      if (state.slots === null) {
+        wizard.innerHTML = '<p class="state error">Available times could not be loaded just now. Please try again shortly.</p>';
+        return;
+      }
+
+      if (state.slots.length === 0) {
+        wizard.innerHTML = '<p class="state">No open times for this yet — check back soon, or get in touch.</p>';
+        appendBack();
+        return;
+      }
+
+      const list = document.createElement('div');
+      list.className = 'slot-list';
+
+      list.append(...state.slots.map((slot) => {
+        const remaining = remainingCapacity(slot);
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'slot-row' + (state.chosenSlot?.id === slot.id ? ' is-selected' : '');
+        row.disabled = remaining <= 0;
+
+        const when = document.createElement('span');
+        when.className = 'slot-row-when';
+        when.textContent = `${dayFormat.format(slot.start)} · ${timeFormat.format(slot.start)}`;
+        row.append(when);
+
+        const meta = document.createElement('span');
+        meta.className = 'slot-row-meta';
+        meta.textContent = remaining <= 0 ? 'Full' : `${remaining} spot${remaining === 1 ? '' : 's'} left`;
+        row.append(meta);
+
+        row.addEventListener('click', () => {
+          state.chosenSlot = slot;
+          // Party size can't exceed what's actually left in this slot.
+          state.partySize = Math.min(state.partySize, remaining);
+          render();
+        });
+        return row;
+      }));
+
+      wizard.append(list);
+      appendActions({ nextLabel: 'Continue', nextDisabled: !state.chosenSlot, onNext: () => goTo(3) });
+    }
+
+    /* ── step 3: details ──────────────────────────────────────────────── */
+
+    function renderDetailsStep() {
+      wizard.replaceChildren();
+
+      const type = state.chosenType;
+      const form = document.createElement('form');
+      form.className = 'form';
+      form.noValidate = true;
+
+      // Party size, bounded by both the booking type and what's left in the
+      // chosen slot — whichever is smaller.
+      const maxAllowed = Math.min(type.maxGroupSize ?? 1, remainingCapacity(state.chosenSlot));
+      const sizeField = document.createElement('div');
+      sizeField.className = 'field';
+      const sizeLabel = document.createElement('label');
+      sizeLabel.htmlFor = 'party-size';
+      sizeLabel.textContent = 'How many people';
+      const sizeInput = document.createElement('input');
+      sizeInput.type = 'number';
+      sizeInput.id = 'party-size';
+      sizeInput.min = String(type.minGroupSize ?? 1);
+      sizeInput.max = String(maxAllowed);
+      sizeInput.value = String(state.partySize);
+      sizeInput.required = true;
+      sizeField.append(sizeLabel, sizeInput);
+      form.append(sizeField);
+
+      // Client type only shown when the booking type actually distinguishes —
+      // a type open to everyone the same way doesn't need this asked.
+      let clientTypeSelect = null;
+      if (type.clientTypes?.length > 1) {
+        const ctField = document.createElement('div');
+        ctField.className = 'field';
+        const ctLabel = document.createElement('label');
+        ctLabel.htmlFor = 'client-type';
+        ctLabel.textContent = 'Booking as';
+        clientTypeSelect = document.createElement('select');
+        clientTypeSelect.id = 'client-type';
+        clientTypeSelect.append(...type.clientTypes.map((ct) => {
+          const option = document.createElement('option');
+          option.value = ct;
+          option.textContent = ct.charAt(0).toUpperCase() + ct.slice(1);
+          return option;
+        }));
+        clientTypeSelect.value = state.clientType ?? type.clientTypes[0];
+        ctField.append(ctLabel, clientTypeSelect);
+        form.append(ctField);
+      }
+
+      const nameField = document.createElement('div');
+      nameField.className = 'field';
+      const nameLabel = document.createElement('label');
+      nameLabel.htmlFor = 'contact-name';
+      nameLabel.textContent = 'Name';
+      const nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.id = 'contact-name';
+      nameInput.required = true;
+      nameInput.value = state.contact.name;
+      nameField.append(nameLabel, nameInput);
+      form.append(nameField);
+
+      const rowField = document.createElement('div');
+      rowField.className = 'field-row';
+
+      const emailField = document.createElement('div');
+      emailField.className = 'field';
+      const emailLabel = document.createElement('label');
+      emailLabel.htmlFor = 'contact-email';
+      emailLabel.textContent = 'Email';
+      const emailInput = document.createElement('input');
+      emailInput.type = 'email';
+      emailInput.id = 'contact-email';
+      emailInput.required = true;
+      emailInput.value = state.contact.email;
+      emailField.append(emailLabel, emailInput);
+
+      const phoneField = document.createElement('div');
+      phoneField.className = 'field';
+      const phoneLabel = document.createElement('label');
+      phoneLabel.htmlFor = 'contact-phone';
+      phoneLabel.textContent = 'Phone';
+      const phoneInput = document.createElement('input');
+      phoneInput.type = 'tel';
+      phoneInput.id = 'contact-phone';
+      phoneInput.value = state.contact.phone;
+      phoneField.append(phoneLabel, phoneInput);
+
+      rowField.append(emailField, phoneField);
+      form.append(rowField);
+
+      const noteField = document.createElement('div');
+      noteField.className = 'field';
+      const noteLabel = document.createElement('label');
+      noteLabel.textContent = 'Anything we should know';
+      const noteHelp = document.createElement('span');
+      noteHelp.className = 'help';
+      noteHelp.textContent = ' — optional';
+      noteLabel.append(noteHelp);
+      const noteInput = document.createElement('textarea');
+      noteInput.id = 'contact-note';
+      noteInput.value = state.note;
+      noteField.append(noteLabel, noteInput);
+      form.append(noteField);
+
+      const status = document.createElement('p');
+      status.className = 'status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const size = Number(sizeInput.value);
+        if (!Number.isInteger(size) || size < Number(sizeInput.min) || size > Number(sizeInput.max)) {
+          status.textContent = `Enter a group size between ${sizeInput.min} and ${sizeInput.max}.`;
+          status.className = 'status error';
+          return;
+        }
+        if (!nameInput.value.trim() || !emailInput.value.trim()) {
+          status.textContent = 'Name and email are required.';
+          status.className = 'status error';
+          return;
+        }
+
+        state.partySize = size;
+        state.clientType = clientTypeSelect?.value ?? state.clientType;
+        state.contact = {
+          name: nameInput.value.trim(),
+          email: emailInput.value.trim(),
+          phone: phoneInput.value.trim(),
+        };
+        state.note = noteInput.value.trim();
+        goTo(4);
+      });
+
+      const actions = document.createElement('div');
+      actions.className = 'wizard-actions';
+
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'btn btn-ghost';
+      back.textContent = 'Back';
+      back.addEventListener('click', () => goTo(2));
+      actions.append(back);
+
+      const next = document.createElement('button');
+      next.type = 'submit';
+      next.className = 'btn';
+      next.textContent = 'Continue';
+      actions.append(next);
+
+      form.append(actions);
+      wizard.append(form, status);
+    }
+
+    /* ── step 4: review + submit ──────────────────────────────────────── */
+
+    function renderReviewStep() {
+      wizard.replaceChildren();
+
+      const type = state.chosenType;
+      const slot = state.chosenSlot;
+      const total = priceFor(type, state.clientType, state.partySize);
+
+      const dl = document.createElement('dl');
+      dl.className = 'review-list';
+
+      const rows = [
+        ['Tour', type.name],
+        ['When', `${dayFormat.format(slot.start)} · ${timeFormat.format(slot.start)}`],
+        ['People', String(state.partySize)],
+        ['Name', state.contact.name],
+        ['Email', state.contact.email],
+      ];
+      if (state.contact.phone) rows.push(['Phone', state.contact.phone]);
+      if (state.note) rows.push(['Note', state.note]);
+
+      dl.append(...rows.map(([label, value]) => {
+        const row = document.createElement('div');
+        row.className = 'review-row';
+        const dt = document.createElement('dt');
+        dt.textContent = label;
+        const dd = document.createElement('dd');
+        dd.textContent = value;
+        row.append(dt, dd);
+        return row;
+      }));
+
+      if (total > 0) {
+        const row = document.createElement('div');
+        row.className = 'review-row total';
+        const dt = document.createElement('dt');
+        dt.textContent = 'Total';
+        const dd = document.createElement('dd');
+        dd.textContent = `${money(total)} — pay when you arrive`;
+        row.append(dt, dd);
+        dl.append(row);
+      }
+
+      wizard.append(dl);
+
+      const status = document.createElement('p');
+      status.className = 'status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+
+      const actions = document.createElement('div');
+      actions.className = 'wizard-actions';
+
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'btn btn-ghost';
+      back.textContent = 'Back';
+      back.addEventListener('click', () => goTo(3));
+
+      const confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.className = 'btn';
+      confirm.textContent = 'Confirm booking';
+      confirm.addEventListener('click', async () => {
+        confirm.disabled = true;
+        status.className = 'status';
+        status.textContent = 'Booking…';
+        try {
+          await bookSlot(db, {
+            siteId: SITE_ID,
+            slotId: slot.id,
+            bookingType: type,
+            partySize: state.partySize,
+            clientType: state.clientType,
+            contact: state.contact,
+            note: state.note,
+          });
+          renderConfirmation();
+        } catch (error) {
+          console.error('Booking failed:', error);
+          if (error instanceof BookingError) {
+            status.className = 'status error';
+            status.textContent = error.message;
+            // The slot they picked is stale — refresh the list rather than
+            // leaving them stuck retrying against a slot that can't work.
+            if (error.code !== 'slot-full' || remainingCapacity(slot) <= 0) {
+              state.chosenSlot = null;
+              await loadSlots(type);
+              goTo(2);
+              return;
+            }
+          } else {
+            status.className = 'status error';
+            status.textContent = 'Something went wrong. Please try again.';
+          }
+        } finally {
+          confirm.disabled = false;
+        }
+      });
+
+      actions.append(back, confirm);
+      wizard.append(actions, status);
+    }
+
+    function renderConfirmation() {
+      wizard.replaceChildren();
+      const type = state.chosenType;
+      const slot = state.chosenSlot;
+
+      const panel = document.createElement('div');
+      panel.className = 'confirmation';
+
+      const heading = document.createElement('h2');
+      heading.textContent = "You're booked";
+      const detail = document.createElement('p');
+      detail.textContent = `${type.name} · ${dayFormat.format(slot.start)} at ${timeFormat.format(slot.start)}. `
+        + `A confirmation email is on its way to ${state.contact.email}.`;
+      panel.append(heading, detail);
+      wizard.append(panel);
+    }
+
+    /* ── shared step chrome ────────────────────────────────────────────── */
+
+    function appendBack() {
+      const actions = document.createElement('div');
+      actions.className = 'wizard-actions';
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'btn btn-ghost';
+      back.textContent = 'Back';
+      back.addEventListener('click', () => goTo(state.step - 1));
+      actions.append(back);
+      wizard.append(actions);
+    }
+
+    function appendActions({ nextLabel, nextDisabled, onNext }) {
+      const actions = document.createElement('div');
+      actions.className = 'wizard-actions';
+
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'btn btn-ghost';
+      back.textContent = 'Back';
+      back.addEventListener('click', () => goTo(state.step - 1));
+      actions.append(back);
+
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.className = 'btn';
+      next.textContent = nextLabel;
+      next.disabled = Boolean(nextDisabled);
+      next.addEventListener('click', onNext);
+      actions.append(next);
+
+      wizard.append(actions);
+    }
+
+    function render() {
+      renderSteps();
+      if (state.step === 1) renderTypeStep();
+      else if (state.step === 2) renderSlotStep();
+      else if (state.step === 3) renderDetailsStep();
+      else if (state.step === 4) renderReviewStep();
+    }
+
+    /* ── boot ──────────────────────────────────────────────────────────── */
+    // Arriving from the tours calendar or a tour page with ?type=&slot=
+    // jumps straight past picking a type — and past picking a time too, if
+    // the slot they clicked is still open by the time this loads.
+
+    try {
+      const snap = await getDocs(query(
+        collection(db, 'sites', SITE_ID, 'public', 'catalog', 'bookingTypes'),
+        orderBy('name'),
+      ));
+      state.bookingTypes = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((type) => type.status === 'active');
+
+      const params = new URLSearchParams(window.location.search);
+      const preselectedType = state.bookingTypes.find((t) => t.id === params.get('type'));
+
+      if (preselectedType) {
+        await selectType(preselectedType);
+
+        const preselectedSlot = state.slots?.find((s) => s.id === params.get('slot'));
+        if (preselectedSlot && remainingCapacity(preselectedSlot) > 0) {
+          state.chosenSlot = preselectedSlot;
+          state.partySize = Math.min(state.partySize, remainingCapacity(preselectedSlot));
+          goTo(3);
+        }
+      } else {
+        render();
+      }
+    } catch (error) {
+      console.error('Loading booking types failed:', error);
+      wizard.innerHTML = '<p class="state error">This page could not be loaded just now. Please try again shortly.</p>';
+    }
+  </script>
+
+</body>
+</html>

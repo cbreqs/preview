@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Blazing Trails — free community cannabis education walks | Elevated Adventures KC" />
+  <meta name="robots" content="noindex" />
+  <title>Community | Elevated Adventures KC</title>
+  <link rel="stylesheet" href="client.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div class="logo-container">
+      <a href="index.html">
+        <div class="brand-text">
+          <span class="brand-name">Elevated Adventures</span>
+          <span class="brand-subtitle">Kansas City's Premier Cannabis Education &amp; Tours</span>
+        </div>
+      </a>
+    </div>
+    <nav id="main-nav">
+      <a href="index.html">Home</a>
+      <a href="tours.html">Tours</a>
+      <a href="community.html" aria-current="page">Community</a>
+      <a href="b2b.html">B2B</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="#walks" class="cta-button">RSVP Free Walk</a>
+    </nav>
+    <button class="hamburger-menu" aria-label="Toggle menu" aria-controls="main-nav" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="container section-head">
+        <p class="eyebrow">Blazing Trails Tour</p>
+        <h1>Community &amp; Free Initiatives</h1>
+        <p>We believe cannabis education should be accessible to all. Through our Blazing
+          Trails Tour series, we host free, community-centered nature walks across Kansas
+          City.</p>
+      </div>
+      <div class="container disclaimer-box">
+        Even with our paid flagship tours temporarily paused, our commitment to Kansas City
+        remains stronger than ever. Blazing Trails Tour is our signature community outreach
+        program, organizing free 21+ cannabis-friendly community trail walks — completely free
+        to the public, fostering local pride, outdoor wellness, and accessible science-based
+        cannabis education. Light-paced, early evening resets — "fresh air after work."
+      </div>
+      <div class="container" style="text-align:center;">
+        <span class="badge free">Free &amp; open to the public (21+)</span>
+      </div>
+    </section>
+
+    <section class="section alt" id="walks">
+      <div class="container section-head">
+        <p class="eyebrow">Official Event Series</p>
+        <h2>Blazing Trails Tour 2026 Timeline</h2>
+        <p>Our free community walks take place on Monday evenings — a relaxing, light-paced
+          "Monday reset" with fresh air after work and good community energy.</p>
+      </div>
+      <div class="container timeline" id="walk-list">
+        <p class="state">Loading walks…</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container card" style="text-align:center;">
+        <p class="eyebrow">B2B Marketing Platform</p>
+        <h2>Partner with Our Tours</h2>
+        <p>Support your community while building compliant brand equity. Put your brand logo
+          on our official banners, distribute approved flyers, and connect face-to-face with
+          local consumers.</p>
+        <a class="cta-button" href="b2b.html">Explore Sponsorships</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Elevated Adventures, LLC</p>
+    <p>Must be 21+ to participate in cannabis-related events.</p>
+    <div class="legal-links">
+      <a href="mailto:hello@elevatedadventureskc.com">hello@elevatedadventureskc.com</a>
+      <a href="admin.html">Manage</a>
+    </div>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script type="module">
+    import { db, toDate, SITE_ID } from './firebase.js';
+    import { setLinkedText } from './core/text.js';
+    import { remainingCapacity } from './core/booking.js';
+    import {
+      collection, getDocs, query, where, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    const MONTH = new Intl.DateTimeFormat(undefined, { month: 'short' });
+    const TIME = new Intl.DateTimeFormat(undefined, { weekday: 'long', hour: 'numeric', minute: '2-digit' });
+
+    async function loadWalks() {
+      const list = document.getElementById('walk-list');
+      try {
+        // Find the Blazing Trails booking type first — the walks are its
+        // slots. If it doesn't exist yet (not set up in admin yet), say so
+        // plainly rather than showing a confusing empty timeline.
+        const typeSnap = await getDocs(query(
+          collection(db, 'sites', SITE_ID, 'public', 'catalog', 'bookingTypes'),
+          where('name', '==', 'Blazing Trails Walk'),
+        ));
+        if (typeSnap.empty) {
+          list.innerHTML = '<p class="state">Walks are being scheduled — check back soon.</p>';
+          return;
+        }
+        const type = { id: typeSnap.docs[0].id, ...typeSnap.docs[0].data() };
+
+        const now = new Date();
+        const slotSnap = await getDocs(query(
+          collection(db, 'sites', SITE_ID, 'public', 'schedule', 'slots'),
+          where('bookingTypeId', '==', type.id),
+          orderBy('start'),
+        ));
+        const walks = slotSnap.docs
+          .map((d) => ({ id: d.id, ...d.data(), start: toDate(d.data().start) }))
+          .filter((slot) => !slot.isCancelled && slot.start && slot.start >= now);
+
+        if (walks.length === 0) {
+          list.innerHTML = '<p class="state">No walks scheduled right now — check back soon.</p>';
+          return;
+        }
+
+        list.replaceChildren(...walks.map((slot) => {
+          const remaining = remainingCapacity(slot);
+          const full = remaining <= 0;
+
+          const item = document.createElement('div');
+          item.className = 'timeline-item';
+
+          const date = document.createElement('div');
+          date.className = 'timeline-date';
+          date.innerHTML = `<div class="month">${MONTH.format(slot.start)}</div><div class="day">${slot.start.getDate()}</div>`;
+          item.append(date);
+
+          const body = document.createElement('div');
+          body.className = 'timeline-body';
+
+          const h3 = document.createElement('h3');
+          h3.textContent = slot.location || 'Trail Walk';
+          body.append(h3);
+
+          const when = document.createElement('p');
+          when.className = 'when';
+          when.textContent = `${TIME.format(slot.start)} · ${slot.location || 'Location TBA'}`;
+          body.append(when);
+
+          if (slot.note) {
+            const note = document.createElement('p');
+            setLinkedText(note, slot.note);
+            body.append(note);
+          }
+
+          const action = document.createElement('a');
+          action.className = full ? 'cta-button ghost' : 'cta-button';
+          action.href = full ? '#' : `book.html?type=${encodeURIComponent(type.id)}&slot=${encodeURIComponent(slot.id)}`;
+          action.textContent = full ? 'Walk is full' : 'RSVP Free';
+          if (full) action.setAttribute('aria-disabled', 'true');
+          body.append(action);
+
+          const status = document.createElement('p');
+          status.className = 'rsvp-status';
+          status.textContent = full ? 'This walk is full.' : `${remaining} spot${remaining === 1 ? '' : 's'} left · target 10–25 attendees`;
+          body.append(status);
+
+          item.append(body);
+          return item;
+        }));
+      } catch (error) {
+        console.error('Loading walks failed:', error);
+        list.innerHTML = '<p class="state error">Walks could not be loaded just now.</p>';
+      }
+    }
+
+    loadWalks();
+  </script>
+
+</body>
+</html>

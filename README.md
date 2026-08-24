@@ -11,6 +11,8 @@ assets/            shared stylesheet, admin styles, theme toggle, Firebase setup
 cnkc/              cnkc.css + index, about, calendar, gallery, memberships,
                    members, contact, documents, admin
 rubi/              index
+eakc/              Elevated Adventures KC — a FlexAgenda booking site, not a
+                   plain content site; see "eakc — a FlexAgenda client" below
 ```
 
 ## CNKC branding
@@ -103,7 +105,31 @@ a project rather than untangling it from everyone else's.
 ```
 cnkc/   cannabis-network-kc   (default) database   ← current
 rubi/   reqs-tech             clients database     ← legacy, not yet moved
+eakc/   eakc-flexagenda       (default) database   ← current
 ```
+
+## eakc — a FlexAgenda client, not a plain content site
+
+`eakc/` is published here for early client review, but it isn't built from
+this repo — it's a copy of a client deployment from the separate
+**FlexAgenda** project (`C:\Users\reqs\flexAgenda`, a standalone booking
+engine). `eakc/core/` is FlexAgenda's shared module set (`booking.js`,
+`admin.css`, `lightbox.js`, …), copied in alongside the client's own pages
+rather than sourced from this repo's `assets/` — the two evolved separately
+and have since diverged (e.g. `eakc/core/site.css` has albums/rotator
+support `assets/site.css` doesn't).
+
+**Editing `eakc/` here does not update FlexAgenda, and vice versa.** Treat
+this folder as a published snapshot: make real changes in
+`flexAgenda/clients/elevated-adventures/`, then re-copy into `eakc/` (and
+re-run the `../../core/` → `./core/` path rewrite — FlexAgenda's own layout
+nests two levels deep, this repo's is flat) rather than editing the copy
+here directly.
+
+Backend is `eakc-flexagenda`, a real Firebase project distinct from
+`cannabis-network-kc` and `reqs-tech` — same one-project-per-client rule as
+everything else in this file, just provisioned from FlexAgenda's own tooling
+(`flexAgenda/scripts/add-editor.py`, not this repo's).
 
 `assets/firebase.js` holds no project config — it exports `initSite(config)`
 and `toDate`. Each site keeps its own config beside its pages

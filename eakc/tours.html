@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Curated culinary and cannabis education tours | Elevated Adventures KC" />
+  <meta name="robots" content="noindex" />
+  <title>Tours | Elevated Adventures KC</title>
+  <link rel="stylesheet" href="client.css" />
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header>
+    <div class="logo-container">
+      <a href="index.html">
+        <div class="brand-text">
+          <span class="brand-name">Elevated Adventures</span>
+          <span class="brand-subtitle">Kansas City's Premier Cannabis Education &amp; Tours</span>
+        </div>
+      </a>
+    </div>
+    <nav id="main-nav">
+      <a href="index.html">Home</a>
+      <a href="tours.html" aria-current="page">Tours</a>
+      <a href="community.html">Community</a>
+      <a href="b2b.html">B2B</a>
+      <a href="about.html">About</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="community.html" class="cta-button">RSVP Free Walk</a>
+    </nav>
+    <button class="hamburger-menu" aria-label="Toggle menu" aria-controls="main-nav" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main id="main">
+    <section class="section">
+      <div class="container section-head">
+        <p class="eyebrow">Curated Adventures</p>
+        <h1>Curated Culinary &amp; Cannabis Tours</h1>
+        <p>Expert-led educational journeys pairing Kansas City's award-winning food and craft
+          breweries with high-end, compliance-safe cannabis and hemp education.</p>
+      </div>
+
+      <div class="container disclaimer-box">
+        <strong>Important operational disclaimer:</strong> Elevated Adventures does not provide,
+        sell, or distribute cannabis during any tours or events. All tours focus on premium
+        education, botanical terpene profiles, local history, and culinary pairings. Visits to
+        licensed dispensaries and hemp shops are for educational showcases and compliant retail
+        purchases only.
+      </div>
+
+      <div class="container" id="tour-list">
+        <p class="state">Loading tours…</p>
+      </div>
+
+      <div class="container card" style="margin-top:2.5rem;">
+        <span class="badge active">Now booking</span>
+        <h2>Private Group Tours (10+ People)</h2>
+        <p>We are open for Private Group Tours of 10 or more guests. Whether for a corporate
+          event, birthday, or private gathering, reach out directly to customize your custom
+          educational walk or culinary tour.</p>
+        <div class="tour-card-actions" style="margin:1.5rem 0;">
+          <a class="cta-button" href="tel:8164331232">Call 816-433-1232</a>
+          <a class="cta-button ghost" href="https://instagram.com/elevatedadventureskc" target="_blank" rel="noopener">DM @elevatedadventureskc</a>
+        </div>
+        <h3>Private Group Inquiry Form</h3>
+        <div id="inquiry-mount"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 Elevated Adventures, LLC</p>
+    <p>Must be 21+ to participate in cannabis-related events.</p>
+    <div class="legal-links">
+      <a href="mailto:hello@elevatedadventureskc.com">hello@elevatedadventureskc.com</a>
+      <a href="admin.html">Manage</a>
+    </div>
+  </footer>
+
+  <script src="nav.js"></script>
+  <script type="module">
+    import { db, SITE_ID } from './firebase.js';
+    import { setLinkedText } from './core/text.js';
+    import { mountInquiryForm } from './inquiry-form.js';
+    import {
+      collection, getDocs, query, orderBy,
+    } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+    mountInquiryForm(document.getElementById('inquiry-mount'), {
+      defaultInterest: 'Private Group Tour Inquiry (10+ Guests)',
+    });
+
+    const STATUS_BADGE = {
+      active: '<span class="badge active">Now booking</span>',
+      paused: '<span class="badge paused">Temporarily paused</span>',
+      upcoming: '<span class="badge upcoming">In development</span>',
+    };
+
+    async function loadTours() {
+      const list = document.getElementById('tour-list');
+      try {
+        const snap = await getDocs(query(
+          collection(db, 'sites', SITE_ID, 'public', 'catalog', 'bookingTypes'),
+          orderBy('displayOrder'),
+        ));
+
+        if (snap.empty) {
+          list.innerHTML = '<p class="state">Tours are being set up — check back soon.</p>';
+          return;
+        }
+
+        list.replaceChildren(...snap.docs.map((d) => {
+          const data = d.data();
+          const card = document.createElement('article');
+          card.className = 'tour-card';
+
+          const badge = document.createElement('div');
+          badge.innerHTML = STATUS_BADGE[data.status] ?? '';
+          card.append(badge);
+
+          const h2 = document.createElement('h2');
+          h2.textContent = data.name;
+          card.append(h2);
+
+          if (data.tagline) {
+            const tagline = document.createElement('p');
+            tagline.innerHTML = `<strong>${data.tagline}</strong>`;
+            card.append(tagline);
+          }
+
+          const desc = document.createElement('p');
+          setLinkedText(desc, data.description || '');
+          card.append(desc);
+
+          const meta = document.createElement('p');
+          meta.className = 'meta';
+          meta.textContent = `Duration: ${data.durationLabel ?? ''}${data.stopsLabel ? ` · Stops: ${data.stopsLabel}` : ''}`;
+          card.append(meta);
+
+          const highlights = Array.isArray(data.highlights) ? data.highlights.filter(Boolean) : [];
+          if (highlights.length) {
+            const ul = document.createElement('ul');
+            ul.append(...highlights.map((h) => {
+              const li = document.createElement('li');
+              setLinkedText(li, h);
+              return li;
+            }));
+            card.append(ul);
+          }
+
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+          if (data.status === 'active') {
+            const book = document.createElement('a');
+            book.className = 'cta-button';
+            book.href = `book.html?type=${encodeURIComponent(d.id)}`;
+            book.textContent = 'Book Tour Experience';
+            actions.append(book);
+          }
+          const sponsor = document.createElement('a');
+          sponsor.className = 'cta-button ghost';
+          sponsor.href = 'b2b.html';
+          sponsor.textContent = 'Sponsor This Tour';
+          actions.append(sponsor);
+          card.append(actions);
+
+          return card;
+        }));
+      } catch (error) {
+        console.error('Loading tours failed:', error);
+        list.innerHTML = '<p class="state error">Tours could not be loaded just now.</p>';
+      }
+    }
+
+    loadTours();
+  </script>
+
+</body>
+</html>
