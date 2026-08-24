@@ -118,28 +118,47 @@
           const card = document.createElement('article');
           card.className = 'tour-card';
 
+          // Real photo once one exists (set via the Booking types tab);
+          // until then, a placeholder fills the same slot at the same
+          // aspect ratio, so the layout doesn't shift when a photo lands.
+          const media = document.createElement('div');
+          media.className = 'tour-card-media';
+          if (data.imageUrl) {
+            const img = document.createElement('img');
+            img.src = data.imageUrl;
+            img.alt = data.name;
+            media.append(img);
+          } else {
+            media.classList.add('no-photo');
+            media.textContent = 'Photo coming soon';
+          }
+          card.append(media);
+
+          const body = document.createElement('div');
+          body.className = 'tour-card-body';
+
           const badge = document.createElement('div');
           badge.innerHTML = STATUS_BADGE[data.status] ?? '';
-          card.append(badge);
+          body.append(badge);
 
           const h2 = document.createElement('h2');
           h2.textContent = data.name;
-          card.append(h2);
+          body.append(h2);
 
           if (data.tagline) {
             const tagline = document.createElement('p');
             tagline.innerHTML = `<strong>${data.tagline}</strong>`;
-            card.append(tagline);
+            body.append(tagline);
           }
 
           const desc = document.createElement('p');
           setLinkedText(desc, data.description || '');
-          card.append(desc);
+          body.append(desc);
 
           const meta = document.createElement('p');
           meta.className = 'meta';
           meta.textContent = `Duration: ${data.durationLabel ?? ''}${data.stopsLabel ? ` · Stops: ${data.stopsLabel}` : ''}`;
-          card.append(meta);
+          body.append(meta);
 
           const highlights = Array.isArray(data.highlights) ? data.highlights.filter(Boolean) : [];
           if (highlights.length) {
@@ -149,7 +168,7 @@
               setLinkedText(li, h);
               return li;
             }));
-            card.append(ul);
+            body.append(ul);
           }
 
           const actions = document.createElement('div');
@@ -166,8 +185,9 @@
           sponsor.href = 'b2b.html';
           sponsor.textContent = 'Sponsor This Tour';
           actions.append(sponsor);
-          card.append(actions);
+          body.append(actions);
 
+          card.append(body);
           return card;
         }));
       } catch (error) {

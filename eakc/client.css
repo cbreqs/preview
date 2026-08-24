@@ -220,21 +220,56 @@ header nav a:hover, header nav a[aria-current="page"] { color: var(--eakc-accent
 .disclaimer-box strong { color: var(--eakc-text); }
 
 /* ── 8. tour cards ────────────────────────────────────────────────────── */
-
+/* Image beside text, alternating which side the image is on — matches the
+   real site's actual two-column tour layout (sampled from its rendered
+   DOM), not just its color tokens. No real photography exists yet, so
+   .tour-card-media falls back to a gradient placeholder at the same
+   aspect ratio and radius the real photo slot uses — the layout is real
+   even though the image isn't; swap in a photo via the admin panel's
+   Booking types tab whenever one exists, nothing else has to change. */
 .tour-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
   background-color: var(--eakc-surface-2);
   border: 1px solid var(--eakc-border);
   border-radius: 14px;
   padding: 2rem;
   margin-bottom: 2rem;
 }
-.tour-card .meta { font-size: 0.85rem; color: var(--eakc-text-dim); margin-bottom: 1rem; }
-.tour-card ul { list-style: none; margin: 1rem 0; }
-.tour-card li { padding: 0.6rem 0; border-bottom: 1px solid var(--eakc-border); font-size: 0.95rem; }
-.tour-card li:last-child { border-bottom: none; }
-.tour-card li strong { color: var(--eakc-text); }
-.tour-card .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
-.tour-card .actions .cta-button { margin-left: 0; }
+@media (min-width: 800px) {
+  .tour-card { grid-template-columns: 1fr 1fr; align-items: center; }
+  /* Every other card mirrors — image right, text left — same as the real
+     site alternating which column the photo lands in per tour. */
+  .tour-card:nth-child(even) .tour-card-media { order: 2; }
+}
+
+.tour-card-media {
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--eakc-border);
+  background: linear-gradient(135deg, var(--eakc-surface), var(--eakc-bg));
+}
+.tour-card-media img { width: 100%; height: 100%; object-fit: cover; }
+.tour-card-media.no-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--eakc-text-dim);
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+.tour-card-body .meta { font-size: 0.85rem; color: var(--eakc-text-dim); margin-bottom: 1rem; }
+.tour-card-body ul { list-style: none; margin: 1rem 0; }
+.tour-card-body li { padding: 0.6rem 0; border-bottom: 1px solid var(--eakc-border); font-size: 0.95rem; }
+.tour-card-body li:last-child { border-bottom: none; }
+.tour-card-body li strong { color: var(--eakc-text); }
+.tour-card-body .actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+.tour-card-body .actions .cta-button { margin-left: 0; }
 
 /* Same shape as .tour-card .actions, for the Private Group Tours card on
    tours.html, which isn't wrapped in a .tour-card. */
