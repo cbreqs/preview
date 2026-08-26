@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Client Ledger | Wands & Ledgers Tax Solutions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ── Core Site Styling (from index.html) ── */
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --navy-deep: #0d1120;
+      --white: #fdfcf8;
+      /* Using the Cream from the intake design for a warmer parchment look */
+      --parchment: #f8f6f1; 
+    }
+
+    body {
+      background-color: var(--navy-deep);
+      color: var(--white);
+      font-family: 'Lato', sans-serif;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Starfield Background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 60% at 50% 0%, #1e2a52 0%, transparent 70%),
+        var(--navy-deep);
+      z-index: -1;
+    }
+
+    /* Floating particles */
+    .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .particle { position: absolute; border-radius: 50%; background: var(--gold); opacity: 0; animation: drift linear infinite; }
+    
+    @keyframes drift {
+      0% { opacity: 0; transform: translateY(100vh) scale(0); }
+      10% { opacity: 0.6; }
+      90% { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+    }
+
+    /* ── Navigation ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(13,17,32,0.95);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+    }
+    .nav-brand { 
+      font-family: 'Cinzel', serif; 
+      color: var(--gold); 
+      text-decoration: none; 
+      letter-spacing: 0.2em; 
+      text-transform: uppercase; 
+      font-size: 0.85rem; 
+    }
+
+    /* ── Form Layout ── */
+    .form-hero {
+      position: relative; z-index: 1;
+      max-width: 850px;
+      margin: 4rem auto 6rem;
+      padding: 0 1.5rem;
+    }
+
+    .form-header { text-align: center; margin-bottom: 3rem; }
+    .form-header h1 { 
+      font-family: 'Cormorant Garamond', serif; 
+      font-size: clamp(2rem, 5vw, 2.8rem); 
+      color: var(--white); 
+      font-weight: 300; 
+      margin-bottom: 0.5rem;
+    }
+    .gold-rule { width: 80px; height: 1px; background: var(--gold); margin: 1.5rem auto; }
+
+    /* The Parchment Container — generous padding so the form's own white
+       background reads as a page laid inside a frame, not an iframe pasted
+       edge-to-edge. Corner radius + overflow:hidden on the iframe itself
+       clips its embedded content to match, since we can't reach inside a
+       cross-origin iframe with CSS to restyle the form directly. */
+    .parchment-container {
+      background: var(--parchment);
+      padding: clamp(10px, 2.5vw, 28px);
+      border-radius: 10px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+      min-height: 600px;
+      border-top: 4px solid var(--gold); /* Branding accent */
+    }
+
+    .parchment-container iframe {
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .form-footnote {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      color: rgba(253,252,248,0.4);
+    }
+
+    footer { 
+      padding: 3rem 2rem; 
+      text-align: center; 
+      border-top: 1px solid rgba(201,168,76,0.1); 
+      font-size: 0.8rem; 
+      color: rgba(253,252,248,0.45); 
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.5rem; }
+      .form-hero { margin: 2rem auto 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="particles" id="particles"></div>
+
+  <nav>
+    <a class="nav-brand" href="index.html">Wands &amp; Ledgers</a>
+    <div style="font-size: 0.78rem; letter-spacing: 0.12em; color: var(--gold-light); font-weight: 600;">573-230-8294</div>
+  </nav>
+
+  <main class="form-hero">
+    <div class="form-header">
+      <h1>Tax Preparation Intake</h1>
+      <div class="gold-rule"></div>
+      <p style="font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; color: var(--gold-light);">Submit your details to the Ledger.</p>
+    </div>
+
+    <div class="parchment-container">
+      <iframe
+        id="JotFormIFrame-260733811913051"
+        title="Client Ledger Form"
+        onload="window.parent.scrollTo(0,0)"
+        allowtransparency="true"
+        allow="geolocation; microphone; camera; fullscreen; payment"
+        src="https://form.jotform.com/260733811913051"
+        frameborder="0"
+        style="min-width:100%;max-width:100%;height:539px;border:none;"
+        scrolling="no"
+      >
+      </iframe>
+      <script src='https://cdn.jotfor.ms/s/umd/latest/for-form-embed-handler.js'></script>
+      <script>window.jotformEmbedHandler("iframe[id='JotFormIFrame-260733811913051']", "https://form.jotform.com/")</script>
+      </div>
+
+    <p class="form-footnote">Secure &amp; confidential — submitted directly to Wands &amp; Ledgers, encrypted in transit.</p>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Wands &amp; Ledgers Tax Solutions &nbsp;·&nbsp; made magical by <a href="https://reqs.tech">REQS.TECH</a>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Re-implemented the particle drift from index.html
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 3 + 1;
+      p.style.cssText = `
+        width: ${size}px; height: ${size}px;
+        left: ${Math.random() * 100}%;
+        animation-duration: ${Math.random() * 18 + 12}s;
+        animation-delay: ${Math.random() * 10}s;
+      `;
+      container.appendChild(p);
+    }
+  </script>
+</body>
+</html>
