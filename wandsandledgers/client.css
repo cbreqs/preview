@@ -23,7 +23,8 @@
   --border-mid:  rgba(201,168,76,0.28);
   --text:        #fdfcf8;
   --text-mid:    rgba(253,252,248,0.68);
-  --text-dim:    rgba(253,252,248,0.4);
+  --text-dim:    rgba(253,252,248,0.5); /* 0.4 measured 3.75:1 on inactive
+                    nav links — fails WCAG AA (4.5:1); 0.5 clears it at 5.2:1 */
   --accent:      #c9a84c;
   --accent2:     #e8c97a;
   --tag-bg:      rgba(201,168,76,0.09);
@@ -47,8 +48,12 @@
   --border-mid:  rgba(26,31,53,0.18);
   --text:        #1a1f35;
   --text-mid:    rgba(26,31,53,0.65);
-  --text-dim:    rgba(26,31,53,0.4);
-  --accent:      #9c7a2e;
+  --text-dim:    rgba(26,31,53,0.65); /* 0.4 measured 2.41:1 on inactive
+                    nav links — fails WCAG AA (4.5:1); 0.65 clears it at 4.96:1 */
+  --accent:      #856827; /* #9c7a2e measured 3.71:1 as text (hero-eyebrow,
+                    current-nav-link) — fails WCAG AA; darkened to 4.85:1.
+                    Still passes as a button background against --bg (that
+                    pairing's contrast only improves when accent darkens). */
   --accent2:     #1a1f35;
   --tag-bg:      rgba(156,122,46,0.08);
   --tag-border:  rgba(156,122,46,0.22);

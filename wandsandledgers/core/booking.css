@@ -59,6 +59,10 @@
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   background: var(--bg2);
+  color: var(--text); /* it's a <button> — without this, browsers fall back
+                          to the UA default button text color instead of
+                          inheriting the page's palette, which read as
+                          near-invisible dark text on a dark card */
   transition: border-color 0.2s, background 0.2s;
 }
 .type-card:hover { border-color: var(--accent); }
@@ -82,6 +86,7 @@
   border: 1px solid var(--border-mid);
   border-radius: 4px;
   background: var(--bg2);
+  color: var(--text); /* same missing-color bug as .type-card above */
   transition: border-color 0.2s, background 0.2s, opacity 0.2s;
 }
 .slot-row:not(:disabled):hover { border-color: var(--accent); }
