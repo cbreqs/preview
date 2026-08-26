@@ -69,6 +69,14 @@
   font-family: var(--display);
 }
 
+/* Cinzel is a naturally slender face — core/site.css's 500/600 weight reads
+   thin at nav sizes. Bumped to a real 700 (loaded via the font import, not
+   synthetic-bold) for the brand mark and top-level nav specifically. */
+.nav-home,
+.site-nav a {
+  font-weight: 700;
+}
+
 /* ── homepage hero ──
    core/site.css has no opinion on marketing-page layout (that's left to each
    client, same as EAKC's client.css) — these classes exist only in
