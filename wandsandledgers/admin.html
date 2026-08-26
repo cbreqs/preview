@@ -197,7 +197,7 @@
 
         <div class="field">
           <label for="ty-name">Name</label>
-          <input type="text" id="ty-name" required placeholder="e.g. Group tour" />
+          <input type="text" id="ty-name" required placeholder="e.g. Business Tax Return" />
         </div>
 
         <div class="field">
@@ -222,7 +222,7 @@
 
         <div class="field">
           <label for="ty-client-types">Who can book this <span class="help">— optional</span></label>
-          <input type="text" id="ty-client-types" placeholder="e.g. personal, business" />
+          <input type="text" id="ty-client-types" placeholder="e.g. individual, business" />
           <p class="help">
             Comma-separated. Leave blank if this isn't different for different kinds of client — the
             person booking won't be asked to choose. First one listed is the default.
@@ -245,27 +245,17 @@
 
         <div class="field">
           <label for="ty-price-overrides">Different price by client type <span class="help">— optional</span></label>
-          <textarea id="ty-price-overrides" placeholder="business: 40&#10;personal: 25"></textarea>
+          <textarea id="ty-price-overrides" placeholder="business: 90&#10;individual: 60"></textarea>
           <p class="help">
-            One per line, as "client type: amount". Only needed if the price above isn't the same for
-            everyone — leave blank to charge the same amount regardless of who's booking.
+            One per line, matching what you typed in "Who can book this" above — e.g. "individual: 60".
+            Only needed if the price isn't the same for everyone; leave blank to charge the flat
+            amount above no matter who's booking.
           </p>
         </div>
 
         <div class="field check">
           <input type="checkbox" id="ty-active" checked />
           <label for="ty-active">Bookable now</label>
-        </div>
-
-        <div class="field">
-          <label>Photo <span class="help">— optional</span></label>
-          <div class="image-picker">
-            <img class="image-preview" id="ty-preview" alt="" data-empty="true" />
-            <input type="file" class="file-input" id="ty-image" accept="image/*" />
-            <label class="file-label" for="ty-image">Choose photo</label>
-            <button type="button" class="link-btn danger" id="ty-image-clear" hidden>Remove</button>
-          </div>
-          <div class="progress" id="ty-progress" hidden><span></span></div>
         </div>
 
         <div class="form-actions">
@@ -328,7 +318,7 @@
 
     <!-- ── bookings ── -->
     <section class="panel" id="panel-bookings" role="tabpanel" aria-labelledby="tab-bookings" hidden>
-      <p class="page-sub" style="margin-bottom: 1.5rem;">
+      <p class="page-sub" id="booking-hint" style="margin-bottom: 1.5rem;">
         What customers have booked. There's no form here — bookings are only created by
         someone booking through the site; this is for viewing and cancelling them.
       </p>
@@ -1118,36 +1108,12 @@
     /* ── booking types ─────────────────────────────────────────────────── */
 
     let editingType = null;
-    let typeImage = null;
-    let typeFile = null;
 
     // Fed to the Slots tab's "booking type" picker, the same way albumOptions
     // feeds the Photos tab — one load, no extra reads to populate a select.
     let typeOptions = [];
 
-    const tyPreview = $('ty-preview');
     const tyStatus = $('ty-status');
-
-    function showTypeImage(url) {
-      const has = Boolean(url);
-      tyPreview.src = has ? url : '';
-      tyPreview.dataset.empty = String(!has);
-      $('ty-image-clear').hidden = !has;
-    }
-
-    $('ty-image').addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      typeFile = file;
-      showTypeImage(URL.createObjectURL(file));
-    });
-
-    $('ty-image-clear').addEventListener('click', () => {
-      typeFile = null;
-      typeImage = null;
-      $('ty-image').value = '';
-      showTypeImage('');
-    });
 
     /** "business: 40\npersonal: 25" -> { business: 40, personal: 25 }.
         Blank lines and lines without a colon are skipped rather than
@@ -1172,12 +1138,9 @@
 
     function resetTypeForm() {
       editingType = null;
-      typeImage = null;
-      typeFile = null;
       $('type-form').reset();
       $('ty-price-model').value = 'flat';
       $('ty-active').checked = true;
-      showTypeImage('');
       $('type-form-title').textContent = 'Add a booking type';
       $('ty-save').textContent = 'Add booking type';
       $('ty-cancel').hidden = true;
@@ -1200,17 +1163,6 @@
       setStatus(tyStatus, 'Saving…');
 
       try {
-        let image = typeImage;
-        if (typeFile) {
-          const bar = $('ty-progress');
-          bar.hidden = false;
-          image = await uploadImage(typeFile, 'bookingTypes', (pct) => {
-            bar.firstElementChild.style.width = `${pct}%`;
-          });
-          bar.hidden = true;
-          if (typeImage?.path && typeImage.path !== image.path) await removeImage(typeImage.path);
-        }
-
         const clientTypes = $('ty-client-types').value
           .split(',').map((s) => s.trim()).filter(Boolean);
 
@@ -1225,8 +1177,8 @@
           price: Number($('ty-price').value) || 0,
           priceByClientType: parsePriceOverrides($('ty-price-overrides').value),
           isActive: $('ty-active').checked,
-          imageUrl: image?.url ?? '',
-          storagePath: image?.path ?? '',
+          imageUrl: '',
+          storagePath: '',
         };
 
         if (editingType) {
@@ -1241,7 +1193,6 @@
       } catch (error) {
         console.error(error);
         setStatus(tyStatus, explain(error), 'error');
-        $('ty-progress').hidden = true;
       } finally {
         $('ty-save').disabled = false;
       }
@@ -1249,8 +1200,6 @@
 
     function startEditType(id, data) {
       editingType = id;
-      typeFile = null;
-      typeImage = data.storagePath ? { url: data.imageUrl, path: data.storagePath } : null;
 
       $('ty-name').value = data.name ?? '';
       $('ty-desc').value = data.description ?? '';
@@ -1262,7 +1211,6 @@
       $('ty-price').value = data.price ?? 0;
       $('ty-price-overrides').value = serializePriceOverrides(data.priceByClientType);
       $('ty-active').checked = data.isActive !== false;
-      showTypeImage(data.imageUrl ?? '');
 
       $('type-form-title').textContent = 'Edit booking type';
       $('ty-save').textContent = 'Save changes';
@@ -1620,6 +1568,10 @@
       const list = $('booking-list');
       try {
         const snap = await getDocs(query(bookings, orderBy('start', 'desc')));
+
+        // The hint explains what this tab is for — useful before there's
+        // anything to look at, redundant clutter once there's a real list.
+        $('booking-hint').hidden = !snap.empty;
 
         if (snap.empty) {
           list.innerHTML = '<p class="state">No bookings yet.</p>';
