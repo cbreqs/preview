@@ -6,7 +6,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-  /* ---- accent swatches (so Aidan can try colors) ---- */
+  /* ---- accent swatches (so Aiden can try colors) ---- */
   $$('.swatch').forEach(b => b.addEventListener('click', () => {
     document.documentElement.dataset.accent = b.dataset.set;
     $$('.swatch').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
