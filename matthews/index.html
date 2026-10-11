@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" data-accent="marigold">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Matthews Home Exteriors | Power washing, with a price and a time</title>
+  <meta name="description" content="Prototype home page for Matthews Home Exteriors: power washing for driveways, fences and house exteriors." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <div class="draft">
+    <div class="wrap">
+      <span><strong>Draft prototype.</strong> Name, logo and photos are placeholders.</span>
+      <span class="swatches" role="group" aria-label="Try an accent color">
+        <span>Try an accent:</span>
+        <button class="swatch" data-set="marigold" aria-pressed="true" aria-label="Marigold"></button>
+        <button class="swatch" data-set="coral" aria-pressed="false" aria-label="Coral"></button>
+        <button class="swatch" data-set="leaf" aria-pressed="false" aria-label="Leaf green"></button>
+      </span>
+    </div>
+  </div>
+
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="#top" aria-label="Matthews Home Exteriors, home">
+        <img src="favicon.svg" alt="" width="42" height="42" />
+        <span>Matthews<small>Home Exteriors</small></span>
+      </a>
+      <nav aria-label="Main">
+        <ul>
+          <li class="hide-sm"><a href="#services">Services</a></li>
+          <li class="hide-sm"><a href="#how">How it works</a></li>
+          <li><a href="#quote" data-tab="book">Schedule</a></li>
+          <li><a class="btn btn-ghost" href="#portal" id="signin-link" style="min-height:44px;padding:6px 18px">Sign in</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="wrap">
+        <div>
+          <p class="eyebrow">Power washing</p>
+          <h1>Your home's outside, <em>washed clean.</em></h1>
+          <p class="lead">Tell me your address. I'll look at your property and send you a price and a time. No pressure and no surprises.</p>
+          <ul class="hero-points">
+            <li><span class="tick" aria-hidden="true">✓</span> Driveways, fences and house exteriors</li>
+            <li><span class="tick" aria-hidden="true">✓</span> Free estimate, based on your actual property</li>
+            <li><span class="tick" aria-hidden="true">✓</span> Pick a day that works, or let me suggest one</li>
+          </ul>
+        </div>
+
+        <div class="card quote" id="quote">
+          <div class="tabs" role="tablist" aria-label="How would you like to start?">
+            <button class="tab" role="tab" id="tab-estimate" aria-controls="panel-estimate" aria-selected="true">Get an estimate</button>
+            <button class="tab" role="tab" id="tab-book" aria-controls="panel-book" aria-selected="false" tabindex="-1">Pick a day</button>
+          </div>
+
+          <!-- Estimate -->
+          <div class="panel" id="panel-estimate" role="tabpanel" aria-labelledby="tab-estimate">
+            <form id="form-estimate" novalidate>
+              <h2>Where's the property?</h2>
+              <p class="sub">I'll look it up and come back with a price and a time.</p>
+              <div class="field">
+                <label for="e-street">Street address</label>
+                <input type="text" id="e-street" name="street" autocomplete="address-line1" placeholder="123 Maple Street" required />
+              </div>
+              <div class="row2">
+                <div class="field"><label for="e-city">City or ZIP</label><input type="text" id="e-city" name="city" autocomplete="postal-code" placeholder="City or ZIP" required /></div>
+                <div class="field"><label for="e-name">First name</label><input type="text" id="e-name" name="name" autocomplete="given-name" required /></div>
+              </div>
+              <fieldset class="field">
+                <legend class="legend">What needs washing? <span class="hint">Pick any</span></legend>
+                <div class="chips">
+                  <label class="chip"><input type="checkbox" name="what" value="Driveway" /><span>Driveway</span></label>
+                  <label class="chip"><input type="checkbox" name="what" value="Fence" /><span>Fence</span></label>
+                  <label class="chip"><input type="checkbox" name="what" value="House" /><span>House</span></label>
+                  <label class="chip"><input type="checkbox" name="what" value="Other" /><span>Not sure</span></label>
+                </div>
+              </fieldset>
+              <div class="field">
+                <label for="e-contact">Phone or email</label>
+                <input type="text" id="e-contact" name="contact" autocomplete="on" required />
+              </div>
+              <details>
+                <summary>Anything else I should know? (optional)</summary>
+                <label class="visually-hidden" for="e-notes">Notes</label>
+                <textarea id="e-notes" name="notes" placeholder="Gate code, pets, a stain you're worried about..."></textarea>
+              </details>
+              <button class="btn btn-accent btn-block" type="submit">Get my free estimate</button>
+              <p class="fine">Takes about a minute. I'll reply by text or email.</p>
+              <p class="msg" role="alert" hidden id="e-error"></p>
+            </form>
+            <div class="done" id="done-estimate" hidden tabindex="-1">
+              <div class="big" aria-hidden="true">✓</div>
+              <h3>Got it, <span data-fill="name">friend</span>.</h3>
+              <p>I have <strong data-fill="address">your address</strong>. Here's what happens next:</p>
+              <ol>
+                <li>I look at your property from above and from the street.</li>
+                <li>I send a price and a time that fits.</li>
+                <li>You say yes, or ask me anything. Either is fine.</li>
+              </ol>
+              <button class="btn btn-ghost" type="button" data-reset="estimate">Send another address</button>
+            </div>
+          </div>
+
+          <!-- Book -->
+          <div class="panel" id="panel-book" role="tabpanel" aria-labelledby="tab-book" hidden>
+            <form id="form-book" novalidate>
+              <h2>Pick a day</h2>
+              <p class="sub">I'll confirm by text or email. It's not booked until I do.</p>
+              <div class="field">
+                <label for="b-street">Street address</label>
+                <input type="text" id="b-street" name="street" autocomplete="address-line1" placeholder="123 Maple Street" required />
+              </div>
+              <div class="field">
+                <span class="legend" id="days-label">Which day works best?</span>
+                <div class="chips days" role="radiogroup" aria-labelledby="days-label" id="days"></div>
+              </div>
+              <fieldset class="field">
+                <legend class="legend">What time of day?</legend>
+                <div class="chips">
+                  <label class="chip"><input type="radio" name="window" value="Morning" /><span>Morning</span></label>
+                  <label class="chip"><input type="radio" name="window" value="Afternoon" /><span>Afternoon</span></label>
+                  <label class="chip"><input type="radio" name="window" value="Any" checked /><span>Anytime</span></label>
+                </div>
+              </fieldset>
+              <div class="row2">
+                <div class="field"><label for="b-contact">Phone or email</label><input type="text" id="b-contact" name="contact" required /></div>
+                <div class="field"><label for="b-name">First name</label><input type="text" id="b-name" name="name" autocomplete="given-name" required /></div>
+              </div>
+              <button class="btn btn-accent btn-block" type="submit">Request this day</button>
+              <p class="fine">Not sure about price yet? <a href="#quote" data-tab="estimate">Get an estimate first.</a></p>
+              <p class="msg" role="alert" hidden id="b-error"></p>
+            </form>
+            <div class="done" id="done-book" hidden tabindex="-1">
+              <div class="big" aria-hidden="true">✓</div>
+              <h3>Requested.</h3>
+              <p><strong data-fill="when">Your day</strong> at <strong data-fill="address">your address</strong>. I'll confirm, or suggest a nearby day if that one's full.</p>
+              <p style="margin-top:12px">
+                <button class="btn btn-ghost" type="button" data-reset="book">Pick a different day</button>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEFORE / AFTER -->
+    <div class="wash" aria-hidden="true" style="--from:#fff;--to:var(--sky)"><svg viewBox="0 0 1000 60" preserveAspectRatio="none"><polygon points="0,0 1000,0 1000,20 0,60"/><line x1="0" y1="60" x2="1000" y2="20"/></svg></div>
+    <section class="bg-sky" style="padding-top:24px" aria-labelledby="ba-title">
+      <div class="wrap">
+        <div class="ba-head">
+          <div>
+            <p class="eyebrow">See the difference</p>
+            <h2 id="ba-title">Drag the line.</h2>
+          </div>
+          <div class="scene-tabs" role="group" aria-label="Choose a project">
+            <button type="button" data-scene="driveway" aria-pressed="true">Driveway</button>
+            <button type="button" data-scene="fence" aria-pressed="false">Fence</button>
+            <button type="button" data-scene="house" aria-pressed="false">House</button>
+          </div>
+        </div>
+        <div class="ba" id="ba">
+          <img class="after" id="img-after" src="img/driveway-after.svg" alt="Driveway after power washing: light, clean concrete" />
+          <img class="before" id="img-before" src="img/driveway-before.svg" alt="Driveway before power washing: dark, stained concrete with weeds" />
+          <span class="tag l">Before</span><span class="tag r">After</span>
+          <div class="handle" aria-hidden="true"><span>↔</span></div>
+          <input type="range" id="ba-range" min="0" max="100" value="50" aria-label="Before and after slider" />
+        </div>
+        <p class="ph-note">Placeholder illustrations. Aidan's real before and after photos go here.</p>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <div class="wash" aria-hidden="true" style="--from:var(--sky);--to:#fff"><svg viewBox="0 0 1000 60" preserveAspectRatio="none"><polygon points="0,0 1000,0 1000,20 0,60"/><line x1="0" y1="60" x2="1000" y2="20"/></svg></div>
+    <section id="services" style="padding-top:24px" aria-labelledby="svc-title">
+      <div class="wrap">
+        <p class="eyebrow">What I wash</p>
+        <h2 id="svc-title">Three things, done properly.</h2>
+        <div class="cards3">
+          <article class="card svc">
+            <img src="img/driveway-after.svg" alt="A clean concrete driveway leading to a garage" loading="lazy" />
+            <div>
+              <h3>Driveways and walkways</h3>
+              <p>Oil spots, tire marks and green creep gone, with the weeds pulled from the cracks.</p>
+              <a href="#quote">Get an estimate →</a>
+            </div>
+          </article>
+          <article class="card svc">
+            <img src="img/fence-after.svg" alt="A clean cedar privacy fence" loading="lazy" />
+            <div>
+              <h3>Fences and gates</h3>
+              <p>Gray, mossy wood back to its real color, washed gently so it isn't damaged.</p>
+              <a href="#quote">Get an estimate →</a>
+            </div>
+          </article>
+          <article class="card svc">
+            <img src="img/house-after.svg" alt="A clean white house with a blue front door" loading="lazy" />
+            <div>
+              <h3>House exteriors</h3>
+              <p>Siding, trim and soffits cleaned with the right pressure for each surface.</p>
+              <a href="#quote">Get an estimate →</a>
+            </div>
+          </article>
+        </div>
+
+        <div class="seasonal">
+          <h3>More help, through your account</h3>
+          <p class="lead" style="font-size:1.05rem;margin-top:4px">Once you've signed in, you can ask for these too. No phone tag.</p>
+          <div class="cards3 small">
+            <div class="tile">
+              <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3c4 3 6 6 6 9a6 6 0 0 1-12 0c0-3 2-6 6-9z"/><path d="M12 21v-9"/></svg></span>
+              <div><span class="badge">Open now</span><h3 style="font-size:1.1rem">Autumn yard cleanup</h3><p>Leaves, debris and beds cleared before the first freeze.</p></div>
+            </div>
+            <div class="tile">
+              <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20M4.9 6l14.2 12M19.1 6 4.9 18M2 12h20"/></svg></span>
+              <div><span class="badge quiet">Winter</span><h3 style="font-size:1.1rem">Snow removal</h3><p>Driveway and walkway, cleared when it snows.</p></div>
+            </div>
+            <div class="tile">
+              <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V10l6-6 6 6v11M10 21v-6h4v6"/></svg></span>
+              <div><span class="badge quiet">Coming soon</span><h3 style="font-size:1.1rem">Landscape design</h3><p>Plans for beds, borders and the whole yard.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <div class="wash" aria-hidden="true" style="--from:#fff;--to:var(--ink)"><svg viewBox="0 0 1000 60" preserveAspectRatio="none"><polygon points="0,0 1000,0 1000,20 0,60"/><line x1="0" y1="60" x2="1000" y2="20"/></svg></div>
+    <section id="how" class="bg-ink" style="padding-top:24px" aria-labelledby="how-title">
+      <div class="wrap">
+        <p class="eyebrow">How it works</p>
+        <h2 id="how-title">Three steps. That's it.</h2>
+        <ol class="steps">
+          <li><h3>Send your address</h3><p>One short form. Takes about a minute.</p></li>
+          <li><h3>I look at your property</h3><p>I review it before I quote, so the price is real.</p></li>
+          <li><h3>You get a price and a time</h3><p>Say yes and it's on the calendar. I'll text before I arrive.</p></li>
+        </ol>
+        <p style="margin-top:32px"><a class="btn btn-accent" href="#quote">Start with my address</a></p>
+      </div>
+    </section>
+
+    <!-- PORTAL -->
+    <div class="wash" aria-hidden="true" style="--from:var(--ink);--to:var(--mist)"><svg viewBox="0 0 1000 60" preserveAspectRatio="none"><polygon points="0,0 1000,0 1000,20 0,60"/><line x1="0" y1="60" x2="1000" y2="20"/></svg></div>
+    <section id="portal" class="bg-mist" style="padding-top:24px" aria-labelledby="portal-title">
+      <div class="wrap">
+        <p class="eyebrow">For customers</p>
+        <h2 id="portal-title">Your requests, in one place.</h2>
+        <p class="lead">Sign in to see where things stand, or ask for autumn cleanup, snow removal and more.</p>
+        <div class="portal">
+          <div class="card signin">
+            <h3>Sign in</h3>
+            <p class="sub">Use the email you gave me.</p>
+            <form id="form-signin" novalidate>
+              <div class="field"><label for="s-email">Email</label><input type="email" id="s-email" autocomplete="email" /></div>
+              <div class="field"><label for="s-pass">Password</label><input type="password" id="s-pass" autocomplete="current-password" /></div>
+              <button class="btn btn-primary btn-block" type="submit">Sign in</button>
+              <p class="or">or</p>
+              <button class="btn btn-ghost btn-block" type="button" id="magic">Email me a sign-in link</button>
+              <p class="msg" role="status" hidden id="s-msg"></p>
+            </form>
+            <p class="fine" style="text-align:left">First time? You're added after your first estimate, so there's nothing to set up.</p>
+          </div>
+
+          <div class="card dash" aria-label="Sample customer dashboard">
+            <header><h3>Your requests</h3><span class="sample">Sample</span></header>
+            <div class="req"><b>Driveway wash</b><small>Thursday, Oct 23 · Morning</small><span class="status s-sched">Scheduled</span></div>
+            <div class="req"><b>Fence wash</b><small>Estimate ready: $—</small><span class="status s-wait">Needs your OK</span></div>
+            <div class="req"><b>Autumn yard cleanup</b><small>Sent today</small><span class="status s-new">Received</span></div>
+            <div class="actions">
+              <button class="act" type="button">+ Autumn cleanup</button>
+              <button class="act" type="button">+ Snow removal</button>
+              <button class="act" type="button" aria-disabled="true">+ Landscape design (soon)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST -->
+    <section aria-labelledby="trust-title">
+      <div class="wrap trust">
+        <div class="portrait" role="img" aria-label="Placeholder for a photo of Aidan">Photo of Aidan<br />goes here</div>
+        <div>
+          <p class="eyebrow">Who you're hiring</p>
+          <h2 id="trust-title">Hi, I'm Aidan.</h2>
+          <p class="lead" style="margin-top:12px">I started Matthews Home Exteriors because I like making things look the way they should. This is my name on every job, so I take it personally.</p>
+          <ul class="promises">
+            <li><span class="tick" aria-hidden="true">✓</span><div><b>Price in writing first</b><span>You'll know the cost before any work starts.</span></div></li>
+            <li><span class="tick" aria-hidden="true">✓</span><div><b>I text before I arrive</b><span>No guessing when someone's pulling in.</span></div></li>
+            <li><span class="tick" aria-hidden="true">✓</span><div><b>Not happy? I come back</b><span>If a spot isn't right, I fix it.</span></div></li>
+          </ul>
+          <div class="reviews">Reviews will go here once there are real ones. Nothing made up.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div>
+        <a class="brand" href="#top"><img src="favicon.svg" alt="" width="42" height="42" /><span>Matthews<small>Home Exteriors</small></span></a>
+        <p style="margin-top:12px">Serving: [service area to be added]</p>
+      </div>
+      <div>
+        <p>Phone: [to be added]<br />Email: [to be added]</p>
+        <p style="margin-top:12px"><a href="#quote">Get an estimate</a> · <a href="#portal">Sign in</a></p>
+      </div>
+      <p style="flex-basis:100%;font-size:.88rem">Prototype for review. Name, logo, domain and photos are not final. Built by REQS TECH.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
