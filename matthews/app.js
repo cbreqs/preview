@@ -1,4 +1,4 @@
-/* Matthews Home Exteriors: prototype behavior.
+/* Matthews Outdoor Services: prototype behavior.
    Nothing here talks to a server yet. Forms show their "what happens next"
    state so the flow can be judged. Wiring notes are in README.md. */
 (function () {
