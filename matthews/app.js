@@ -1,6 +1,5 @@
-/* Matthews Outdoor Services: prototype behavior.
-   Nothing here talks to a server yet. Forms show their "what happens next"
-   state so the flow can be judged. Wiring notes are in README.md. */
+/* Matthews Outdoor Services: site behavior.
+   Requests and sign-in go through window.MOS (see firebase.js). */
 (function () {
   'use strict';
   const $ = (s, r = document) => r.querySelector(s);
@@ -55,6 +54,16 @@
   function address(form) { return [form.street.value.trim(), form.city && form.city.value.trim()].filter(Boolean).join(', '); }
   function fill(root, key, val) { $$(`[data-fill="${key}"]`, root).forEach(n => n.textContent = val); }
 
+  const SEND_FAIL = 'That did not send. Please try again, or email service@matthewsoutdoorservices.com.';
+  function save(data) {
+    if (!window.MOS) return Promise.reject(new Error('offline'));
+    return window.MOS.saveRequest(data);
+  }
+  function busy(f, on) {
+    const b = f.querySelector('button[type=submit]');
+    b.disabled = on; b.setAttribute('aria-busy', String(on));
+  }
+
   $('#form-estimate').addEventListener('submit', e => {
     e.preventDefault();
     const f = e.target, err = $('#e-error');
@@ -64,9 +73,20 @@
     if (!f.name.value.trim()) return fail(err, 'What should I call you?'), f.name.focus();
     if (!f.contact.value.trim()) return fail(err, 'Add a phone or email so I can reply.'), f.contact.focus();
     const done = $('#done-estimate');
-    fill(done, 'name', f.name.value.trim());
-    fill(done, 'address', address(f));
-    f.hidden = true; done.hidden = false; done.focus();
+    busy(f, true);
+    save({
+      type: 'estimate',
+      street: f.street.value.trim(),
+      city: f.city.value.trim(),
+      name: f.name.value.trim(),
+      contact: f.contact.value.trim(),
+      chips: $$('input[name=what]:checked', f).map(x => x.value),
+      notes: f.notes.value.trim()
+    }).then(() => {
+      fill(done, 'name', f.name.value.trim());
+      fill(done, 'address', address(f));
+      f.hidden = true; done.hidden = false; done.focus();
+    }).catch(() => fail(err, SEND_FAIL)).finally(() => busy(f, false));
   });
 
   $('#form-book').addEventListener('submit', e => {
@@ -80,9 +100,19 @@
     if (!f.contact.value.trim()) return fail(err, 'Add a phone or email so I can confirm.'), f.contact.focus();
     const w = f.querySelector('input[name=window]:checked').value;
     const done = $('#done-book');
-    fill(done, 'when', day.value + (w === 'Any' ? '' : ', ' + w.toLowerCase()));
-    fill(done, 'address', f.street.value.trim());
-    f.hidden = true; done.hidden = false; done.focus();
+    busy(f, true);
+    save({
+      type: 'booking',
+      street: f.street.value.trim(),
+      name: f.name.value.trim(),
+      contact: f.contact.value.trim(),
+      day: day.value,
+      window: w
+    }).then(() => {
+      fill(done, 'when', day.value + (w === 'Any' ? '' : ', ' + w.toLowerCase()));
+      fill(done, 'address', f.street.value.trim());
+      f.hidden = true; done.hidden = false; done.focus();
+    }).catch(() => fail(err, SEND_FAIL)).finally(() => busy(f, false));
   });
 
   $$('[data-reset]').forEach(b => b.addEventListener('click', () => {
@@ -92,20 +122,84 @@
     f.reset(); f.hidden = false; f.querySelector('input[type=text]').focus();
   }));
 
-  /* ---- sign in (prototype only) ---- */
+  /* ---- sign in (email link) ---- */
   const sMsg = $('#s-msg');
+  function say(box, text) { box.textContent = text; box.hidden = false; }
   $('#form-signin').addEventListener('submit', e => {
     e.preventDefault();
-    sMsg.textContent = 'Prototype only: sign-in isn\'t connected yet. The panel on the right shows what you\'d see.';
-    sMsg.hidden = false;
-  });
-  $('#magic').addEventListener('click', () => {
     const v = $('#s-email').value.trim();
-    sMsg.textContent = v ? 'Prototype only. In the real site, a sign-in link would be sent to ' + v + '.' : 'Add your email above first.';
-    sMsg.hidden = false;
-    if (!v) $('#s-email').focus();
+    if (!v) { say(sMsg, 'Add your email above first.'); $('#s-email').focus(); return; }
+    if (!window.MOS) { say(sMsg, 'Sign-in is not available right now. Please try again in a moment.'); return; }
+    const btn = $('#s-send'); btn.disabled = true;
+    window.MOS.sendLink(v)
+      .then(() => say(sMsg, 'Sent. Check ' + v + ' and tap the link. It may take a minute, and check spam too.'))
+      .catch(() => say(sMsg, 'That did not send. Check the email address and try again.'))
+      .finally(() => { btn.disabled = false; });
   });
   $('#signin-link').addEventListener('click', () => setTimeout(() => $('#s-email').focus({ preventScroll: true }), 400));
+  $('#signout').addEventListener('click', () => window.MOS && window.MOS.signOut());
+
+  const STATUS = {
+    new: ['s-new', 'Received'],
+    scheduled: ['s-sched', 'Scheduled'],
+    quoted: ['s-wait', 'Needs your OK'],
+    done: ['s-sched', 'Done']
+  };
+  const dMsg = $('#d-msg');
+  function titleFor(r) {
+    if (r.type === 'seasonal') return r.notes || 'Seasonal request';
+    if (r.type === 'booking') return 'Power washing visit';
+    return 'Estimate: ' + ((r.chips && r.chips.length) ? r.chips.join(', ') : 'power washing');
+  }
+  function renderRows(rows) {
+    const list = $('#d-list');
+    list.textContent = '';
+    if (!rows.length) {
+      const p = document.createElement('p'); p.className = 'fine'; p.style.textAlign = 'left';
+      p.textContent = 'Nothing yet. Ask for an estimate above, or request a seasonal job below.';
+      list.appendChild(p); return;
+    }
+    rows.forEach(r => {
+      const row = document.createElement('div'); row.className = 'req';
+      const b = document.createElement('b'); b.textContent = titleFor(r);
+      const sm = document.createElement('small');
+      sm.textContent = [r.street, r.day && (r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : ''))].filter(Boolean).join(' · ');
+      const st = STATUS[r.status] || STATUS.new;
+      const sp = document.createElement('span'); sp.className = 'status ' + st[0]; sp.textContent = st[1];
+      row.append(b, sm, sp);
+      list.appendChild(row);
+    });
+  }
+  let lastRows = [];
+  function refresh() {
+    return window.MOS.myRequests().then(rows => { lastRows = rows; renderRows(rows); })
+      .catch(() => say(dMsg, 'Could not load your requests. Please refresh.'));
+  }
+  function onUser(u) {
+    $('#form-signin').hidden = !!u;
+    $('#signed').hidden = !u;
+    $('#dash-sample').hidden = !!u;
+    $('#dash-live').hidden = !u;
+    $('.dash').setAttribute('aria-label', u ? 'Your requests' : 'Sample customer dashboard');
+    if (u) { $('#s-who').textContent = u.email; refresh(); }
+  }
+  $$('#dash-live [data-svc]').forEach(b => b.addEventListener('click', () => {
+    const u = window.MOS.user(); if (!u) return;
+    const last = lastRows.find(r => r.street);
+    b.disabled = true; dMsg.hidden = true;
+    window.MOS.saveRequest({
+      type: 'seasonal',
+      street: last ? last.street : 'Address on file',
+      name: (last && last.name) || u.email.split('@')[0],
+      contact: u.email.toLowerCase(),
+      notes: b.dataset.svc
+    }).then(() => { say(dMsg, 'Got it. I\'ll follow up on ' + b.dataset.svc.toLowerCase() + '.'); return refresh(); })
+      .catch(() => say(dMsg, 'That did not send. Please try again.'))
+      .finally(() => { b.disabled = false; });
+  }));
+  window.addEventListener('mos-auth-error', () => say(sMsg, 'That link did not work. It may have expired. Send yourself a new one.'));
+  function hookAuth() { window.MOS.onUser(onUser); }
+  if (window.MOS) hookAuth(); else window.addEventListener('mos-ready', hookAuth, { once: true });
 
   /* ---- before / after ---- */
   const ba = $('#ba'), range = $('#ba-range');

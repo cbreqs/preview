@@ -261,19 +261,21 @@
         <div class="portal">
           <div class="card signin">
             <h3>Sign in</h3>
-            <p class="sub">Use the email you gave me.</p>
+            <p class="sub">I'll send a link. Tap it and you're in.</p>
             <form id="form-signin" novalidate>
               <div class="field"><label for="s-email">Email</label><input type="email" id="s-email" autocomplete="email" /></div>
-              <div class="field"><label for="s-pass">Password</label><input type="password" id="s-pass" autocomplete="current-password" /></div>
-              <button class="btn btn-primary btn-block" type="submit">Sign in</button>
-              <p class="or">or</p>
-              <button class="btn btn-ghost btn-block" type="button" id="magic">Email me a sign-in link</button>
+              <button class="btn btn-primary btn-block" type="submit" id="s-send">Email me a sign-in link</button>
               <p class="msg" role="status" hidden id="s-msg"></p>
             </form>
-            <p class="fine" style="text-align:left">First time? You're added after your first estimate, so there's nothing to set up.</p>
+            <div id="signed" hidden>
+              <p>Signed in as <b id="s-who"></b></p>
+              <button class="btn btn-ghost btn-block" type="button" id="signout">Sign out</button>
+            </div>
+            <p class="fine" style="text-align:left">No password. Ask for an estimate first, then sign in with the same email to see it here.</p>
           </div>
 
           <div class="card dash" aria-label="Sample customer dashboard">
+            <div id="dash-sample">
             <header><h3>Your requests</h3><span class="sample">Sample</span></header>
             <div class="req"><b>Driveway wash</b><small>Thursday, Oct 23 · Morning</small><span class="status s-sched">Scheduled</span></div>
             <div class="req"><b>Fence wash</b><small>Estimate ready: $—</small><span class="status s-wait">Needs your OK</span></div>
@@ -282,6 +284,17 @@
               <button class="act" type="button">+ Autumn cleanup</button>
               <button class="act" type="button">+ Snow removal</button>
               <button class="act" type="button" aria-disabled="true">+ Landscape design (soon)</button>
+            </div>
+            </div>
+            <div id="dash-live" hidden>
+              <header><h3>Your requests</h3></header>
+              <div id="d-list"></div>
+              <p class="msg" role="status" hidden id="d-msg"></p>
+              <div class="actions">
+                <button class="act" type="button" data-svc="Autumn yard cleanup">+ Autumn cleanup</button>
+                <button class="act" type="button" data-svc="Snow removal">+ Snow removal</button>
+                <button class="act" type="button" aria-disabled="true">+ Landscape design (soon)</button>
+              </div>
             </div>
           </div>
         </div>
@@ -321,6 +334,7 @@
     </div>
   </footer>
 
+  <script type="module" src="firebase.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
