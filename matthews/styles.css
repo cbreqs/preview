@@ -53,16 +53,6 @@ p { max-width: 62ch; }
 .skip { position: absolute; left: 8px; top: -60px; background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 8px; z-index: 100; }
 .skip:focus { top: 8px; }
 
-/* ---------- draft banner ---------- */
-.draft { background: var(--ink); color: #fff; font-size: 0.95rem; }
-.draft .wrap { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding-block: 10px; }
-.draft strong { color: var(--accent); }
-.swatches { display: flex; gap: 8px; align-items: center; }
-.swatch { width: 28px; height: 28px; border-radius: 50%; border: 3px solid rgba(255,255,255,.35); cursor: pointer; }
-.swatch[aria-pressed="true"] { border-color: #fff; }
-.swatch[data-set="marigold"] { background: #F4B13E; }
-.swatch[data-set="coral"] { background: #F2765A; }
-.swatch[data-set="leaf"] { background: #8CC63F; }
 
 /* ---------- nav ---------- */
 .nav { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
