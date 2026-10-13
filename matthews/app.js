@@ -111,14 +111,14 @@
   const ba = $('#ba'), range = $('#ba-range');
   range.addEventListener('input', () => ba.style.setProperty('--pos', range.value + '%'));
   const alts = {
-    driveway: ['Driveway after power washing: light, clean concrete', 'Driveway before power washing: dark, stained concrete with weeds'],
-    fence: ['Fence after power washing: warm, clean cedar', 'Fence before power washing: gray, mossy wood'],
-    house: ['House after power washing: bright siding and a blue door', 'House before power washing: dingy, streaked siding']
+    fence: ['Fence after power washing: bright, clean white panels', 'Fence before power washing: white panels streaked with green grime'],
+    porch: ['Porch slab after power washing: clean, even concrete', 'Porch slab before power washing: dark stains and mildew'],
+    yard: ['Yard after cleanup: fresh mulch bed and trimmed lawn edge', 'Yard before cleanup: overgrown bed with cut branches on the lawn']
   };
   $$('.scene-tabs button').forEach(b => b.addEventListener('click', () => {
     const s = b.dataset.scene;
     $$('.scene-tabs button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-    $('#img-after').src = `img/${s}-after.svg`;  $('#img-after').alt = alts[s][0];
-    $('#img-before').src = `img/${s}-before.svg`; $('#img-before').alt = alts[s][1];
+    $('#img-after').src = `img/${s}-after.jpg`;  $('#img-after').alt = alts[s][0];
+    $('#img-before').src = `img/${s}-before.jpg`; $('#img-before').alt = alts[s][1];
   }));
 })();
