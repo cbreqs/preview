@@ -139,6 +139,7 @@
     quoted: ['s-wait', 'Needs your OK'],
     done: ['s-sched', 'Done']
   };
+  const ADMINS = ['singularity@reqs.tech', 'service@matthewsoutdoorservices.com']; // menu link only; Firestore rules enforce access
   const dMsg = $('#d-msg');
   function titleFor(r) {
     if (r.type === 'seasonal') return r.notes || 'Seasonal request';
@@ -157,7 +158,7 @@
       const row = document.createElement('div'); row.className = 'req';
       const b = document.createElement('b'); b.textContent = titleFor(r);
       const sm = document.createElement('small');
-      sm.textContent = [r.street, r.day && (r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : ''))].filter(Boolean).join(' · ');
+      sm.textContent = [r.street, r.day && (r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : '')), r.quote && ('Estimate: ' + r.quote)].filter(Boolean).join(' \u00b7 ');
       const st = STATUS[r.status] || STATUS.new;
       const sp = document.createElement('span'); sp.className = 'status ' + st[0]; sp.textContent = st[1];
       row.append(b, sm, sp);
@@ -175,6 +176,11 @@
     $('#dash-sample').hidden = !!u;
     $('#dash-live').hidden = !u;
     $('.dash').setAttribute('aria-label', u ? 'Your requests' : 'Sample customer dashboard');
+    const nb = $('#signin-link');
+    nb.classList.toggle('is-in', !!u);
+    nb.textContent = u ? '\u2713 Signed in' : 'Sign in';
+    nb.setAttribute('aria-label', u ? 'Signed in as ' + u.email + '. Go to your requests.' : 'Sign in');
+    $('#nav-admin').hidden = !(u && ADMINS.indexOf((u.email || '').toLowerCase()) > -1);
     if (u) { $('#s-who').textContent = u.email; refresh(); }
   }
   $$('#dash-live [data-svc]').forEach(b => b.addEventListener('click', () => {

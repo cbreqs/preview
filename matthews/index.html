@@ -18,14 +18,17 @@
   <header class="nav">
     <div class="wrap">
       <a class="brand" href="#top" aria-label="Matthews Outdoor Services, home">
-        <img src="favicon.svg" alt="" width="42" height="42" />
-        <span>Matthews<small>Outdoor Services</small></span>
+        <picture>
+          <source media="(max-width: 820px)" srcset="img/logo-stacked-ink.png" />
+          <img class="logo" src="img/logo-wordmark-ink.png" alt="Matthews Outdoor Services" width="1714" height="92" />
+        </picture>
       </a>
       <nav aria-label="Main">
         <ul>
           <li class="hide-sm"><a href="#services">Services</a></li>
           <li class="hide-sm"><a href="#how">How it works</a></li>
           <li><a href="#quote" data-tab="book">Schedule</a></li>
+          <li id="nav-admin" hidden><a href="admin.html">Admin</a></li>
           <li><a class="btn btn-ghost" href="#portal" id="signin-link" style="min-height:44px;padding:6px 18px">Sign in</a></li>
         </ul>
       </nav>
@@ -311,7 +314,7 @@
   <footer>
     <div class="wrap">
       <div>
-        <a class="brand" href="#top"><img src="favicon.svg" alt="" width="42" height="42" /><span>Matthews<small>Outdoor Services</small></span></a>
+        <a class="brand" href="#top" aria-label="Matthews Outdoor Services, home"><img class="logo-foot" src="img/logo-wide-white.png" alt="Matthews Outdoor Services: driveway, fence, yard" width="1714" height="199" /></a>
         <p style="margin-top:12px">Serving Belton, Raymore, Peculiar and Harrisonville</p>
       </div>
       <div>

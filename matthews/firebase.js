@@ -7,7 +7,7 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp
+  getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -76,6 +76,18 @@ window.MOS = {
     return rows;
   },
 
+  async allRequests() {
+    const snap = await getDocs(query(collection(db, 'requests'), orderBy('createdAt', 'desc')));
+    const rows = [];
+    snap.forEach(d => {
+      const x = d.data(); x.id = d.id;
+      x.when = x.createdAt && x.createdAt.toMillis ? x.createdAt.toMillis() : Date.now();
+      rows.push(x);
+    });
+    return rows;
+  },
+  updateRequest(id, patch) { return updateDoc(doc(db, 'requests', id), patch); },
+
   user() { return auth.currentUser; },
   signOut() { return signOut(auth); },
   onUser(cb) { return onAuthStateChanged(auth, cb); }
@@ -91,7 +103,7 @@ window.MOS = {
   try {
     await signInWithEmailLink(auth, email, location.href);
     try { localStorage.removeItem(EMAIL_KEY); } catch (e) {}
-    history.replaceState(null, '', location.pathname + '#portal');
+    history.replaceState(null, '', location.pathname + (document.getElementById('portal') ? '#portal' : ''));
   } catch (e) {
     window.dispatchEvent(new CustomEvent('mos-auth-error'));
   }

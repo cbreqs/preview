@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-accent="coral">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | Matthews Outdoor Services</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <a class="brand" href="index.html" aria-label="Matthews Outdoor Services, home">
+        <picture>
+          <source media="(max-width: 820px)" srcset="img/logo-stacked-ink.png" />
+          <img class="logo" src="img/logo-wordmark-ink.png" alt="Matthews Outdoor Services" width="1714" height="92" />
+        </picture>
+      </a>
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="index.html">Back to site</a></li>
+          <li id="who-li" hidden><a class="btn btn-ghost is-in" href="#" id="out" style="min-height:44px;padding:6px 18px">Sign out</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap" style="padding-bottom:64px">
+    <div class="admin-bar">
+      <h1>Requests</h1>
+      <p id="who" class="fine" hidden></p>
+    </div>
+
+    <section id="gate" class="card" style="max-width:460px">
+      <h2 style="font-size:1.3rem">Admin sign in</h2>
+      <p class="sub">I'll send a link to your email.</p>
+      <form id="form-in" novalidate>
+        <div class="field"><label for="a-email">Email</label><input type="email" id="a-email" autocomplete="email" /></div>
+        <button class="btn btn-primary btn-block" type="submit" id="a-send">Email me a sign-in link</button>
+        <p class="msg" role="status" hidden id="a-msg"></p>
+      </form>
+    </section>
+
+    <section id="panel" hidden>
+      <div class="admin-filters" role="group" aria-label="Filter requests" id="filters"></div>
+      <p class="msg" role="status" hidden id="p-msg"></p>
+      <div id="list"></div>
+    </section>
+  </main>
+
+  <script type="module" src="firebase.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    const $ = s => document.querySelector(s);
+    const STATUS = [['new', 'New'], ['quoted', 'Estimate sent'], ['scheduled', 'Scheduled'], ['done', 'Done']];
+    const TYPE = { estimate: 'Estimate', booking: 'Booking', seasonal: 'Seasonal' };
+    let rows = [], filter = 'all';
+
+    function say(box, t) { box.textContent = t; box.hidden = false; }
+    function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+    function fmt(ms) { return new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+
+    function filters() {
+      const box = $('#filters'); box.textContent = '';
+      [['all', 'All']].concat(STATUS).forEach(f => {
+        const n = rows.filter(r => f[0] === 'all' || (r.status || 'new') === f[0]).length;
+        const b = el('button', null, f[1] + ' (' + n + ')');
+        b.type = 'button'; b.setAttribute('aria-pressed', String(filter === f[0]));
+        b.addEventListener('click', () => { filter = f[0]; filters(); render(); });
+        box.appendChild(b);
+      });
+    }
+
+    function card(r) {
+      const c = el('article', 'a-card');
+      const top = el('div', 'a-top');
+      top.append(el('b', null, (TYPE[r.type] || 'Request') + ': ' + (r.name || '')), el('small', null, fmt(r.when)));
+      c.appendChild(top);
+
+      const meta = el('div', 'a-meta');
+      const addr = [r.street, r.city].filter(Boolean).join(', ');
+      const map = el('a', null, addr); map.target = '_blank'; map.rel = 'noopener';
+      map.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
+      meta.appendChild(map);
+      const ct = el('a', null, r.contact || '');
+      ct.href = (r.contact || '').indexOf('@') > -1 ? 'mailto:' + r.contact : 'tel:' + (r.contact || '').replace(/[^\d+]/g, '');
+      meta.appendChild(ct);
+      c.appendChild(meta);
+
+      const bits = [];
+      if (r.chips && r.chips.length) bits.push('Wash: ' + r.chips.join(', '));
+      if (r.day) bits.push('Day: ' + r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : ''));
+      if (bits.length) c.appendChild(el('p', null, bits.join(' · ')));
+      if (r.notes) c.appendChild(el('p', 'a-note', r.notes));
+
+      const ed = el('div', 'a-edit');
+      const l1 = el('label', null, 'Status'); const sel = el('select');
+      STATUS.forEach(s => { const o = el('option', null, s[1]); o.value = s[0]; if ((r.status || 'new') === s[0]) o.selected = true; sel.appendChild(o); });
+      l1.appendChild(sel);
+      const l2 = el('label', null, 'Estimate shown to customer'); const q = el('input');
+      q.type = 'text'; q.placeholder = '$150'; q.value = r.quote || ''; l2.appendChild(q);
+      const save = el('button', 'btn btn-primary', 'Save'); save.type = 'button'; save.style.minHeight = '44px';
+      const ok = el('span', 'saved'); ok.setAttribute('role', 'status');
+      save.addEventListener('click', () => {
+        save.disabled = true; ok.textContent = '';
+        const patch = { status: sel.value, quote: q.value.trim() };
+        window.MOS.updateRequest(r.id, patch)
+          .then(() => { Object.assign(r, patch); ok.textContent = 'Saved'; filters(); })
+          .catch(() => { ok.textContent = 'Did not save. Try again.'; })
+          .finally(() => { save.disabled = false; });
+      });
+      ed.append(l1, l2, save, ok);
+      c.appendChild(ed);
+      return c;
+    }
+
+    function render() {
+      const list = $('#list'); list.textContent = '';
+      const shown = rows.filter(r => filter === 'all' || (r.status || 'new') === filter);
+      if (!shown.length) { list.appendChild(el('p', 'fine', 'Nothing here yet.')); return; }
+      shown.forEach(r => list.appendChild(card(r)));
+    }
+
+    function load() {
+      $('#p-msg').hidden = true;
+      return window.MOS.allRequests().then(r => { rows = r; filters(); render(); $('#panel').hidden = false; })
+        .catch(() => { $('#panel').hidden = true; say($('#a-msg'), 'This account does not have admin access.'); $('#gate').hidden = false; });
+    }
+
+    function onUser(u) {
+      $('#who-li').hidden = !u; $('#who').hidden = !u;
+      $('#gate').hidden = !!u;
+      if (u) { $('#who').textContent = 'Signed in as ' + u.email; load(); } else { $('#panel').hidden = true; }
+    }
+
+    $('#form-in').addEventListener('submit', e => {
+      e.preventDefault();
+      const v = $('#a-email').value.trim(), m = $('#a-msg');
+      if (!v) { say(m, 'Add your email first.'); return; }
+      $('#a-send').disabled = true;
+      window.MOS.sendLink(v).then(() => say(m, 'Sent. Check ' + v + ' and tap the link.'))
+        .catch(() => say(m, 'That did not send. Check the address and try again.'))
+        .finally(() => { $('#a-send').disabled = false; });
+    });
+    $('#out').addEventListener('click', e => { e.preventDefault(); window.MOS.signOut(); });
+    window.addEventListener('mos-auth-error', () => say($('#a-msg'), 'That link did not work. Send a new one.'));
+    function hook() { window.MOS.onUser(onUser); }
+    if (window.MOS) hook(); else window.addEventListener('mos-ready', hook, { once: true });
+  })();
+  </script>
+</body>
+</html>
