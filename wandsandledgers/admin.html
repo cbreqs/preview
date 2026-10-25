@@ -273,6 +273,68 @@
         <p class="state">Loading…</p>
       </div>
 
+      <form class="form" id="gen-form">
+        <p class="form-title">Add a whole season of times</p>
+        <p class="page-sub" style="margin-bottom: 1.25rem;">
+          Pick a booking type, a date range and your weekly hours, and every opening is created
+          at once. Each time lasts as long as the booking type, and anything that would overlap
+          a time already on the calendar is skipped, so a 30 minute and a 50 minute session can
+          never land on top of each other. Run it once per booking type.
+        </p>
+
+        <div class="field">
+          <label for="gen-type">Booking type</label>
+          <select id="gen-type" required>
+            <option value="">Choose one…</option>
+          </select>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="gen-from">First day</label>
+            <input type="date" id="gen-from" required />
+          </div>
+          <div class="field">
+            <label for="gen-to">Last day</label>
+            <input type="date" id="gen-to" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="gen-start">Day starts</label>
+            <input type="time" id="gen-start" value="09:00" required />
+          </div>
+          <div class="field">
+            <label for="gen-end">Day ends</label>
+            <input type="time" id="gen-end" value="17:00" required />
+          </div>
+          <div class="field">
+            <label for="gen-gap">Break between (min)</label>
+            <input type="number" id="gen-gap" min="0" step="5" value="10" required />
+          </div>
+          <div class="field">
+            <label for="gen-capacity">Spots per time</label>
+            <input type="number" id="gen-capacity" min="1" step="1" value="1" required />
+          </div>
+        </div>
+
+        <div class="field-row" id="gen-days">
+          <div class="field check"><input type="checkbox" id="gen-d1" value="1" checked /><label for="gen-d1">Mon</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d2" value="2" checked /><label for="gen-d2">Tue</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d3" value="3" checked /><label for="gen-d3">Wed</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d4" value="4" checked /><label for="gen-d4">Thu</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d5" value="5" checked /><label for="gen-d5">Fri</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d6" value="6" /><label for="gen-d6">Sat</label></div>
+          <div class="field check"><input type="checkbox" id="gen-d0" value="0" /><label for="gen-d0">Sun</label></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" type="submit" id="gen-save">Create times</button>
+          <span class="status" id="gen-status" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+
       <form class="form" id="slot-form">
         <p class="form-title" id="slot-form-title">Add a bookable time</p>
 
@@ -350,7 +412,7 @@
     } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js';
     import {
       collection, doc, addDoc, updateDoc, deleteDoc, getDocs, query, orderBy, where,
-      Timestamp, runTransaction,
+      Timestamp, runTransaction, writeBatch,
     } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
 
     const auth = getAuth(app);
@@ -1227,6 +1289,7 @@
           id: d.id,
           name: d.data().name || 'Untitled',
           maxGroupSize: d.data().maxGroupSize ?? 1,
+          durationMinutes: d.data().durationMinutes ?? 30,
         }));
         refreshSlotTypePicker();
 
@@ -1338,6 +1401,7 @@
       }));
 
       select.value = typeOptions.some((t) => t.id === previous) ? previous : '';
+      refreshGenTypePicker();
     }
 
     // Suggest the type's max group size as the slot's capacity — the common
@@ -1395,6 +1459,15 @@
           isCancelled: false,
         };
 
+        if (!editingSlot) {
+          const win = { start: start.getTime(), end: start.getTime() + type.durationMinutes * 60000 };
+          const clash = (await existingWindows()).some((w) => overlaps(w, win));
+          if (clash && !confirm('That overlaps another time already on the calendar. Add it anyway?')) {
+            setStatus(slStatus, '');
+            return;
+          }
+        }
+
         if (editingSlot) {
           // bookedCount is never part of this form — it's only ever changed
           // by a booking being made or cancelled, never by hand here.
@@ -1411,6 +1484,139 @@
         setStatus(slStatus, explain(error), 'error');
       } finally {
         $('sl-save').disabled = false;
+      }
+    });
+
+    /* ── season generator + overlap check ───────────────────────────────
+
+       A slot only stores its start; how long it lasts comes from its booking
+       type. Two slots overlap when one starts before the other ends, whatever
+       their types. Keeping every moment of the day in at most one slot is what
+       stops a 30 minute and a 50 minute booking landing on the same time. */
+
+    async function existingWindows() {
+      const snap = await getDocs(query(slots, orderBy('start')));
+      const windows = [];
+      for (const d of snap.docs) {
+        const data = d.data();
+        if (data.isCancelled) continue;
+        const start = toDate(data.start);
+        if (!start) continue;
+        const type = typeOptions.find((t) => t.id === data.bookingTypeId);
+        windows.push({ id: d.id, start: start.getTime(), end: start.getTime() + (type?.durationMinutes ?? 30) * 60000 });
+      }
+      return windows;
+    }
+
+    const overlaps = (a, b) => a.start < b.end && b.start < a.end;
+
+    function refreshGenTypePicker() {
+      const select = $('gen-type');
+      const previous = select.value;
+      select.replaceChildren();
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Choose one…';
+      select.append(placeholder);
+      select.append(...typeOptions.map((type) => {
+        const option = document.createElement('option');
+        option.value = type.id;
+        option.textContent = `${type.name} (${type.durationMinutes} min)`;
+        return option;
+      }));
+      select.value = typeOptions.some((t) => t.id === previous) ? previous : '';
+    }
+
+    const genStatus = $('gen-status');
+
+    $('gen-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const type = typeOptions.find((t) => t.id === $('gen-type').value);
+      if (!type) { setStatus(genStatus, 'Choose a booking type first.', 'error'); return; }
+
+      const [fy, fm, fd] = $('gen-from').value.split('-').map(Number);
+      const [ty, tm, td] = $('gen-to').value.split('-').map(Number);
+      const first = new Date(fy, fm - 1, fd);
+      const last = new Date(ty, tm - 1, td);
+      if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime()) || last < first) {
+        setStatus(genStatus, 'The last day has to be on or after the first day.', 'error');
+        return;
+      }
+      if ((last - first) / 86400000 > 366) {
+        setStatus(genStatus, 'That is more than a year. Pick a shorter range.', 'error');
+        return;
+      }
+
+      const [sh, sm] = $('gen-start').value.split(':').map(Number);
+      const [eh, em] = $('gen-end').value.split(':').map(Number);
+      const dayStartMin = sh * 60 + sm;
+      const dayEndMin = eh * 60 + em;
+      if (!(dayEndMin > dayStartMin)) { setStatus(genStatus, 'The day has to end after it starts.', 'error'); return; }
+
+      const weekdays = [...document.querySelectorAll('#gen-days input:checked')].map((c) => Number(c.value));
+      if (!weekdays.length) { setStatus(genStatus, 'Pick at least one weekday.', 'error'); return; }
+
+      const gap = Math.max(0, Number($('gen-gap').value) || 0);
+      const capacity = Math.max(1, Number($('gen-capacity').value) || 1);
+      const step = type.durationMinutes + gap;
+
+      $('gen-save').disabled = true;
+      setStatus(genStatus, 'Working out the times…');
+
+      try {
+        const taken = await existingWindows();
+        const now = Date.now();
+        const planned = [];
+        let skipped = 0;
+
+        for (let day = new Date(first); day <= last; day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)) {
+          if (!weekdays.includes(day.getDay())) continue;
+          for (let t = dayStartMin; t + type.durationMinutes <= dayEndMin; t += step) {
+            const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(t / 60), t % 60);
+            const win = { start: start.getTime(), end: start.getTime() + type.durationMinutes * 60000 };
+            if (win.start < now) continue;
+            if (taken.some((w) => overlaps(w, win)) || planned.some((p) => overlaps(p.win, win))) { skipped += 1; continue; }
+            planned.push({ win, start });
+          }
+        }
+
+        if (!planned.length) {
+          setStatus(genStatus, skipped
+            ? `Nothing to add. All ${skipped} possible times overlap something already on the calendar.`
+            : 'Nothing to add. Check the dates, hours and weekdays.', 'error');
+          return;
+        }
+
+        const summary = `Create ${planned.length} "${type.name}" time${planned.length === 1 ? '' : 's'}`
+          + (skipped ? ` (skipping ${skipped} that overlap)` : '') + '?';
+        if (!confirm(summary)) { setStatus(genStatus, ''); return; }
+
+        setStatus(genStatus, 'Saving…');
+        for (let i = 0; i < planned.length; i += 400) {
+          const batch = writeBatch(db);
+          for (const { start } of planned.slice(i, i + 400)) {
+            batch.set(doc(slots), {
+              bookingTypeId: type.id,
+              bookingTypeName: type.name,
+              start: Timestamp.fromDate(start),
+              capacity,
+              location: '',
+              note: '',
+              isCancelled: false,
+              bookedCount: 0,
+            });
+          }
+          await batch.commit();
+        }
+
+        setStatus(genStatus, `Created ${planned.length} time${planned.length === 1 ? '' : 's'}.`, 'ok');
+        loadSlots();
+      } catch (error) {
+        console.error(error);
+        setStatus(genStatus, explain(error), 'error');
+      } finally {
+        $('gen-save').disabled = false;
       }
     });
 

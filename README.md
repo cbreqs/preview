@@ -11,6 +11,8 @@ assets/            shared stylesheet, admin styles, theme toggle, Firebase setup
 cnkc/              cnkc.css + index, about, calendar, gallery, memberships,
                    members, contact, documents, admin
 rubi/              index
+wandsandledgers/   Wands & Ledgers — booking wizard + admin (Firebase project
+                   wands-ledgers-flexagenda); edited directly in this repo
 eakc/              Elevated Adventures KC — a FlexAgenda booking site, not a
                    plain content site; see "eakc — a FlexAgenda client" below
 ```
