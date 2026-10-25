@@ -1316,13 +1316,8 @@
 
           const when = document.createElement('p');
           when.className = 'admin-row-when';
-          const sizeLabel = data.minGroupSize === data.maxGroupSize
-            ? `${data.maxGroupSize} people`
-            : `${data.minGroupSize}–${data.maxGroupSize} people`;
-          when.textContent = `${sizeLabel} · ${data.durationMinutes ?? '?'} min`
+          when.textContent = `${data.durationMinutes ?? '?'} min`
             + (data.isActive === false ? ' · not bookable' : '');
-          text.append(when);
-
           const title = document.createElement('p');
           title.className = 'admin-row-title';
           title.textContent = data.name || 'Untitled';
@@ -1802,7 +1797,7 @@
 
           const title = document.createElement('p');
           title.className = 'admin-row-title';
-          title.textContent = `${data.bookingTypeName || 'Booking'} · ${data.partySize ?? 1} people`;
+          title.textContent = data.bookingTypeName || 'Booking';
           text.append(title);
 
           const meta = document.createElement('p');

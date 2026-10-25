@@ -133,14 +133,13 @@ function confirmationEmail({ bookingType, start, partySize, clientType, contact,
   const text = `Hi ${contact.name},\n\n`
     + `You're booked for ${bookingType.name}.\n\n`
     + `When: ${when}\n`
-    + `People: ${partySize}\n`
     + priceLine
     + (note ? `Note: ${note}\n` : '')
     + `\nIf anything here is wrong, just reply to this email.`;
 
   const html = `<p>Hi ${escapeHtml(contact.name)},</p>`
     + `<p>You're booked for <strong>${escapeHtml(bookingType.name)}</strong>.</p>`
-    + `<p>${escapeHtml(when)}<br>${partySize} people</p>`
+    + `<p>${escapeHtml(when)}</p>`
     + (total > 0 ? `<p>Total: $${total.toFixed(2)} — pay when you arrive.</p>` : '')
     + (note ? `<p>Note: ${escapeHtml(note)}</p>` : '')
     + `<p>If anything here is wrong, just reply to this email.</p>`;

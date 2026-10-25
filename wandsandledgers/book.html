@@ -41,7 +41,7 @@
     <header class="page-header">
       <p class="hero-eyebrow">Book</p>
       <h1>Book an appointment</h1>
-      <p class="page-sub">Pick individual or business tax prep, then a time that works.</p>
+      <p class="page-sub">Pick individual or business tax prep, then a time that works. Filing with a spouse or partner? One appointment covers you both, and we will need the information for each of you.</p>
     </header>
 
     <div class="wizard-steps" id="wizard-steps"></div>
@@ -147,10 +147,7 @@
 
         const meta = document.createElement('p');
         meta.className = 'type-card-meta';
-        const sizeLabel = type.minGroupSize === type.maxGroupSize
-          ? `${type.maxGroupSize} ${type.maxGroupSize === 1 ? 'person' : 'people'}`
-          : `${type.minGroupSize}–${type.maxGroupSize} people`;
-        meta.textContent = `${sizeLabel} · ${type.durationMinutes} min`;
+        meta.textContent = `${type.durationMinutes} min`;
         card.append(meta);
 
         card.addEventListener('click', () => selectType(type));
@@ -163,7 +160,7 @@
     async function selectType(type) {
       state.chosenType = type;
       state.chosenSlot = null;
-      state.partySize = Math.min(Math.max(1, type.minGroupSize ?? 1), type.maxGroupSize ?? 1);
+      state.partySize = 1;
       state.clientType = type.clientTypes?.[0] ?? null;
       goTo(2);
       await loadSlots(type);
@@ -248,23 +245,8 @@
       form.className = 'form';
       form.noValidate = true;
 
-      // Party size, bounded by both the booking type and what's left in the
-      // chosen slot — whichever is smaller.
-      const maxAllowed = Math.min(type.maxGroupSize ?? 1, remainingCapacity(state.chosenSlot));
-      const sizeField = document.createElement('div');
-      sizeField.className = 'field';
-      const sizeLabel = document.createElement('label');
-      sizeLabel.htmlFor = 'party-size';
-      sizeLabel.textContent = 'How many people';
-      const sizeInput = document.createElement('input');
-      sizeInput.type = 'number';
-      sizeInput.id = 'party-size';
-      sizeInput.min = String(type.minGroupSize ?? 1);
-      sizeInput.max = String(maxAllowed);
-      sizeInput.value = String(state.partySize);
-      sizeInput.required = true;
-      sizeField.append(sizeLabel, sizeInput);
-      form.append(sizeField);
+      // No head-count field: a tax appointment is one person, or two filing
+      // together. Two people book once and bring information for both.
 
       // Client type only shown when the booking type actually distinguishes —
       // a type open to everyone the same way doesn't need this asked.
@@ -353,19 +335,12 @@
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const size = Number(sizeInput.value);
-        if (!Number.isInteger(size) || size < Number(sizeInput.min) || size > Number(sizeInput.max)) {
-          status.textContent = `Enter a group size between ${sizeInput.min} and ${sizeInput.max}.`;
-          status.className = 'status error';
-          return;
-        }
         if (!nameInput.value.trim() || !emailInput.value.trim()) {
           status.textContent = 'Name and email are required.';
           status.className = 'status error';
           return;
         }
 
-        state.partySize = size;
         state.clientType = clientTypeSelect?.value ?? state.clientType;
         state.contact = {
           name: nameInput.value.trim(),
@@ -411,7 +386,6 @@
       const rows = [
         ['Booking', type.name],
         ['When', `${dayFormat.format(slot.start)} · ${timeFormat.format(slot.start)}`],
-        ['People', String(state.partySize)],
         ['Name', state.contact.name],
         ['Email', state.contact.email],
       ];
