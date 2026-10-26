@@ -258,3 +258,38 @@ footer a { text-decoration-color: var(--accent); text-underline-offset: 4px; }
 .portrait.has-photo { border: 0; background: none; padding: 0; display: block; }
 .portrait.has-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; border-radius: 24px; display: block; }
 @media (max-width: 880px) { .portrait.has-photo { aspect-ratio: 1 / 1; max-height: none; max-width: 300px; } }
+
+/* ---------- admin calendar ---------- */
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.cal-dow { font-weight: 700; font-size: .85rem; text-align: center; color: var(--text-mid); padding-bottom: 2px; }
+.cal-day { min-height: 84px; padding: 6px; border-radius: 12px; border: 2px solid var(--line); background: #fff; text-align: left; font: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; overflow: hidden; }
+.cal-day b { font-size: 1rem; }
+.cal-day small { color: var(--text-mid); font-size: .78rem; }
+.cal-day.is-today { border-color: var(--blue); }
+.cal-day.is-closed { background: #F3F6F9; color: var(--text-mid); }
+.cal-day.is-blocked { background: repeating-linear-gradient(135deg, #fff 0 8px, #FBE4DD 8px 16px); border-color: var(--accent); }
+.cal-pill { font-size: .78rem; font-weight: 600; padding: 2px 6px; border-radius: 999px; border: 1.5px solid var(--blue); color: var(--blue); max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal-pill.is-sched { background: var(--blue); color: #fff; }
+@media (max-width: 640px) { .cal-day { min-height: 64px; padding: 4px; } .cal-pill { font-size: .7rem; } }
+
+/* ---------- admin request steps ---------- */
+.ptrack { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 10px; padding: 0; margin: 0; font-size: .92rem; }
+.ptrack li > * { display: inline-block; padding: 6px 12px; border-radius: 999px; border: 2px solid var(--line); background: #fff; color: var(--text-mid); font: inherit; font-weight: 600; }
+.ptrack button { cursor: pointer; }
+.ptrack .is-done { border-color: var(--blue); color: var(--blue); }
+.ptrack .is-cur { background: var(--blue); border-color: var(--blue); color: #fff; }
+.next { background: var(--sky); border-radius: 14px; padding: 14px 16px; border-left: 6px solid var(--accent); display: grid; gap: 10px; }
+.next h3 { font-size: 1.1rem; }
+.next textarea { min-height: 64px; padding: 8px 12px; border-radius: 10px; border: 2px solid var(--line); font: inherit; width: 100%; }
+.a-notice { background: #E3F4EA; color: #1B6B45; border-radius: 10px; padding: 10px 12px; font-weight: 600; }
+.req-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.req-actions button { min-height: 44px; padding: 8px 16px; border-radius: 10px; border: 2px solid var(--blue); background: #fff; color: var(--blue); font: inherit; font-weight: 700; cursor: pointer; }
+.req-actions button:first-child { background: var(--blue); color: #fff; }
+.req .reply { grid-column: 1 / -1; background: var(--sky); border-radius: 10px; padding: 8px 12px; font-size: .95rem; }
+.ptrack { counter-reset: none; }
+.ptrack li { counter-increment: none; background: none; border: 0; border-radius: 0; padding: 0; }
+.ptrack li::before { content: none; display: none; }
+.next .fine { text-align: left; }
+.a-edit label { flex: 1 1 200px; }
+.a-edit label input, .a-edit label select, .a-edit label textarea { width: 100%; }

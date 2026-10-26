@@ -7,7 +7,7 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, updateDoc
+  getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, updateDoc, getDoc, setDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -86,7 +86,22 @@ window.MOS = {
     });
     return rows;
   },
+  respond(id, answer) { return updateDoc(doc(db, 'requests', id), { response: answer, respondedAt: serverTimestamp() }); },
   updateRequest(id, patch) { return updateDoc(doc(db, 'requests', id), patch); },
+
+  async getAvailability() {
+    const d = await getDoc(doc(db, 'settings', 'availability'));
+    return d.exists() ? d.data() : null;
+  },
+  async getSlots() {
+    const snap = await getDocs(collection(db, 'slots'));
+    const out = {};
+    snap.forEach(d => { out[d.id] = d.data().requestId || true; });
+    return out;
+  },
+  saveAvailability(cfg) { return setDoc(doc(db, 'settings', 'availability'), cfg); },
+  setSlot(key, data) { return setDoc(doc(db, 'slots', key), data); },
+  clearSlot(key) { return deleteDoc(doc(db, 'slots', key)); },
 
   user() { return auth.currentUser; },
   signOut() { return signOut(auth); },

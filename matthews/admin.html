@@ -17,7 +17,7 @@
       <a class="brand" href="index.html" aria-label="Matthews Outdoor Services, home">
         <picture>
           <source media="(max-width: 820px)" srcset="img/logo-stacked-ink.png" />
-          <img class="logo" src="img/logo-wordmark-ink.png" alt="Matthews Outdoor Services" width="1714" height="92" />
+          <img class="logo" src="img/logo-wordmark-ink.png" alt="Matthews Outdoor Services" width="1761" height="95" />
         </picture>
       </a>
       <nav aria-label="Main">
@@ -46,9 +46,42 @@
     </section>
 
     <section id="panel" hidden>
-      <div class="admin-filters" role="group" aria-label="Filter requests" id="filters"></div>
-      <p class="msg" role="status" hidden id="p-msg"></p>
-      <div id="list"></div>
+      <div class="admin-filters" role="tablist" aria-label="Admin sections" id="views">
+        <button type="button" role="tab" data-view="requests" aria-pressed="true">Requests</button>
+        <button type="button" role="tab" data-view="calendar" aria-pressed="false">Calendar</button>
+        <button type="button" role="tab" data-view="avail" aria-pressed="false">Availability</button>
+      </div>
+
+      <div id="v-requests">
+        <div class="admin-filters" role="group" aria-label="Filter requests" id="filters"></div>
+        <p class="msg" role="status" hidden id="p-msg"></p>
+        <div id="list"></div>
+      </div>
+
+      <div id="v-calendar" hidden>
+        <div class="cal-head">
+          <button type="button" class="btn btn-ghost" id="cal-prev" aria-label="Previous month" style="min-height:44px;padding:6px 16px">&larr;</button>
+          <h2 id="cal-title" style="font-size:1.3rem"></h2>
+          <button type="button" class="btn btn-ghost" id="cal-next" aria-label="Next month" style="min-height:44px;padding:6px 16px">&rarr;</button>
+        </div>
+        <p class="fine" style="text-align:left;margin-bottom:10px">Tap a day to block or unblock it. Solid = scheduled. Outlined = waiting for your OK.</p>
+        <div class="cal" id="cal" role="grid" aria-label="Calendar"></div>
+        <p class="msg" role="status" hidden id="c-msg"></p>
+      </div>
+
+      <div id="v-avail" hidden>
+        <div class="card" style="max-width:520px">
+          <h2 style="font-size:1.3rem">Which days are open?</h2>
+          <p class="sub">Customers only see these days.</p>
+          <div class="chips" id="wd" role="group" aria-label="Open weekdays"></div>
+          <div class="a-edit" style="margin-top:16px">
+            <label>Notice needed (days)<input type="number" id="lead" min="0" max="14" style="width:110px" /></label>
+            <label>Show how far ahead (days)<input type="number" id="horizon" min="7" max="90" style="width:110px" /></label>
+          </div>
+          <p style="margin-top:16px"><button class="btn btn-primary" type="button" id="av-save">Save</button></p>
+          <p class="msg" role="status" hidden id="av-msg"></p>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -57,18 +90,45 @@
   (function () {
     'use strict';
     const $ = s => document.querySelector(s);
-    const STATUS = [['new', 'New'], ['quoted', 'Estimate sent'], ['scheduled', 'Scheduled'], ['done', 'Done']];
+    const STATUS = [['new', 'New'], ['quoted', 'Estimate sent'], ['scheduled', 'Scheduled'], ['done', 'Done'], ['declined', 'Declined']];
     const TYPE = { estimate: 'Estimate', booking: 'Booking', seasonal: 'Seasonal' };
-    let rows = [], filter = 'all';
+    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let rows = [], filter = 'needs', cfg = { weekdays: [1, 2, 3, 4, 5, 6], leadDays: 1, horizonDays: 21, blocked: [] }, taken = {};
+    let calMonth = new Date(); calMonth.setDate(1);
 
     function say(box, t) { box.textContent = t; box.hidden = false; }
     function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
     function fmt(ms) { return new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); }
+    const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+    /* ---- requests ---- */
+    const FILTERS = [['needs', 'Needs you'], ['waiting', 'Waiting on customer'], ['scheduled', 'Scheduled'], ['done', 'Done'], ['all', 'All']];
+    const STEPS = ['Received', 'Estimate', 'Scheduled', 'Done'];
+    const fmtDate = ds => new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const whenText = (ds, w) => fmtDate(ds) + (w && w !== 'Any' ? ', ' + w.toLowerCase() : '');
+    const todayISO = () => iso(new Date());
+
+    function bucket(r) {
+      const s = r.status || 'new';
+      if (s === 'new') return 'needs';
+      if (s === 'quoted' || s === 'proposed') return r.response ? 'needs' : 'waiting';
+      if (s === 'scheduled') return 'scheduled';
+      return 'done';
+    }
+    function statusLabel(r) {
+      const s = r.status || 'new';
+      if (s === 'new') return ['s-new', 'New'];
+      if (s === 'quoted') return r.response === 'accepted' ? ['s-wait', 'Customer said yes'] : r.response === 'declined' ? ['s-wait', 'Customer passed'] : ['s-sched', 'Estimate sent'];
+      if (s === 'proposed') return r.response === 'accepted' ? ['s-wait', 'Customer accepted'] : r.response === 'declined' ? ['s-wait', 'Customer needs another time'] : ['s-sched', 'Time suggested'];
+      if (s === 'scheduled') return ['s-sched', 'Scheduled'];
+      if (s === 'done') return ['s-sched', 'Done'];
+      return ['s-new', 'Closed'];
+    }
 
     function filters() {
       const box = $('#filters'); box.textContent = '';
-      [['all', 'All']].concat(STATUS).forEach(f => {
-        const n = rows.filter(r => f[0] === 'all' || (r.status || 'new') === f[0]).length;
+      FILTERS.forEach(f => {
+        const n = rows.filter(r => f[0] === 'all' || bucket(r) === f[0]).length;
         const b = el('button', null, f[1] + ' (' + n + ')');
         b.type = 'button'; b.setAttribute('aria-pressed', String(filter === f[0]));
         b.addEventListener('click', () => { filter = f[0]; filters(); render(); });
@@ -76,59 +136,289 @@
       });
     }
 
+    function btn(text, cls, fn) {
+      const b = el('button', cls, text); b.type = 'button'; b.style.minHeight = '44px';
+      b.addEventListener('click', () => fn(b));
+      return b;
+    }
+    function labeled(text, input) { const l = el('label', null, text); l.appendChild(input); return l; }
+
     function card(r) {
       const c = el('article', 'a-card');
-      const top = el('div', 'a-top');
-      top.append(el('b', null, (TYPE[r.type] || 'Request') + ': ' + (r.name || '')), el('small', null, fmt(r.when)));
-      c.appendChild(top);
+      let edit = null, notice = '';
 
-      const meta = el('div', 'a-meta');
-      const addr = [r.street, r.city].filter(Boolean).join(', ');
-      const map = el('a', null, addr); map.target = '_blank'; map.rel = 'noopener';
-      map.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
-      meta.appendChild(map);
-      const ct = el('a', null, r.contact || '');
-      ct.href = (r.contact || '').indexOf('@') > -1 ? 'mailto:' + r.contact : 'tel:' + (r.contact || '').replace(/[^\d+]/g, '');
-      meta.appendChild(ct);
-      c.appendChild(meta);
+      function showErr(box, t) { box.textContent = t; box.hidden = false; }
 
-      const bits = [];
-      if (r.chips && r.chips.length) bits.push('Wash: ' + r.chips.join(', '));
-      if (r.day) bits.push('Day: ' + r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : ''));
-      if (bits.length) c.appendChild(el('p', null, bits.join(' · ')));
-      if (r.notes) c.appendChild(el('p', 'a-note', r.notes));
+      function applyChange(patch, note, errBox, button) {
+        const prevKey = (r.status === 'scheduled' && r.date && r.window && r.window !== 'Any') ? r.date + '_' + r.window : null;
+        const nextKey = (patch.status === 'scheduled' && patch.date && patch.window && patch.window !== 'Any') ? patch.date + '_' + patch.window : null;
+        if (nextKey && taken[nextKey] && taken[nextKey] !== r.id) { showErr(errBox, 'That window is already booked. Pick another.'); return; }
+        if (button) button.disabled = true;
+        errBox.hidden = true;
+        let p = window.MOS.updateRequest(r.id, patch);
+        if (nextKey) p = p.then(() => window.MOS.setSlot(nextKey, { requestId: r.id })).then(() => { taken[nextKey] = r.id; });
+        if (prevKey && prevKey !== nextKey) p = p.then(() => window.MOS.clearSlot(prevKey)).then(() => { delete taken[prevKey]; });
+        p.then(() => { Object.assign(r, patch); edit = null; notice = note; draw(); filters(); calendar(); })
+          .catch(() => { showErr(errBox, 'Did not save. Try again.'); if (button) button.disabled = false; });
+      }
 
-      const ed = el('div', 'a-edit');
-      const l1 = el('label', null, 'Status'); const sel = el('select');
-      STATUS.forEach(s => { const o = el('option', null, s[1]); o.value = s[0]; if ((r.status || 'new') === s[0]) o.selected = true; sel.appendChild(o); });
-      l1.appendChild(sel);
-      const l2 = el('label', null, 'Estimate shown to customer'); const q = el('input');
-      q.type = 'text'; q.placeholder = '$150'; q.value = r.quote || ''; l2.appendChild(q);
-      const save = el('button', 'btn btn-primary', 'Save'); save.type = 'button'; save.style.minHeight = '44px';
-      const ok = el('span', 'saved'); ok.setAttribute('role', 'status');
-      save.addEventListener('click', () => {
-        save.disabled = true; ok.textContent = '';
-        const patch = { status: sel.value, quote: q.value.trim() };
-        window.MOS.updateRequest(r.id, patch)
-          .then(() => { Object.assign(r, patch); ok.textContent = 'Saved'; filters(); })
-          .catch(() => { ok.textContent = 'Did not save. Try again.'; })
-          .finally(() => { save.disabled = false; });
-      });
-      ed.append(l1, l2, save, ok);
-      c.appendChild(ed);
+      function header() {
+        const top = el('div', 'a-top');
+        const left = el('div');
+        left.append(el('b', null, (r.name || 'Customer') + ' · ' + (TYPE[r.type] || 'Request')), el('br'), el('small', null, 'Received ' + fmt(r.when)));
+        const st = statusLabel(r);
+        top.append(left, el('span', 'status ' + st[0], st[1]));
+        return top;
+      }
+
+      function info() {
+        const wrap = el('div');
+        const meta = el('div', 'a-meta');
+        const addr = [r.street, r.city].filter(Boolean).join(', ');
+        const map = el('a', null, addr); map.target = '_blank'; map.rel = 'noopener';
+        map.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr);
+        const ct = el('a', null, r.contact || '');
+        ct.href = (r.contact || '').indexOf('@') > -1 ? 'mailto:' + r.contact : 'tel:' + (r.contact || '').replace(/[^\d+]/g, '');
+        meta.append(map, ct);
+        wrap.appendChild(meta);
+        const bits = [];
+        if (r.chips && r.chips.length) bits.push('Wash: ' + r.chips.join(', '));
+        if (r.date) bits.push('They asked for: ' + whenText(r.date, r.window));
+        else if (r.day) bits.push('They asked for: ' + r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : ''));
+        if (bits.length) wrap.appendChild(el('p', null, bits.join(' · ')));
+        if (r.notes) wrap.appendChild(el('p', 'a-note', r.notes));
+        return wrap;
+      }
+
+      function stepsRow() {
+        const s = r.status || 'new';
+        const idx = { new: 0, quoted: 1, proposed: 2, scheduled: 2, done: 4, declined: -1 }[s];
+        const row = el('ol', 'ptrack'); row.setAttribute('aria-label', 'Progress');
+        STEPS.forEach((name, i) => {
+          const li = el('li'); const done = i < idx, cur = i === idx;
+          const label = (done ? '✓ ' : '') + name;
+          if (i === 1 || i === 2) {
+            const b = el('button', null, label); b.type = 'button';
+            b.className = (done ? 'is-done' : '') + (cur ? ' is-cur' : '');
+            if (cur) b.setAttribute('aria-current', 'step');
+            b.title = 'Open this step';
+            b.addEventListener('click', () => { edit = i === 1 ? 'estimate' : 'schedule'; draw(); });
+            li.appendChild(b);
+          } else {
+            li.appendChild(el('span', (done ? 'is-done' : '') + (cur ? ' is-cur' : ''), label));
+          }
+          row.appendChild(li);
+        });
+        return row;
+      }
+
+      function estimatePanel() {
+        const box = el('div', 'next'); const err = el('p', 'msg', ''); err.hidden = true; err.setAttribute('role', 'alert');
+        box.append(el('h3', null, 'Send an estimate'), el('p', 'fine', 'The customer sees this in their account.'));
+        const price = el('input'); price.type = 'text'; price.placeholder = '$150'; price.value = r.quote || '';
+        const note = el('textarea'); note.rows = 2; note.value = r.reply || ''; note.placeholder = 'Anything they should know (optional)';
+        const row = el('div', 'a-edit'); row.append(labeled('Price', price), labeled('Note to customer (optional)', note));
+        box.appendChild(row);
+        const actions = el('div', 'a-edit');
+        actions.appendChild(btn(r.quote && r.status === 'quoted' ? 'Send updated estimate' : 'Send estimate', 'btn btn-primary', b => {
+          if (!price.value.trim()) return showErr(err, 'Add a price first.');
+          const keep = (r.status === 'scheduled' || r.status === 'done') ? r.status : 'quoted';
+          applyChange({ status: keep, quote: price.value.trim(), reply: note.value.trim(), response: null }, 'Estimate sent. ' + (r.name || 'The customer') + ' can see it in their account.', err, b);
+        }));
+        if (edit) actions.appendChild(btn('Cancel', 'btn btn-ghost', () => { edit = null; draw(); }));
+        box.append(actions, err);
+        return box;
+      }
+
+      function schedulePanel() {
+        const box = el('div', 'next'); const err = el('p', 'msg', ''); err.hidden = true; err.setAttribute('role', 'alert');
+        box.append(el('h3', null, 'Pick a day'));
+        const date = el('input'); date.type = 'date'; date.min = todayISO(); date.value = r.proposedDate || r.date || '';
+        const win = el('select'); ['Morning', 'Afternoon'].forEach(w => { const o = el('option', null, w); o.value = w; win.appendChild(o); });
+        win.value = (r.proposedWindow || r.window) === 'Afternoon' ? 'Afternoon' : 'Morning';
+        const note = el('textarea'); note.rows = 2; note.placeholder = 'Message to customer (optional)'; note.value = '';
+        const hint = el('p', 'fine', ''); hint.style.textAlign = 'left';
+        function check() {
+          const v = date.value; let t = '';
+          if (v) {
+            const dow = new Date(v + 'T12:00:00').getDay();
+            if ((cfg.blocked || []).indexOf(v) > -1) t = 'Heads up: you blocked this day.';
+            else if ((cfg.weekdays || []).indexOf(dow) < 0) t = 'Heads up: this is a closed day.';
+          }
+          Array.from(win.options).forEach(o => { const k = v + '_' + o.value; o.disabled = !!(v && taken[k] && taken[k] !== r.id); });
+          if (win.options[win.selectedIndex].disabled) { const ok = Array.from(win.options).find(o => !o.disabled); if (ok) win.value = ok.value; }
+          hint.textContent = t;
+        }
+        date.addEventListener('change', check); check();
+        const row = el('div', 'a-edit'); row.append(labeled('Day', date), labeled('Time', win), labeled('Message (optional)', note));
+        box.append(row, hint);
+        const direct = r.response === 'accepted';
+        const needDate = () => { if (!date.value) { showErr(err, 'Pick a day first.'); return false; } return true; };
+        const suggest = btn('Suggest this time', direct ? 'btn btn-ghost' : 'btn btn-primary', b => {
+          if (!needDate()) return;
+          applyChange({ status: 'proposed', proposedDate: date.value, proposedWindow: win.value, proposedDay: fmtDate(date.value), reply: note.value.trim(), response: null },
+            'Suggestion sent. ' + (r.name || 'The customer') + ' can accept it in their account.', err, b);
+        });
+        const book = btn(direct ? 'Schedule it' : 'Book it without asking', direct ? 'btn btn-primary' : 'btn btn-ghost', b => {
+          if (!needDate()) return;
+          applyChange({ status: 'scheduled', date: date.value, window: win.value, day: fmtDate(date.value), proposedDate: null, proposedWindow: null, proposedDay: null, reply: note.value.trim(), response: null },
+            'Scheduled for ' + whenText(date.value, win.value) + '.', err, b);
+        });
+        const actions = el('div', 'a-edit'); actions.append(direct ? book : suggest, direct ? suggest : book);
+        if (edit) actions.appendChild(btn('Cancel', 'btn btn-ghost', () => { edit = null; draw(); }));
+        box.append(actions, err);
+        return box;
+      }
+
+      function simplePanel(title, text, buttons) {
+        const box = el('div', 'next'); const err = el('p', 'msg', ''); err.hidden = true; err.setAttribute('role', 'alert');
+        box.append(el('h3', null, title));
+        if (text) box.appendChild(el('p', null, text));
+        const actions = el('div', 'a-edit');
+        buttons(err).forEach(b => actions.appendChild(b));
+        box.append(actions, err);
+        return box;
+      }
+
+      function panel() {
+        const s = r.status || 'new';
+        if (edit === 'estimate') return estimatePanel();
+        if (edit === 'schedule') return schedulePanel();
+        const name = r.name || 'The customer';
+        const close = err => btn('Close request', 'btn btn-ghost', b => applyChange({ status: 'declined' }, 'Request closed.', err, b));
+        if (s === 'new') {
+          if (r.type === 'booking' && r.date) {
+            return simplePanel(name + ' asked for ' + whenText(r.date, r.window), 'Confirm it, or suggest a different time.', err => [
+              btn('Confirm ' + whenText(r.date, r.window), 'btn btn-primary', b => applyChange({ status: 'scheduled', date: r.date, window: r.window, day: fmtDate(r.date), response: null }, 'Confirmed for ' + whenText(r.date, r.window) + '.', err, b)),
+              btn('Suggest another time', 'btn btn-ghost', () => { edit = 'schedule'; draw(); }),
+              btn('Send an estimate first', 'btn btn-ghost', () => { edit = 'estimate'; draw(); }),
+              close(err)
+            ]);
+          }
+          return estimatePanel();
+        }
+        if (s === 'quoted') {
+          if (r.response === 'accepted') return simplePanel(name + ' said yes to ' + (r.quote || 'the estimate'), 'Next: pick the day.', err => [
+            btn('Schedule it', 'btn btn-primary', () => { edit = 'schedule'; draw(); }),
+            btn('Change estimate', 'btn btn-ghost', () => { edit = 'estimate'; draw(); })]);
+          if (r.response === 'declined') return simplePanel(name + ' passed on ' + (r.quote || 'the estimate'), 'Send a new price, or close it.', err => [
+            btn('Send a new estimate', 'btn btn-primary', () => { edit = 'estimate'; draw(); }), close(err)]);
+          return simplePanel('Estimate sent: ' + (r.quote || ''), 'Waiting for ' + name + '. They can see it in their account.', err => [
+            btn('Change estimate', 'btn btn-ghost', () => { edit = 'estimate'; draw(); }),
+            btn('Schedule anyway', 'btn btn-ghost', () => { edit = 'schedule'; draw(); }), close(err)]);
+        }
+        if (s === 'proposed') {
+          const t = whenText(r.proposedDate, r.proposedWindow);
+          if (r.response === 'accepted') return simplePanel(name + ' accepted ' + t, 'Confirm it to lock the time.', err => [
+            btn('Confirm ' + t, 'btn btn-primary', b => applyChange({ status: 'scheduled', date: r.proposedDate, window: r.proposedWindow, day: fmtDate(r.proposedDate), proposedDate: null, proposedWindow: null, proposedDay: null, response: null }, 'Confirmed for ' + t + '.', err, b)),
+            btn('Suggest a different time', 'btn btn-ghost', () => { edit = 'schedule'; draw(); })]);
+          if (r.response === 'declined') return simplePanel(name + ' cannot do ' + t, 'Suggest another time.', err => [
+            btn('Suggest another time', 'btn btn-primary', () => { edit = 'schedule'; draw(); }), close(err)]);
+          return simplePanel('You suggested ' + t, 'Waiting for ' + name + ' to answer.', err => [
+            btn('Change the time', 'btn btn-ghost', () => { edit = 'schedule'; draw(); }), close(err)]);
+        }
+        if (s === 'scheduled') return simplePanel('Scheduled for ' + (r.date ? whenText(r.date, r.window) : (r.day || 'a day to be set')), '', err => [
+          btn('Mark done', 'btn btn-primary', b => applyChange({ status: 'done' }, 'Marked done.', err, b)),
+          btn('Change time', 'btn btn-ghost', () => { edit = 'schedule'; draw(); }),
+          btn('Move back to new', 'btn btn-ghost', b => applyChange({ status: 'new', response: null }, 'Moved back to new.', err, b))]);
+        if (s === 'done') return simplePanel('Done', '', err => [btn('Reopen', 'btn btn-ghost', b => applyChange({ status: 'scheduled' }, 'Reopened.', err, b))]);
+        return simplePanel('Closed', '', err => [btn('Reopen', 'btn btn-ghost', b => applyChange({ status: 'new', response: null }, 'Reopened.', err, b))]);
+      }
+
+      function draw() {
+        c.textContent = '';
+        c.append(header(), info(), stepsRow());
+        if (notice) { const n = el('p', 'a-notice', '✓ ' + notice); n.setAttribute('role', 'status'); c.appendChild(n); }
+        c.appendChild(panel());
+      }
+      draw();
       return c;
     }
 
     function render() {
       const list = $('#list'); list.textContent = '';
-      const shown = rows.filter(r => filter === 'all' || (r.status || 'new') === filter);
-      if (!shown.length) { list.appendChild(el('p', 'fine', 'Nothing here yet.')); return; }
+      let shown = rows.filter(r => filter === 'all' || bucket(r) === filter);
+      if (filter === 'scheduled') shown = shown.slice().sort((a, b) => String(a.date || '9').localeCompare(String(b.date || '9')));
+      if (!shown.length) { list.appendChild(el('p', 'fine', filter === 'needs' ? "You're all caught up." : 'Nothing here.')); return; }
       shown.forEach(r => list.appendChild(card(r)));
     }
 
+/* ---- calendar ---- */
+    function calendar() {
+      const grid = $('#cal'); grid.textContent = '';
+      $('#cal-title').textContent = calMonth.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      DAYS.forEach(d => { const h = el('div', 'cal-dow', d); grid.appendChild(h); });
+      const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+      for (let i = 0; i < first.getDay(); i++) grid.appendChild(el('div', 'cal-empty'));
+      const n = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+      const todayKey = iso(new Date());
+      for (let day = 1; day <= n; day++) {
+        const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
+        const key = iso(d);
+        const blocked = (cfg.blocked || []).indexOf(key) > -1;
+        const closed = (cfg.weekdays || []).indexOf(d.getDay()) < 0;
+        const b = el('button', 'cal-day' + (blocked ? ' is-blocked' : '') + (closed ? ' is-closed' : '') + (key === todayKey ? ' is-today' : ''));
+        b.type = 'button';
+        b.appendChild(el('b', null, String(day)));
+        if (blocked) b.appendChild(el('small', null, 'Blocked'));
+        else if (closed) b.appendChild(el('small', null, 'Closed'));
+        rows.filter(r => (r.status === 'scheduled' && r.date === key) || (r.status === 'proposed' && r.proposedDate === key) || ((r.status || 'new') === 'new' && r.type === 'booking' && r.date === key))
+          .forEach(r => {
+            const w = r.status === 'proposed' ? r.proposedWindow : r.window;
+            const pill = el('span', 'cal-pill' + (r.status === 'scheduled' ? ' is-sched' : ''), (w === 'Afternoon' ? 'PM ' : 'AM ') + (r.name || ''));
+            b.appendChild(pill);
+          });
+        b.setAttribute('aria-label', d.toDateString() + (blocked ? ', blocked' : ''));
+        b.addEventListener('click', () => toggleBlock(key));
+        grid.appendChild(b);
+      }
+    }
+    function toggleBlock(key) {
+      const list = (cfg.blocked || []).slice();
+      const i = list.indexOf(key);
+      if (i > -1) list.splice(i, 1); else list.push(key);
+      const next = Object.assign({}, cfg, { blocked: list.sort() });
+      window.MOS.saveAvailability(next).then(() => { cfg = next; calendar(); $('#c-msg').hidden = true; })
+        .catch(() => say($('#c-msg'), 'Did not save. Try again.'));
+    }
+    $('#cal-prev').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() - 1); calendar(); });
+    $('#cal-next').addEventListener('click', () => { calMonth.setMonth(calMonth.getMonth() + 1); calendar(); });
+
+    /* ---- availability ---- */
+    function availUI() {
+      const box = $('#wd'); box.textContent = '';
+      DAYS.forEach((d, i) => {
+        const l = el('label', 'chip'); const inp = document.createElement('input');
+        inp.type = 'checkbox'; inp.value = String(i); inp.checked = (cfg.weekdays || []).indexOf(i) > -1;
+        l.append(inp, el('span', null, d)); box.appendChild(l);
+      });
+      $('#lead').value = cfg.leadDays != null ? cfg.leadDays : 1;
+      $('#horizon').value = cfg.horizonDays || 21;
+    }
+    $('#av-save').addEventListener('click', () => {
+      const next = Object.assign({}, cfg, {
+        weekdays: Array.from(document.querySelectorAll('#wd input:checked')).map(i => Number(i.value)),
+        leadDays: Math.max(0, Number($('#lead').value) || 0),
+        horizonDays: Math.min(90, Math.max(7, Number($('#horizon').value) || 21))
+      });
+      window.MOS.saveAvailability(next).then(() => { cfg = next; say($('#av-msg'), 'Saved.'); calendar(); })
+        .catch(() => say($('#av-msg'), 'Did not save. Try again.'));
+    });
+
+    /* ---- views ---- */
+    function view(v) {
+      ['requests', 'calendar', 'avail'].forEach(x => { $('#v-' + x).hidden = x !== v; });
+      document.querySelectorAll('#views button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === v)));
+    }
+    document.querySelectorAll('#views button').forEach(b => b.addEventListener('click', () => view(b.dataset.view)));
+
     function load() {
       $('#p-msg').hidden = true;
-      return window.MOS.allRequests().then(r => { rows = r; filters(); render(); $('#panel').hidden = false; })
+      return Promise.all([window.MOS.allRequests(), window.MOS.getAvailability(), window.MOS.getSlots()])
+        .then(r => {
+          rows = r[0]; if (r[1]) cfg = Object.assign(cfg, r[1]); taken = r[2] || {};
+          filters(); render(); calendar(); availUI(); $('#panel').hidden = false;
+        })
         .catch(() => { $('#panel').hidden = true; say($('#a-msg'), 'This account does not have admin access.'); $('#gate').hidden = false; });
     }
 

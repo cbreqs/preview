@@ -25,23 +25,59 @@
   });
   $$('[data-tab]').forEach(a => a.addEventListener('click', () => showTab(a.dataset.tab)));
 
-  /* ---- day chips: next 10 days, no Sundays ---- */
+  /* ---- day chips: open days from Aiden's availability ---- */
   const daysEl = $('#days');
   const fmtDay = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
   const fmtMon = new Intl.DateTimeFormat('en-US', { month: 'short' });
   const fmtLong = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  let d = new Date(); d.setHours(12, 0, 0, 0);
-  let made = 0;
-  while (made < 10) {
-    d = new Date(d.getTime() + 86400000);
-    if (d.getDay() === 0) continue;
-    const id = 'day-' + made;
-    const label = document.createElement('label');
-    label.className = 'chip';
-    label.innerHTML = `<input type="radio" name="day" id="${id}" value="${fmtLong.format(d)}"><span><small>${fmtDay.format(d)}</small><b>${d.getDate()}</b><small>${fmtMon.format(d)}</small></span>`;
-    daysEl.appendChild(label);
-    made++;
+  const WINDOWS = ['Morning', 'Afternoon'];
+  let cfg = { weekdays: [1, 2, 3, 4, 5, 6], leadDays: 1, horizonDays: 21, blocked: [] };
+  let taken = {};
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+  function syncWindows(date) {
+    const radios = $$('input[name=window]', $('#form-book'));
+    radios.forEach(r => {
+      const off = !!(date && taken[date + '_' + r.value]);
+      r.disabled = off;
+      r.closest('.chip').style.opacity = off ? '.45' : '';
+      r.closest('.chip').title = off ? 'Already booked' : '';
+    });
+    const cur = radios.find(r => r.checked && !r.disabled) || radios.find(r => !r.disabled);
+    if (cur) cur.checked = true;
   }
+
+  function renderDays() {
+    daysEl.textContent = '';
+    const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + (cfg.leadDays || 1));
+    let made = 0;
+    for (let i = 0; i < (cfg.horizonDays || 21) && made < 10; i++, d.setDate(d.getDate() + 1)) {
+      if ((cfg.weekdays || []).indexOf(d.getDay()) < 0) continue;
+      const key = iso(d);
+      if ((cfg.blocked || []).indexOf(key) > -1) continue;
+      if (WINDOWS.every(w => taken[key + '_' + w])) continue;
+      const label = document.createElement('label');
+      label.className = 'chip';
+      label.innerHTML = `<input type="radio" name="day" id="day-${made}" value="${fmtLong.format(d)}" data-date="${key}"><span><small>${fmtDay.format(d)}</small><b>${d.getDate()}</b><small>${fmtMon.format(d)}</small></span>`;
+      label.querySelector('input').addEventListener('change', () => syncWindows(key));
+      daysEl.appendChild(label);
+      made++;
+    }
+    if (!made) {
+      const p = document.createElement('p'); p.className = 'fine'; p.style.textAlign = 'left';
+      p.textContent = 'No open days right now. Send an estimate request and I will reach out with times.';
+      daysEl.appendChild(p);
+    }
+  }
+  renderDays();
+  function loadAvailability() {
+    Promise.all([window.MOS.getAvailability(), window.MOS.getSlots()]).then(r => {
+      if (r[0]) cfg = Object.assign(cfg, r[0]);
+      taken = r[1] || {};
+      renderDays();
+    }).catch(() => {});
+  }
+  if (window.MOS) loadAvailability(); else window.addEventListener('mos-ready', loadAvailability, { once: true });
 
   /* ---- forms ---- */
   function fail(box, text) { box.textContent = text; box.hidden = false; }
@@ -92,7 +128,9 @@
     if (!day) return fail(err, 'Pick a day. I can adjust it if needed.');
     if (!f.name.value.trim()) return fail(err, 'What should I call you?'), f.name.focus();
     if (!f.contact.value.trim()) return fail(err, 'Add a phone or email so I can confirm.'), f.contact.focus();
-    const w = f.querySelector('input[name=window]:checked').value;
+    const wEl = f.querySelector('input[name=window]:checked');
+    if (!wEl) return fail(err, 'Pick morning or afternoon.');
+    const w = wEl.value;
     const done = $('#done-book');
     busy(f, true);
     save({
@@ -101,6 +139,7 @@
       name: f.name.value.trim(),
       contact: f.contact.value.trim(),
       day: day.value,
+      date: day.dataset.date,
       window: w
     }).then(() => {
       fill(done, 'when', day.value + (w === 'Any' ? '' : ', ' + w.toLowerCase()));
@@ -137,7 +176,9 @@
     new: ['s-new', 'Received'],
     scheduled: ['s-sched', 'Scheduled'],
     quoted: ['s-wait', 'Needs your OK'],
-    done: ['s-sched', 'Done']
+    done: ['s-sched', 'Done'],
+    declined: ['s-wait', 'Needs a new time'],
+    proposed: ['s-wait', 'New time suggested']
   };
   const ADMINS = ['singularity@reqs.tech', 'service@matthewsoutdoorservices.com']; // menu link only; Firestore rules enforce access
   const dMsg = $('#d-msg');
@@ -158,10 +199,27 @@
       const row = document.createElement('div'); row.className = 'req';
       const b = document.createElement('b'); b.textContent = titleFor(r);
       const sm = document.createElement('small');
-      sm.textContent = [r.street, r.day && (r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : '')), r.quote && ('Estimate: ' + r.quote)].filter(Boolean).join(' \u00b7 ');
+      const shown = r.status === 'proposed' && r.proposedDay ? 'Suggested: ' + r.proposedDay + (r.proposedWindow ? ', ' + r.proposedWindow.toLowerCase() : '') : (r.day && (r.day + (r.window && r.window !== 'Any' ? ', ' + r.window.toLowerCase() : '')));
+      sm.textContent = [r.street, shown, r.quote && ('Estimate: ' + r.quote)].filter(Boolean).join(' · ');
       const st = STATUS[r.status] || STATUS.new;
       const sp = document.createElement('span'); sp.className = 'status ' + st[0]; sp.textContent = st[1];
       row.append(b, sm, sp);
+      if (r.reply) { const p = document.createElement('p'); p.className = 'reply'; p.textContent = r.reply; row.appendChild(p); }
+      const ask = r.status === 'quoted' || r.status === 'proposed';
+      if (ask && !r.response) {
+        const box = document.createElement('div'); box.className = 'req-actions';
+        const yes = document.createElement('button'); yes.type = 'button'; yes.textContent = r.status === 'quoted' ? 'Looks good' : 'Works for me';
+        const no = document.createElement('button'); no.type = 'button'; no.textContent = r.status === 'quoted' ? 'Not now' : "Doesn't work";
+        [[yes, 'accepted'], [no, 'declined']].forEach(x => x[0].addEventListener('click', () => {
+          yes.disabled = no.disabled = true;
+          window.MOS.respond(r.id, x[1]).then(refresh).catch(() => { yes.disabled = no.disabled = false; });
+        }));
+        box.append(yes, no); row.appendChild(box);
+      } else if (ask && r.response) {
+        const p = document.createElement('p'); p.className = 'reply';
+        p.textContent = r.response === 'accepted' ? 'Thanks. Aiden will confirm.' : 'Got it. Aiden will follow up.';
+        row.appendChild(p);
+      }
       list.appendChild(row);
     });
   }
